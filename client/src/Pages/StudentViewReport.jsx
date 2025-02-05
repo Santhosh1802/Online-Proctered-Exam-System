@@ -1,6 +1,6 @@
 import React from "react";
-import TeacherNavBar from "../Components/TeacherNavBar";
-export default function TeacherDashboard() {
+import StudentNavBar from '../Components/StudentNavBar'
+export default function StudentViewReport() {
   return (
     <div
       style={{
@@ -9,9 +9,9 @@ export default function TeacherDashboard() {
         alignItems: "center",
       }}
     >
-      <TeacherNavBar />
+      <StudentNavBar />
       <div style={{ marginTop: "5em" }}>
-        <h1>Welcome Teacher</h1>
+        <h1>View Report</h1>
       </div>
     </div>
   );

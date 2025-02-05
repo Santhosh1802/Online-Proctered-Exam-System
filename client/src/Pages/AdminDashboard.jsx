@@ -37,7 +37,9 @@ export default function AdminDashboard({ toast }) {
       }}
     >
       <AdminNavBar />
-      <h1 style={{ marginTop: "2.2em" }}>Welcome {name}</h1>
+      <div style={{marginTop:"5em"}}>
+        <h1>Welcome {name}</h1>
+      </div>
     </div>
   );
 }

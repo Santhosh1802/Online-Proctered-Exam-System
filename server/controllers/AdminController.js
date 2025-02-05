@@ -13,6 +13,7 @@ const getAdminProfile = async (req, res) => {
   const admin = await Admin.findOne({ email: email });
   if (admin) {
     response.message = "Admin Found";
+    response.data.profile=admin.profile;
     response.data.name = admin.name;
     response.data.phone = admin.phone;
     response.data.email = admin.email;
@@ -29,10 +30,10 @@ const updateAdminProfile = async (req, res) => {
     error: "",
   };
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phone ,profile} = req.body;
     const admin = await Admin.findOneAndUpdate(
       { email: email },
-      { name: name, email: email, phone: phone },
+      { name: name, email: email, phone: phone ,profile:profile},
       { new: true, upsert: true, runValidators: true }
     );
     response.message = admin
@@ -63,6 +64,7 @@ const getTeacher=async(req,res)=>{
   }
   res.status(200).json(response);
 }
+
 
 // export async function getTeacher() {}
 

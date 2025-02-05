@@ -10,7 +10,8 @@ dotenv.config();
 //Routes imports
 const userRoutes=require("./routes/User");
 const adminRoutes=require("./routes/Admin");
-
+const teacherRoutes=require("./routes/Teacher");
+const studentRoutes=require("./routes/Student");
 
 const app=express();
 app.use(cors());
@@ -29,6 +30,8 @@ mongoose.connect(process.env.DBURL)
 
 app.use(userRoutes);
 app.use(adminRoutes);
+app.use(teacherRoutes);
+app.use(studentRoutes);
 
 const port=5000 || process.env.PORT;
 app.listen(port,()=>{

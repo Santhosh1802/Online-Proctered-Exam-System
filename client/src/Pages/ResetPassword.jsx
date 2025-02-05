@@ -47,7 +47,8 @@ function ResetPassword({toast}) {
                 borderRadius:"1em",
                 boxShadow: "0px 5px 10px grey",
                 
-        }}>
+        }}
+        className="dashbox">
         <div style={{
             fontSize:"2em",
             textAlign:"center",

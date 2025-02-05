@@ -48,7 +48,7 @@ export default function AdminNavBar() {
     );
 
     return (
-        <div className="card" style={{marginTop:"8px", position:"fixed",width:"98%",alignItems:"center"}}>
+        <div className="card" style={{marginTop:"8px", position:"fixed",width:"99%",alignItems:"center",zIndex:"1"}}>
             <Menubar model={items} start={start} end={end} />
         </div>
     )

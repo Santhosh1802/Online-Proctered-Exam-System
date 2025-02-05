@@ -59,14 +59,17 @@ function Login({toast}) {
         border: "px solid black",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-start",
+        justifyContent: "flex-end",
         alignItems: "center",
         margin: "auto",
+        marginRight:"10em",
         marginTop: "10vh",
         borderRadius: "1em",
         boxShadow: "0px 5px 10px grey",
+        backdropFilter:"blur(20px)"
+        
       }}
-      className="box"
+      className="dashbox"
     >
       <div
         style={{

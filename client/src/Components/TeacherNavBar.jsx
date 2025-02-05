@@ -19,6 +19,21 @@ export default function StudentNavBar() {
             command:()=>navigate("/teacherdashboard")
         },
         {
+            label:'Profile',
+            icon:'pi pi-user',
+            command:()=>navigate("/teacherprofile")
+        },
+        {
+            label:'View Student',
+            icon:'pi pi-user',
+            command:()=>navigate("/teacherstudent")
+        },
+        {
+            label:'Manage Test',
+            icon:'pi pi-clipboard',
+            command:()=>navigate("/teachertest")
+        },
+        {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             command:()=>handleLogout()
@@ -32,7 +47,7 @@ export default function StudentNavBar() {
     );
 
     return (
-        <div className="card" style={{marginTop:"8px", position:"fixed",width:"98%",alignItems:"center"}}>
+        <div className="card" style={{marginTop:"8px", position:"fixed",width:"99%",alignItems:"center",zIndex:"1"}}>
             <Menubar model={items} start={start} end={end} />
         </div>
     )

@@ -15,3 +15,18 @@
   align-items: center;
   height: 100vh;
 }
+
+
+
+.with-background {
+  background-image: url("https://i.postimg.cc/SNFWKzkn/Background.png");
+  background-repeat: no-repeat;  
+  background-size: cover;
+  height: 90vh;
+  z-index: 1;
+  width: 100%;
+}
+
+.dashbox{
+  margin-left: 10em;
+}

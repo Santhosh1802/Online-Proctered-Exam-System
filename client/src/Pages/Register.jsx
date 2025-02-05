@@ -51,6 +51,7 @@ function Register({toast}) {
         borderRadius: "1em",
         boxShadow: "0px 5px 10px grey",
       }}
+      className="dashbox"
     >
       <div
         style={{

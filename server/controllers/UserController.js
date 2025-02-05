@@ -64,7 +64,6 @@ const handleStudentRegister = async (req, res) => {
       email_id: email,
       password: hashedPassword,
       role: usertype,
-      created_at: Date.now(),
     });
     await newUser.save();
     response.message = "User Successfully registered";

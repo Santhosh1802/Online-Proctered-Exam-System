@@ -1,6 +1,6 @@
 import React from "react";
 import TeacherNavBar from "../Components/TeacherNavBar";
-export default function TeacherDashboard() {
+export default function TeacherViewStudent() {
   return (
     <div
       style={{
@@ -11,7 +11,7 @@ export default function TeacherDashboard() {
     >
       <TeacherNavBar />
       <div style={{ marginTop: "5em" }}>
-        <h1>Welcome Teacher</h1>
+        <h1>View Students</h1>
       </div>
     </div>
   );
