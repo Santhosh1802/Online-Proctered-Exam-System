@@ -22,7 +22,10 @@ export default function AdminDashboard({ toast }) {
           } else {
             setName(res.data.data.name);
           }
-        });
+        })
+        .catch((error)=>{
+          console.log(error);
+        })
     } else {
       console.log("Error Call");
     }

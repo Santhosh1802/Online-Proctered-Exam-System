@@ -130,7 +130,6 @@ const getOneStudent = async (req, res) => {
     error: "",
     data: {},
   };
-  console.log(req.query.email);
   try {
     const student = await Student.findOne({ email: req.query.email });
     if (!student || student==null) {
@@ -163,7 +162,7 @@ const deleteTeacher = async (req, res) => {
     if (!teacher || teacher==null) {
       response.message = "No data found";
       response.error = "Teacher only found in login";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.message = "Teacher deleted";
     return res.status(200).send(response);
@@ -190,7 +189,7 @@ const deleteStudent = async (req, res) => {
     if (!student || student==null) {
       response.message = "No data found";
       response.error = "Student only found in login";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.message = "Student deleted";
     return res.status(200).send(response);

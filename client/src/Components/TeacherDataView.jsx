@@ -39,8 +39,22 @@ export default function TeacherDataView() {
     setTeacherToDelete(user);
     setDeleteDialog(true);
   };
-  const handleDelete = (user) => {
-   
+  const handleDelete = async() => {
+    if (!teacherToDelete) return;
+    try {
+      await axios.delete(process.env.REACT_APP_ADMIN_DELETE_TEACHER, {
+        params: { email: teacherToDelete.email_id },
+        withCredentials: true,
+      });
+
+      setTeacher((prevTeachers) =>
+        prevTeachers.filter((t) => t.email_id !== teacherToDelete.email_id)
+      );
+    } catch (error) {
+      console.error("Error deleting teacher:", error);
+    }
+    setDeleteDialog(false);
+    setTeacherToDelete(null);
   };
   const actionButtons = (rowData) => {
     return (
@@ -55,7 +69,7 @@ export default function TeacherDataView() {
           label="Delete"
           icon="pi pi-trash"
           className="p-button-sm p-button-danger"
-          onClick={() => handleDelete(rowData)}
+          onClick={() => confirmDelete(rowData)}
         />
       </div>
     );
@@ -105,6 +119,20 @@ export default function TeacherDataView() {
         ) : (
           <p>No details available</p>
         )}
+      </Dialog>
+      <Dialog
+        visible={deleteDialog}
+        onHide={() => setDeleteDialog(false)}
+        header="Confirm Deletion"
+        style={{ width: "25vw" }}
+        footer={
+          <div className="flex justify-content-end">
+            <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => setDeleteDialog(false)} />
+            <Button label="Delete" icon="pi pi-trash" className="p-button-danger" onClick={handleDelete} />
+          </div>
+        }
+      >
+        <p>Are you sure you want to delete <strong>{teacherToDelete?.user_name}</strong>?</p>
       </Dialog>
     </div>
   );

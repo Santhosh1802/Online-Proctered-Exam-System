@@ -26,7 +26,11 @@ export default function AdminProfile({toast}) {
         setPhone(res.data.data.phone);
         setProfile(res.data.data.profile);
       }
-    })}
+    })
+    .catch((error)=>{
+      console.log(error);
+    })
+  }   
     else{
       console.log("Error Call");
     }
