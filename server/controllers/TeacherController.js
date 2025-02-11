@@ -1,5 +1,5 @@
-const Login = require("../models/LoginSchema");
 const Teacher = require("../models/TeacherSchema");
+const Test = require("../models/TestSchema");
 
 const getTecherProfile = async (req, res) => {
   const response = {
@@ -32,10 +32,16 @@ const updateTeacherProfile = async (req, res) => {
     error: "",
   };
   try {
-    const { name, email, phone, department ,profile} = req.body;
+    const { name, email, phone, department, profile } = req.body;
     const teacher = await Teacher.findOneAndUpdate(
       { email: email },
-      { name: name, email: email, phone: phone, department: department ,profile:profile},
+      {
+        name: name,
+        email: email,
+        phone: phone,
+        department: department,
+        profile: profile,
+      },
       { new: true, upsert: true, runValidators: true }
     );
     response.message = teacher
@@ -48,4 +54,37 @@ const updateTeacherProfile = async (req, res) => {
   }
 };
 
-module.exports={getTecherProfile,updateTeacherProfile};
+const createTest = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+  };
+  const { data } = req.body;
+  if (data) {
+    const testname = data.testname;
+    const description = data.description;
+    const teacher_id = data.teacher_id;
+    const start_date = data.start_date;
+    const end_date = data.end_date;
+    const duration = data.duration;
+    const status = data.status;
+    const proctor_settings = data.proctor_settings;
+    try {
+      const create = new Test({
+        testname: testname,
+        description: description,
+        teacher_id: teacher_id,
+        start_date: start_date,
+        end_date: end_date,
+        duration: duration,
+        status: status,
+        proctor_settings: proctor_settings,
+      });
+      res.json(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+};
+
+module.exports = { getTecherProfile, updateTeacherProfile ,createTest};

@@ -4,6 +4,6 @@ const router=express.Router();
 
 router.get("/teacherprofile",getTecherProfile);
 router.post("/updateteacherprofile",updateTeacherProfile);
-
+router.post("/create-test",)
 
 module.exports=router;

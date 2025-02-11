@@ -9,6 +9,8 @@ const getStudentProfile = async (req, res) => {
   const email = req.query.email;
   if (!email) {
     console.log("No Email");
+    response.error="No Email";
+    return res.status(400).send(response);
   }
   const student = await Student.findOne({ email: email });
   if (student) {
@@ -21,7 +23,7 @@ const getStudentProfile = async (req, res) => {
     return res.status(200).send(response);
   } else {
     response.error = "Fill Details to continue";
-    return res.status(200).send(response);
+    return res.status(400).send(response);
   }
 };
 
@@ -49,7 +51,7 @@ const updateStudentProfile = async (req, res) => {
     return res.status(200).send(response);
   } catch (error) {
     response.error = "An error occurred while updating profile";
-    return res.status(200).send(response);
+    return res.status(500).send(response);
   }
 };
 

@@ -23,7 +23,7 @@ const TestSchema=new mongoose.Schema({
         require:true,
     },
     duration:{
-        type:Timestamp,
+        type:Number,
         require:true,
     },
     status:{

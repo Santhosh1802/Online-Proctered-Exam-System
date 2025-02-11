@@ -7,7 +7,7 @@ function ForgotPassword({ toast }) {
   const [email, setEmail] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email==="") {
+    if (email === "") {
       toast.current.show({
         severity: "error",
         summary: "Error",
@@ -42,53 +42,43 @@ function ForgotPassword({ toast }) {
   return (
     <div
       style={{
-        width: "400px",
-        height: "50vh",
-        border: "px solid black",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-start",
+        justifyContent: "center",
         alignItems: "center",
-        margin: "auto",
-        marginTop: "10vh",
-        borderRadius: "1em",
-        boxShadow: "0px 5px 10px grey",
-        
+        marginTop: "10%",
       }}
-      className="dashbox"
     >
-      <div
-        style={{
-          fontSize: "2em",
-          textAlign: "center",
-          padding: "2em",
-          fontWeight: "bold",
-        }}
-      >
-        Forgot Password
+      <div style={{ boxShadow: "0px 2px 8px 0px", borderRadius: ".5em" }}>
+        <h1 style={{ textAlign: "center", marginTop: "2em" }}>
+          Forgot Password
+        </h1>
+        <form onSubmit={handleSubmit} style={{ margin: "4em" }}>
+          <label
+            htmlFor="email"
+            style={{ fontSize: "18px", fontWeight: "bold" }}
+          >
+            Email
+          </label>
+          <br></br>
+          <InputText
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter Email"
+            style={{ width: "100%" }}
+          />
+          <br></br>
+          <br></br>
+          <Button label="Send mail" type="submit" />
+          <Button
+            label="Back to login"
+            type="button"
+            link
+            onClick={() => window.open("/", "_self")}
+          />
+        </form>
       </div>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email" style={{ fontSize: "18px", fontWeight: "bold" }}>
-          Email
-        </label>
-        <br></br>
-        <InputText
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter Email"
-          style={{ width: "275px" }}
-        />
-        <br></br>
-        <br></br>
-        <Button label="Submit" type="submit" />
-        <Button
-          label="Back to login"
-          type="button"
-          link
-          onClick={() => window.open("/", "_self")}
-        />
-      </form>
     </div>
   );
 }

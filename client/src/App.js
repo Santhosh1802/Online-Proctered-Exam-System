@@ -1,11 +1,10 @@
 import "./App.css";
 import { useRef, useState, useEffect, Suspense, lazy } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { ProgressSpinner } from "primereact/progressspinner";
 
-// Lazy-load your pages
 const Login = lazy(() => import("./Pages/Login"));
 const Register = lazy(() => import("./Pages/Register"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
@@ -36,14 +35,12 @@ function App() {
     setIsDarkTheme(savedTheme === "dark");
   }, []);
 
-  // Handle theme toggle
   const handleThemeChange = (e) => {
     const selectedTheme = e.value ? "dark" : "light";
     setIsDarkTheme(e.value);
     localStorage.setItem("theme", selectedTheme);
   };
 
-  // Apply theme styles dynamically
   useEffect(() => {
     const themeLink = document.getElementById("theme-link");
     if (isDarkTheme) {
@@ -58,9 +55,7 @@ function App() {
   return (
     <BrowserRouter>
       <div>
-        {/* Toast component */}
         <Toast ref={toast} />
-
         <div className="toggle-button-container">
           <ToggleButton
             checked={isDarkTheme}
@@ -73,8 +68,6 @@ function App() {
             style={{ zIndex: "2" }}
           />
         </div>
-
-        {/* The Suspense loader is used here */}
         <Suspense
           fallback={
             <div className="loading-container">
@@ -90,37 +83,61 @@ function App() {
 }
 
 function AppRoutes({ toast }) {
-  const location = useLocation();
-
-  // List of routes that need background
-  const routesWithBackground = [
-    "/",
-    "/login",
-    "/register",
-    "/forgotpassword",
-    "/resetpassword",
-  ];
-  const isBackgroundNeeded = routesWithBackground.includes(location.pathname);
-
   return (
-    <div className={isBackgroundNeeded ? "with-background" : ""}>
+    <div>
       <Routes>
         <Route path="/" element={<Login toast={toast} />} />
         <Route path="/login" element={<Login toast={toast} />} />
         <Route path="/register" element={<Register toast={toast} />} />
-        <Route path="/forgotpassword" element={<ForgotPassword toast={toast} />} />
-        <Route path="/resetpassword" element={<ResetPassword toast={toast} />} />
-        <Route path="/studentdashboard" element={<StudentDashboard toast={toast} />} />
-        <Route path="/studentprofile" element={<StudentProfile toast={toast} />} />
-        <Route path="/studentreport" element={<StudentViewReport toast={toast} />} />
-        <Route path="/admindashboard" element={<AdminDashboard toast={toast} />} />
+        <Route
+          path="/forgotpassword"
+          element={<ForgotPassword toast={toast} />}
+        />
+        <Route
+          path="/resetpassword"
+          element={<ResetPassword toast={toast} />}
+        />
+        <Route
+          path="/studentdashboard"
+          element={<StudentDashboard toast={toast} />}
+        />
+        <Route
+          path="/studentprofile"
+          element={<StudentProfile toast={toast} />}
+        />
+        <Route
+          path="/studentreport"
+          element={<StudentViewReport toast={toast} />}
+        />
+        <Route
+          path="/admindashboard"
+          element={<AdminDashboard toast={toast} />}
+        />
         <Route path="/adminprofile" element={<AdminProfile toast={toast} />} />
-        <Route path="/adminstudent" element={<AdminManageStudent toast={toast} />} />
-        <Route path="/adminteacher" element={<AdminManageTeacher toast={toast} />} />
-        <Route path="/teacherdashboard" element={<TeacherDashboard toast={toast} />} />
-        <Route path="/teacherstudent" element={<TeacherViewStudent toast={toast} />} />
-        <Route path="/teachertest" element={<TeacherManageTest toast={toast} />} />
-        <Route path="/teacherprofile" element={<TeacherProfile toast={toast} />} />
+        <Route
+          path="/adminstudent"
+          element={<AdminManageStudent toast={toast} />}
+        />
+        <Route
+          path="/adminteacher"
+          element={<AdminManageTeacher toast={toast} />}
+        />
+        <Route
+          path="/teacherdashboard"
+          element={<TeacherDashboard toast={toast} />}
+        />
+        <Route
+          path="/teacherstudent"
+          element={<TeacherViewStudent toast={toast} />}
+        />
+        <Route
+          path="/teachertest"
+          element={<TeacherManageTest toast={toast} />}
+        />
+        <Route
+          path="/teacherprofile"
+          element={<TeacherProfile toast={toast} />}
+        />
         <Route path="*" element={<Login toast={toast} />} />
       </Routes>
     </div>

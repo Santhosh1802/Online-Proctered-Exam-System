@@ -18,7 +18,7 @@ export default function TeacherProfile({ toast }) {
     if (userEmail) {
       axios
         .get(process.env.REACT_APP_GET_TEACHER_DATA, {
-          params: { email: userEmail },
+          params: { email: userEmail },withCredentials:true,
         })
         .then((res) => {
           console.log(res.data);
@@ -61,7 +61,7 @@ export default function TeacherProfile({ toast }) {
         phone: phone,
         department: department,
         profile: profile,
-      });
+      },{withCredentials:true});
       console.log(res.data);
       if (res.data.error === "") {
         toast.current.show({

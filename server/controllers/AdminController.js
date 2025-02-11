@@ -1,5 +1,7 @@
-const Login=require("../models/LoginSchema");
+const Login = require("../models/LoginSchema");
 const Admin = require("../models/AdminSchema");
+const Student = require("../models/StudentSchema");
+const Teacher = require("../models/TeacherSchema");
 const getAdminProfile = async (req, res) => {
   const response = {
     message: "",
@@ -7,20 +9,27 @@ const getAdminProfile = async (req, res) => {
     data: {},
   };
   const email = req.query.email;
-  if(!email){
+  if (!email) {
     console.log("No Email");
   }
-  const admin = await Admin.findOne({ email: email });
-  if (admin) {
-    response.message = "Admin Found";
-    response.data.profile=admin.profile;
-    response.data.name = admin.name;
-    response.data.phone = admin.phone;
-    response.data.email = admin.email;
-    return res.status(200).send(response);
-  } else {
-    response.error = "Fill Details to continue";
-    return res.status(200).send(response);
+  try {
+    const admin = await Admin.findOne({ email: email });
+    if (admin) {
+      response.message = "Admin Found";
+      response.data.profile = admin.profile;
+      response.data.name = admin.name;
+      response.data.phone = admin.phone;
+      response.data.email = admin.email;
+      console.log(req.cookies.token);
+
+      return res.status(200).send(response);
+    } else {
+      response.error = "Fill Details to continue";
+      return res.status(400).send(response);
+    }
+  } catch (error) {
+    response.error = error.message;
+    return res.status(500).send(response);
   }
 };
 
@@ -30,47 +39,175 @@ const updateAdminProfile = async (req, res) => {
     error: "",
   };
   try {
-    const { name, email, phone ,profile} = req.body;
+    const { name, email, phone, profile } = req.body;
+    if (!req.body) {
+      response.error = "missing details";
+      return res.status(400).send(response);
+    }
     const admin = await Admin.findOneAndUpdate(
       { email: email },
-      { name: name, email: email, phone: phone ,profile:profile},
+      { name: name, email: email, phone: phone, profile: profile },
       { new: true, upsert: true, runValidators: true }
     );
     response.message = admin
       ? "Admin updated successfully"
       : "Admin profile created successfully";
-      return res.status(200).send(response)
-  } catch (error) {
-    response.error="An error occurred while updating profile";
     return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while updating profile";
+    return res.status(500).send(response);
   }
 };
 
-const getTeacher=async(req,res)=>{
-  const response={
-    message:"",
-    error:"",
-    data:{}
-  }
+const getAllTeacher = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
   try {
-    const res=await Login.find({role:"teacher"});
-    if(!res){
-      response.message="No data found";
+    const teachers = await Login.find({ role: "teacher" });
+    if (!teachers || teachers==null) {
+      response.message = "No data found";
+      return res.status(404).json(response);
     }
-    response.data=res;
+    response.data = teachers;
+    return res.status(200).json(response);
   } catch (error) {
-    console.log(error);
-    
+    console.log(error.message);
+    response.error = error.message;
+    return res.status(500).json(response);
   }
-  res.status(200).json(response);
-}
+};
 
+const getAllStudent = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const students = await Login.find({ role: "student" });
+    if (!students || students==null) {
+      response.message = "No data found";
+      return res.status(404).json(response);
+    }
+    response.data = students;
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error.message);
+    response.error = error.message;
+    return  res.status(500).json(response);
+  }
+};
 
-// export async function getTeacher() {}
+const getOneTeacher = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  
+  try {
+    const teacher = await Teacher.findOne({ email: req.query.email });
+    if (!teacher || teacher==null) {
+      response.message = "No data found";
+      return res.status(404).json(response);
+    }
+    response.data = teacher;
+    response.message = "Teacher found";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
 
-// export async function viewStudent() {}
-// export async function viewTeacher() {}
-// export async function deleteStudent() {}
-// export async function deleteTeacher() {}
+const getOneStudent = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  console.log(req.query.email);
+  try {
+    const student = await Student.findOne({ email: req.query.email });
+    if (!student || student==null) {
+      response.message = "No data found";
+      return res.status(404).json(response);
+    }
+    response.data = student;
+    response.message = "Student found";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
 
-module.exports={getAdminProfile,updateAdminProfile,getTeacher};
+const deleteTeacher = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const loginTeacher=await Login.findOneAndDelete({email_id:req.query.email});
+    if(!loginTeacher || loginTeacher==null){
+      response.message="No data found";
+      return res.status(404).json(response);
+    }
+    const teacher = await Teacher.findOneAndDelete({ email: req.query.email });
+    if (!teacher || teacher==null) {
+      response.message = "No data found";
+      response.error = "Teacher only found in login";
+      return res.status(404).json(response);
+    }
+    response.message = "Teacher deleted";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
+
+const deleteStudent = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const loginStudent=await Login.findOneAndDelete({email_id:req.query.email});
+    if(!loginStudent || loginStudent==null){
+      response.message="No data found";
+      return res.status(404).json(response);
+    }
+    const student = await Student.findOneAndDelete({ email: req.query.email });
+    if (!student || student==null) {
+      response.message = "No data found";
+      response.error = "Student only found in login";
+      return res.status(404).json(response);
+    }
+    response.message = "Student deleted";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
+
+module.exports = {
+  getAdminProfile,
+  updateAdminProfile,
+  getAllTeacher,
+  getAllStudent,
+  getOneTeacher,
+  getOneStudent,
+  deleteTeacher,
+  deleteStudent,
+};

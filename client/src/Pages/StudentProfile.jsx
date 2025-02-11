@@ -18,7 +18,7 @@ export default function StudentProfile({ toast }) {
     if (userEmail) {
       axios
         .get(process.env.REACT_APP_GET_STUDENT_DATA, {
-          params: { email: userEmail },
+          params: { email: userEmail },withCredentials:true,
         })
         .then((res) => {
           console.log(res.data);
@@ -61,7 +61,7 @@ export default function StudentProfile({ toast }) {
         name: name,
         phone: phone,
         department: department,
-      });
+      },{withCredentials:true});
       console.log(res.data);
       if (res.data.error === "") {
         toast.current.show({

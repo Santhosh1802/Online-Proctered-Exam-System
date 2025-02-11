@@ -35,39 +35,29 @@ function ResetPassword({toast}) {
         }
     }
   return (
-    <div style={{width:"400px",
-                height:"60vh",
-                border:"px solid black",
-                display:"flex",
-                flexDirection:"column",
-                justifyContent:"flex-start",
-                alignItems:"center",
-                margin:"auto",
-                marginTop:"10vh",
-                borderRadius:"1em",
-                boxShadow: "0px 5px 10px grey",
-                
-        }}
-        className="dashbox">
-        <div style={{
-            fontSize:"2em",
-            textAlign:"center",
-            padding:"2em",
-            fontWeight:"bold"
-            }}>
-            Reset Password</div>
-            <form onSubmit={handleSubmit}>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: "10%",
+      marginBottom: "2em",
+    }}>
+        <div style={{ boxShadow: "0px 2px 8px 0px", borderRadius: ".5em" }}>
+            <h1 style={{ textAlign: "center", marginTop: "2em" }}>Reset Password</h1>
+            <form onSubmit={handleSubmit} style={{ margin: "4em" }}>
             <label htmlFor='password' style={{fontSize:"18px",fontWeight:"bold"}}>Password</label>
-            <br></br>
-            <Password id='password' value={password} onChange={(e) => setPassword(e.target.value)} toggleMask/>
-            <br></br><br></br>
+            <br />
+            <Password id='password' value={password} onChange={(e) => setPassword(e.target.value)} toggleMask placeholder='Enter Password'/>
+            <br /><br />
             <label htmlFor='confirmpassword' style={{fontSize:"18px",fontWeight:"bold"}}>Confirm Password</label>
-            <br></br>
-            <Password id='confirmpassword' value={confirmpassword} onChange={(e) => setConfirmpassword(e.target.value)} toggleMask/>
-            <br></br><br></br>
+            <br />
+            <Password id='confirmpassword' value={confirmpassword} onChange={(e) => setConfirmpassword(e.target.value)} toggleMask placeholder='Re-enter Password'/>
+            <br /><br />
             <Button label="Submit" type='submit'/>
             <Button label="Login" link onClick={() =>  window.open('/', '_self')}/>
             </form>
+    </div>
     </div>
   )
 }

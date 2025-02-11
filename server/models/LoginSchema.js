@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const LoginSchema = new mongoose.Schema({
+  user_name: { type: String, require: true },
   email_id: {
     type: String,
     require: true,
-    unique:true,
+    unique: true,
   },
   password: {
     type: String,
@@ -12,9 +13,9 @@ const LoginSchema = new mongoose.Schema({
   role: {
     type: String,
     require: true,
-    default:"student",
+    default: "student",
   },
 });
 
 const Login = mongoose.model("login", LoginSchema);
-module.exports =Login;
+module.exports = Login;

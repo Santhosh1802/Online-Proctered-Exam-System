@@ -4,6 +4,7 @@ const cors=require("cors");
 const dotenv=require("dotenv");
 const bodyParser = require("body-parser");
 const mongoose= require("mongoose");
+const cookieParser=require("cookie-parser");
 //dotenv configuration
 dotenv.config();
 
@@ -14,7 +15,8 @@ const teacherRoutes=require("./routes/Teacher");
 const studentRoutes=require("./routes/Student");
 
 const app=express();
-app.use(cors());
+app.use(cors({origin:true,credentials:true}));
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 

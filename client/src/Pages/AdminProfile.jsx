@@ -17,7 +17,7 @@ export default function AdminProfile({toast}) {
   useEffect(()=>{
     if(userEmail){
     axios.get(process.env.REACT_APP_GET_ADMIN_DATA,{
-      params:{email:userEmail}
+      params:{email:userEmail},withCredentials:true,
     })
     .then((res)=>{
       console.log(res.data);
@@ -54,7 +54,7 @@ const handleFileUpload = (e) => {
         name:name,
         phone:phone,
         profile:profile,
-      })
+      },{withCredentials:true});
       console.log(res.data);
       if(res.data.error===""){
         toast.current.show({severity:"success",summary:"Success",detail:"Profile Updated"})

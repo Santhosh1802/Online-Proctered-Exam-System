@@ -3,10 +3,12 @@ import { Menubar } from 'primereact/menubar';
 import { useNavigate } from 'react-router-dom';
 import {useDispatch} from "react-redux";
 import {persistor} from "../store";
+import axios from "axios";
 export default function StudentNavBar() {
     const navigate=useNavigate();
     const dispatch=useDispatch();
     const handleLogout=async()=>{
+        await axios.post(process.env.REACT_APP_LOGOUT,{},{withCredentials:true}); 
         persistor.purge().then(()=>{
             dispatch({type:"user/logout"});
             navigate("/");

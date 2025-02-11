@@ -1,6 +1,4 @@
-.linkmove {
-  margin-left: 30px;
-}
+
 
 .toggle-button-container {
   position: fixed;
@@ -18,15 +16,4 @@
 
 
 
-.with-background {
-  background-image: url("https://i.postimg.cc/SNFWKzkn/Background.png");
-  background-repeat: no-repeat;  
-  background-size: cover;
-  height: 90vh;
-  z-index: 1;
-  width: 100%;
-}
 
-.dashbox{
-  margin-left: 10em;
-}

@@ -12,28 +12,27 @@ const handleUserLogin = async (req, res) => {
     usertype: "",
   };
   const { email, password } = req.body;
-  if (!email || !password) {
-    response.error = "Missing email or password";
-    return res.status(200).send(response);
-  }
   try {
     const user = await Login.findOne({ email_id: email });
     if (!user) {
       response.error = "User not found";
-      return res.status(200).json(response);
+      return res.status(401).json(response);
     }
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (isValidPassword) {
       response.message = "Login Success";
       response.usertype = user.role;
-      return res.status(200).json(response);
+      const token=jwt.sign({email:email,role:user.role},process.env.JWT_SECRET,{expiresIn:"1h"});
+      res.cookie("token",token,{httpOnly:false,maxAge:3600000});
+      return res.status(202).json(response);
     } else {
       response.error = "Invalid Password";
-      return res.status(200).json(response);
+      return res.status(400).json(response);
     }
   } catch (error) {
+    console.log(error.message);
     response.error = "An error occurred during login";
-    return res.status(200).json(response);
+    return res.status(500).json(response);
   }
 };
 
@@ -42,21 +41,21 @@ const handleStudentRegister = async (req, res) => {
     message: "",
     error: "",
   };
-  const { email, password, confirmpassword, usertype } = req.body;
+  const { email, password, confirmpassword, usertype,user_name } = req.body;
 
-  if (!email || !password || !usertype || !confirmpassword) {
+  if (!email || !password || !usertype || !confirmpassword ||!user_name) {
     response.error = "All fields are required";
-    return res.status(200).json(response);
+    return res.status(400).json(response);
   }
   if (password !== confirmpassword) {
     response.error = "Password do not match";
-    return res.status(200).json(response);
+    return res.status(400).json(response);
   }
   try {
     const existingUser = await Login.findOne({ email_id: email });
     if (existingUser) {
       response.error = "Email is already registered";
-      return res.status(200).json(response);
+      return res.status(500).json(response);
     }
     let saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -64,13 +63,15 @@ const handleStudentRegister = async (req, res) => {
       email_id: email,
       password: hashedPassword,
       role: usertype,
+      user_name:user_name,
     });
     await newUser.save();
     response.message = "User Successfully registered";
-    return res.status(200).json(response);
+    return res.status(201).json(response);
   } catch (error) {
+    console.log(error.message);
     response.error = "An error occurred while registering the user";
-    return res.status(200).json(response);
+    return res.status(500).json(response);
   }
 };
 
@@ -84,25 +85,22 @@ const handleForgotPassword = async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "santhoshklearning@gmail.com",
+      user: `${process.env.GMAIL_USER}`,
       pass: `${process.env.APP_PASS}`,
     },
   });
   if (!email) {
     response.error = "Email is required";
-    return res.status(200).json(response);
+    return res.status(400).json(response);
   }
   try {
     const secretKey = process.env.JWT_SECRET;
-
     const token = jwt.sign({ email }, secretKey, { expiresIn: "1h" });
-    console.log(token);
-
     const resetLink = `${process.env.FRONTEND_URL}/resetpassword?token=${token}`;
     const mailOptions = {
-      from: "santhoshklearning@gmail.com",
+      from: `${process.env.GMAIL_USER}`,
       to: email,
-      subject: "OES Password Reset Mail",
+      subject: "Password Reset Mail",
       html: `
           <div style="text-align: center; font-family: Arial, sans-serif;">
       <h1>Password Reset Request</h1>
@@ -130,8 +128,9 @@ const handleForgotPassword = async (req, res) => {
     response.message = "Password reset email sent Successfully";
     return res.status(200).json(response);
   } catch (error) {
+    console.log(error.message);
     response.error = "Error sending password reset email.";
-    return res.status(200).json(response);
+    return res.status(500).json(response);
   }
 };
 
@@ -151,16 +150,32 @@ const handleResetPassword = async (req, res) => {
     response.message = "Password reset successfully";
     return res.status(200).json(response);
   } catch (error) {
-    console.log(error);
-
+    console.log(error.message);
     response.error = "Invalid or expired token";
-    return res.status(200).json(response);
+    return res.status(500).json(response);
   }
 };
 
+const handleLogout=async (req,res) => {
+  const response={
+    message:"",
+    error:"",
+  }
+  try{
+    res.clearCookie("token");
+    response.message="Logout Success";
+    return res.status(200).json(response);
+  }
+  catch(error){
+    response.error="An error occurred during logout";
+    console.log(error.message);
+    return res.status(500).json(response);
+  }
+}
 module.exports = {
   handleUserLogin,
   handleStudentRegister,
   handleForgotPassword,
   handleResetPassword,
+  handleLogout,
 };
