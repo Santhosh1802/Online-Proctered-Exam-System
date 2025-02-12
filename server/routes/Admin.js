@@ -9,6 +9,7 @@ const {
   getOneTeacher,
   deleteStudent,
   deleteTeacher,
+  getStats
 } = require("../controllers/AdminController");
 
 router.get("/adminprofile", getAdminProfile);
@@ -19,4 +20,5 @@ router.get("/getstudent", getOneStudent);
 router.get("/getteacher", getOneTeacher);
 router.delete("/deletestudent", deleteStudent);
 router.delete("/deleteteacher", deleteTeacher);
+router.get("/getstats", getStats);
 module.exports = router;

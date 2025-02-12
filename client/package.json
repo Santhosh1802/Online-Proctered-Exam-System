@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@react-spring/web": "^9.7.5",
     "@reduxjs/toolkit": "^2.5.0",
     "apexcharts": "^4.3.0",
     "axios": "^1.7.9",

@@ -21,12 +21,15 @@ const StudentSchema=new mongoose.Schema({
         type:String,
         require:true,
     },
-    test:{
-        type:[],
-    },
-    completed_test:{
-        type:[],
-    }
+    ongoingTests: [{
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" }, 
+        startedAt: { type: Date, default: Date.now } 
+    }],
+    completedTests: [{
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" }, // Reference to Test schema
+        completedAt: { type: Date, default: Date.now }, // Store completion time
+        score: { type: Number } // Optional: Store the score
+    }]
 })
 const Student=mongoose.model("Student",StudentSchema);
 module.exports=Student;

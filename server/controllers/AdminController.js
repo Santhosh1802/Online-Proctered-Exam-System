@@ -2,6 +2,7 @@ const Login = require("../models/LoginSchema");
 const Admin = require("../models/AdminSchema");
 const Student = require("../models/StudentSchema");
 const Teacher = require("../models/TeacherSchema");
+const Test = require("../models/TestSchema");
 const getAdminProfile = async (req, res) => {
   const response = {
     message: "",
@@ -200,6 +201,29 @@ const deleteStudent = async (req, res) => {
   }
 };
 
+const getStats=async (req,res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const totalTeachers = await Teacher.countDocuments();
+    const totalStudents = await Student.countDocuments();
+    const activeUsers = await Login.countDocuments();
+    const ongoingQuizzes = await Test.countDocuments({ status: "ongoing" });
+    response.data.totalTeachers = totalTeachers;
+    response.data.totalStudents = totalStudents;
+    response.data.activeUsers = activeUsers;
+    response.data.ongoingQuizzes = ongoingQuizzes;
+    response.message = "Data found";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+}
 module.exports = {
   getAdminProfile,
   updateAdminProfile,
@@ -209,4 +233,5 @@ module.exports = {
   getOneStudent,
   deleteTeacher,
   deleteStudent,
+  getStats
 };

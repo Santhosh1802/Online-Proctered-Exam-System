@@ -1,5 +1,6 @@
 import React from "react";
 import TeacherNavBar from "../Components/TeacherNavBar";
+import TestForm from "../Components/TestForm";
 export default function TeacherManageTest() {
   return (
     <div
@@ -12,6 +13,7 @@ export default function TeacherManageTest() {
       <TeacherNavBar />
       <div style={{ marginTop: "5em" }}>
         <h1>Manage Test</h1>
+        <TestForm/>
       </div>
     </div>
   );

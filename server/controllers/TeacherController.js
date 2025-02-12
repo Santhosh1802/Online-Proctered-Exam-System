@@ -22,7 +22,7 @@ const getTecherProfile = async (req, res) => {
     return res.status(200).send(response);
   } else {
     response.error = "Fill Details to continue";
-    return res.status(200).send(response);
+    return res.status(404).send(response);
   }
 };
 
@@ -50,41 +50,51 @@ const updateTeacherProfile = async (req, res) => {
     return res.status(200).send(response);
   } catch (error) {
     response.error = "An error occurred while updating profile";
-    return res.status(200).send(response);
+    return res.status(404).send(response);
   }
 };
 
 const createTest = async (req, res) => {
-  const response = {
-    message: "",
-    error: "",
-  };
-  const { data } = req.body;
-  if (data) {
-    const testname = data.testname;
-    const description = data.description;
-    const teacher_id = data.teacher_id;
-    const start_date = data.start_date;
-    const end_date = data.end_date;
-    const duration = data.duration;
-    const status = data.status;
-    const proctor_settings = data.proctor_settings;
-    try {
-      const create = new Test({
-        testname: testname,
-        description: description,
-        teacher_id: teacher_id,
-        start_date: start_date,
-        end_date: end_date,
-        duration: duration,
-        status: status,
-        proctor_settings: proctor_settings,
-      });
-      res.json(response);
-    } catch (error) {
-      console.log(error);
+  const response={
+    message:"",
+    error:"",
+  }
+  try {
+    const {
+      email,
+      testname,
+      description,
+      start_date,
+      end_date,
+      duration,
+      status,
+      proctor_settings,
+      questions,
+    } = req.body;
+    const teacher = await Teacher.findOne({ email: email });
+    if(!teacher){
+      response.message="Teacher not found";
+      return res.status(200).send({message:"Teacher not found"});
     }
+    const newTest = new Test({
+      testname,
+      description,
+      teacher_id: teacher._id,
+      start_date,
+      end_date,
+      duration,
+      proctor_settings,
+      questions,
+  });
+  const savedTest = await newTest.save();
+  teacher.tests.push(savedTest._id);
+  await teacher.save();
+  response.message="Test created successfully";
+  return res.status(201).json({ response, test: savedTest });
+  } catch (error) {
+    console.error("Error creating test:", error.message);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
-module.exports = { getTecherProfile, updateTeacherProfile ,createTest};
+module.exports = { getTecherProfile, updateTeacherProfile,createTest };
