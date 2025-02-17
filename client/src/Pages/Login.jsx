@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
@@ -23,10 +23,14 @@ function Login({ toast }) {
       return;
     }
     try {
-      const res = await axios.post(process.env.REACT_APP_LOGIN_API, {
-        email: email,
-        password: password,
-      },{withCredentials:true});
+      const res = await axios.post(
+        process.env.REACT_APP_LOGIN_API,
+        {
+          email: email,
+          password: password,
+        },
+        { withCredentials: true }
+      );
       if (res.data.error === "") {
         toast.current.show({
           severity: "success",
@@ -35,6 +39,7 @@ function Login({ toast }) {
         });
         dispatch(setUserType(res.data.usertype));
         dispatch(setLogin(true));
+        dispatch(setStoreEmail(res.data.email_id));
         switch (res.data.usertype) {
           case "student":
             navigate("/studentdashboard");
@@ -48,7 +53,7 @@ function Login({ toast }) {
           default:
             navigate("/");
         }
-      } else {
+      } else if (res.status === 400) {
         toast.current.show({
           severity: "error",
           summary: "Error",
@@ -56,10 +61,11 @@ function Login({ toast }) {
         });
       }
     } catch (err) {
+      console.log(err);
       toast.current.show({
         severity: "error",
-        summary: "Server Error",
-        detail: "Check Your Internet Connection",
+        summary: "Error",
+        detail: `${err.response.data.error}`,
       });
     }
   };
@@ -67,13 +73,27 @@ function Login({ toast }) {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: "10%",
+        flexDirection: "row",
+        justifyContent: "right",
+        alignItems: "right",
+        height: "100vh",
+        backgroundImage: 'url("/Background.jpeg")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        paddingRight: "8em",
       }}
     >
-      <div style={{ boxShadow: "0px 2px 8px 0px", borderRadius: ".5em" }}>
+      <div
+        style={{
+          boxShadow: "0px 2px 8px 0px",
+          borderRadius: ".5em",
+          height: "500px",
+          marginTop: "8em",
+          backgroundColor:"white",
+          color:"black"
+        }}
+      >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>Login</h1>
         <form onSubmit={handleSubmit} style={{ margin: "4em" }}>
           <label

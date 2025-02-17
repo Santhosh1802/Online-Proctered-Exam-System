@@ -43,13 +43,27 @@ function ForgotPassword({ toast }) {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: "10%",
+        flexDirection: "row",
+        justifyContent: "right",
+        alignItems: "right",
+        height: "100vh",
+        backgroundImage: 'url("/Background.jpeg")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        paddingRight: "8em",
       }}
     >
-      <div style={{ boxShadow: "0px 2px 8px 0px", borderRadius: ".5em" }}>
+      <div
+        style={{
+          boxShadow: "0px 2px 8px 0px",
+          borderRadius: ".5em",
+          marginTop: "8em",
+          marginBottom: "12em",
+          backgroundColor: "white",
+          color: "black",
+        }}
+      >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>
           Forgot Password
         </h1>

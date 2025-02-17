@@ -22,6 +22,7 @@ const handleUserLogin = async (req, res) => {
     if (isValidPassword) {
       response.message = "Login Success";
       response.usertype = user.role;
+      response.email_id=user.email_id;
       const token=jwt.sign({email:email,role:user.role},process.env.JWT_SECRET,{expiresIn:"1h"});
       res.cookie("token",token,{httpOnly:false,maxAge:3600000});
       return res.status(202).json(response);

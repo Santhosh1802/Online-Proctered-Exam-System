@@ -56,14 +56,28 @@ function Register({ toast }) {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: "10%",
-        marginBottom: "2em",
+        flexDirection: "row",
+        justifyContent: "right",
+        alignItems: "right",
+        height: "100vh",
+        backgroundImage: 'url("/Background.jpeg")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        paddingRight: "8em",
       }}
     >
-      <div style={{ boxShadow: "0px 2px 8px 0px", borderRadius: ".5em" }}>
+      <div
+        style={{
+          boxShadow: "0px 2px 8px 0px",
+          borderRadius: ".5em",
+          height: "",
+          marginTop: "4em",
+          marginBottom: "4em",
+          backgroundColor: "white",
+          color: "black",
+        }}
+      >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>Register</h1>
         <form onSubmit={handleSubmit} style={{ margin: "4em" }}>
           <label

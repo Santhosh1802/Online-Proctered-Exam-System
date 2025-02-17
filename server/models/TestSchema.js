@@ -11,13 +11,25 @@ const QuestionSchema = new mongoose.Schema({
         required: true,
     },
     options: {
-        type: [String], // Store multiple options for MCQ questions
+        type: [String], 
         default: [],
     },
     correctAnswers: {
-        type: [String], // Store correct answers (supports multiple answers for multi-select)
+        type: [String],
         required: true,
     },
+    marks: {
+        type: Number, 
+        required: true,
+    },
+    negativeMarks: {
+        type: Number, 
+        default: 0,  
+    },
+    image: {
+        type: String, 
+        default: "",
+    }
 });
 
 const TestSchema = new mongoose.Schema({
@@ -43,7 +55,7 @@ const TestSchema = new mongoose.Schema({
         required: true,
     },
     duration: {
-        type: Number, // Duration in minutes
+        type: Number,
         required: true,
     },
     status: {
@@ -52,15 +64,15 @@ const TestSchema = new mongoose.Schema({
         default: "pending",
     },
     proctor_settings: {
-        type: [String], // Example: ["face-detection", "tab-switching", etc.]
+        type: [String], 
         default: [],
     },
     questions: {
-        type: [QuestionSchema], // Embed questions inside the test schema
+        type: [QuestionSchema], 
         required: true,
     },
     report: {
-        type: [mongoose.Schema.Types.ObjectId], // Store references to report documents
+        type: [mongoose.Schema.Types.ObjectId],
         ref: "Report",
         default: [],
     },

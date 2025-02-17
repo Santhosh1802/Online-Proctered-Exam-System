@@ -5,6 +5,7 @@ import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { ProgressSpinner } from "primereact/progressspinner";
 
+
 const Login = lazy(() => import("./Pages/Login"));
 const Register = lazy(() => import("./Pages/Register"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
@@ -20,13 +21,13 @@ const TeacherDashboard = lazy(() => import("./Pages/TeacherDashboard"));
 const TeacherViewStudent = lazy(() => import("./Pages/TeacherViewStudent"));
 const TeacherManageTest = lazy(() => import("./Pages/TeacherManageTest"));
 const TeacherProfile = lazy(() => import("./Pages/TeacherProfile"));
-
+const TestForm = lazy(() => import("./Pages/TestForm"));
+const EditTestForm = lazy(() => import("./Pages/EditTestForm"));
 function App() {
   const toast = useRef(null);
 
   const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-  // Initial theme setup based on localStorage
   useEffect(() => {
     if (!localStorage.getItem("theme")) {
       localStorage.setItem("theme", "light");
@@ -51,7 +52,6 @@ function App() {
         "https://unpkg.com/primereact/resources/themes/lara-light-cyan/theme.css";
     }
   }, [isDarkTheme]);
-
   return (
     <BrowserRouter>
       <div>
@@ -134,6 +134,8 @@ function AppRoutes({ toast }) {
           path="/teachertest"
           element={<TeacherManageTest toast={toast} />}
         />
+        <Route path="/createtest" element={<TestForm toast={toast} />} />
+        <Route path="/edittest/:testId" element={<EditTestForm toast={toast} />} />
         <Route
           path="/teacherprofile"
           element={<TeacherProfile toast={toast} />}

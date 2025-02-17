@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import TeacherNavBar from "../Components/TeacherNavBar";
 import { InputText } from "primereact/inputtext";
@@ -28,6 +29,9 @@ export default function TeacherProfile({ toast }) {
             setProfile(res.data.data.profile);
             setDepartment(res.data.data.department);
           }
+        })
+        .catch((err) => {
+          toast.current.show({severity:"error",summary:"Error",detail:`${err.response.data.error}Fill details to continue`});
         });
     } else {
       console.log("Error Call");

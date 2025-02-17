@@ -26,9 +26,9 @@ const StudentSchema=new mongoose.Schema({
         startedAt: { type: Date, default: Date.now } 
     }],
     completedTests: [{
-        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" }, // Reference to Test schema
-        completedAt: { type: Date, default: Date.now }, // Store completion time
-        score: { type: Number } // Optional: Store the score
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" }, 
+        completedAt: { type: Date, default: Date.now }, 
+        score: { type: Number } 
     }]
 })
 const Student=mongoose.model("Student",StudentSchema);

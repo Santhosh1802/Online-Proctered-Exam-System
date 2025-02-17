@@ -14,6 +14,7 @@ const getTecherProfile = async (req, res) => {
   const teacher = await Teacher.findOne({ email: email });
   if (teacher) {
     response.message = "Teacher Found";
+    response.data.id=teacher._id;
     response.data.profile = teacher.profile;
     response.data.name = teacher.name;
     response.data.phone = teacher.phone;
@@ -21,7 +22,7 @@ const getTecherProfile = async (req, res) => {
     response.data.department = teacher.department;
     return res.status(200).send(response);
   } else {
-    response.error = "Fill Details to continue";
+    response.error = "Teacher not found";
     return res.status(404).send(response);
   }
 };
@@ -55,10 +56,6 @@ const updateTeacherProfile = async (req, res) => {
 };
 
 const createTest = async (req, res) => {
-  const response={
-    message:"",
-    error:"",
-  }
   try {
     const {
       email,
@@ -69,13 +66,27 @@ const createTest = async (req, res) => {
       duration,
       status,
       proctor_settings,
-      questions,
+      questions, // Must include marks & negativeMarks
     } = req.body;
+
+    // Find teacher by email
     const teacher = await Teacher.findOne({ email: email });
-    if(!teacher){
-      response.message="Teacher not found";
-      return res.status(200).send({message:"Teacher not found"});
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
     }
+
+    // Validate each question to ensure marks and negativeMarks are present
+    const validatedQuestions = questions.map((q) => ({
+      questionText: q.questionText,
+      type: q.type,
+      options: q.options || [],
+      correctAnswers: q.correctAnswers,
+      marks: q.marks, // Ensure marks are included
+      negativeMarks: q.negativeMarks ?? 0, // Default to 0 if not provided
+    }));
+
+    // Create new test
     const newTest = new Test({
       testname,
       description,
@@ -83,18 +94,61 @@ const createTest = async (req, res) => {
       start_date,
       end_date,
       duration,
+      status: status || "pending",
       proctor_settings,
-      questions,
-  });
-  const savedTest = await newTest.save();
-  teacher.tests.push(savedTest._id);
-  await teacher.save();
-  response.message="Test created successfully";
-  return res.status(201).json({ response, test: savedTest });
+      questions: validatedQuestions, // Include questions with marks & negativeMarks
+    });
+
+    // Save test to DB
+    const savedTest = await newTest.save();
+
+    // Add test reference to teacher
+    teacher.tests.push(savedTest._id);
+    await teacher.save();
+
+    return res.status(201).json({ message: "Test created successfully", test: savedTest });
+
   } catch (error) {
     console.error("Error creating test:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
-module.exports = { getTecherProfile, updateTeacherProfile,createTest };
+const getAllTest = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: [],
+  };
+  try {
+    const {teacher_id} = req.query;
+    const tests = await Test.find({ teacher_id: teacher_id });
+    response.message = "Tests Found";
+    response.data = tests;
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while fetching tests";
+    return res.status(500).send(response);
+  }  
+}
+
+const getOneTest=async (req,res) => {
+  const response ={
+    message:"",
+    error:"",
+    data:{},
+  }
+  try {
+    const {id}=req.query;
+    const test=await Test.findOne({_id:id});
+    response.message = "Tests Found";
+    response.data = test;
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while fetching tests";
+    return res.status(500).send(response);
+  }
+}
+
+
+module.exports = { getTecherProfile, updateTeacherProfile,createTest,getAllTest,getOneTest };

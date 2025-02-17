@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Divider } from "primereact/divider";
 import { Card } from "primereact/card";
-import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { useSpring, animated } from "@react-spring/web";
 
@@ -55,17 +54,12 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-column align-items-center">
       <AdminNavBar />
-      <div className="mt-5 mb-5 flex flex-column align-items-center" style={{border:"2px solid black",width:"100%"}}>
-        <Card className="w-8 text-center" style={{marginTop:"5em"}}>
+      <div className="mt-5 mb-5 flex flex-column align-items-center" style={{width:"100%"}}>
+        <Card className="w-8 text-center" style={{marginTop:"3em"}}>
           <Avatar label={name[0]} size="xlarge" shape="circle" className="mb-3" />
           <h2 className="text-2xl font-bold">Welcome, {name} 👋</h2>
           <p className="text-gray-500">{email}</p>
         </Card>
-        <div className="flex gap-3 mt-3">
-          <Button label="Manage Teachers" icon="pi pi-users" className="p-button-info" onClick={() => navigate("/adminteachers")} />
-          <Button label="Manage Students" icon="pi pi-user" className="p-button-success" onClick={() => navigate("/adminstudents")} />
-          <Button label="View Reports" icon="pi pi-chart-bar" className="p-button-warning" onClick={() => navigate("/admindashboard")} />
-        </div>
         <Divider />
         <div className="grid mt-4 w-10 flex justify-content-center gap-4">
           <div className="col-12 md:col-2">

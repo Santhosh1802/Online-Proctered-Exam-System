@@ -200,6 +200,79 @@ const deleteStudent = async (req, res) => {
     return res.status(500).send(response);
   }
 };
+const createTeacher = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const { name, email, phone, department, profile } = req.body;
+    const teacher = new Teacher({
+      name: name,
+      email: email,
+      phone: phone,
+      department: department,
+      profile: profile,
+    });
+    await teacher.save();
+    response.message = "Teacher created successfully";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
+const createStudent = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const { name, email, phone, department, profile } = req.body;
+    const student = new Student({
+      name: name,
+      email: email,
+      phone: phone,
+      department: department,
+      profile: profile,
+    });
+    await student.save();
+    response.message = "Student created successfully";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+};
+
+const BulkUploadStudents=async (req,res)=>{
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const students = req.body.students;
+    if (!students || students==null) {
+      response.message = "No data found";
+      return res.status(404).json(response);
+    }
+    students.forEach(async (student) => {
+      const newStudent = new Student(student);
+      await newStudent.save();
+    });
+    response.message = "Students created successfully";
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = error.message;
+    console.log(error.message);
+    return res.status(500).send(response);
+  }
+}
 
 const getStats=async (req,res) => {
   const response = {
@@ -233,5 +306,8 @@ module.exports = {
   getOneStudent,
   deleteTeacher,
   deleteStudent,
+  createTeacher,
+  createStudent,
+  BulkUploadStudents,
   getStats
 };

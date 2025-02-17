@@ -8,7 +8,6 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
-
 const TestForm = ({ toast }) => {
   const [testData, setTestData] = useState({
     testname: "",
@@ -19,16 +18,13 @@ const TestForm = ({ toast }) => {
     proctor_settings: [],
     questions: [],
   });
-
   const questionTypes = [
     { label: "Fill in the Blanks", value: "fill-in-the-blanks" },
     { label: "Choose One", value: "choose-one" },
     { label: "Choose Multiple", value: "choose-multiple" },
     { label: "True/False", value: "true-false" },
   ];
-
   const proctorOptions = ["Face Detection", "Tab Switching", "Noise Detection"];
-
   const addQuestion = () => {
     setTestData({
       ...testData,
@@ -46,18 +42,15 @@ const TestForm = ({ toast }) => {
       ],
     });
   };
-
   const removeQuestion = (index) => {
     const updatedQuestions = testData.questions.filter((_, i) => i !== index);
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const updateQuestion = (index, key, value) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[index][key] = value;
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const addOption = (index) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[index].options.push("");
@@ -69,14 +62,11 @@ const TestForm = ({ toast }) => {
     updatedQuestions[qIndex].options.splice(oIndex, 1);
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const updateOption = (qIndex, oIndex, value) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[qIndex].options[oIndex] = value;
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
-  // Handle Image Upload
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     if (file) {
@@ -87,21 +77,22 @@ const TestForm = ({ toast }) => {
       reader.readAsDataURL(file);
     }
   };
-
+  const removeImage = (index) => {
+    updateQuestion(index, "image", "");
+};
   const email = useSelector((store) => store.user.email);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const requestData = { ...testData, email };
-
     try {
+      console.log(requestData);
+
       const response = await axios.post(
-        process.env.REACT_APP_CREATE_TEST,
+        process.env.REACT_APP_TEACHER_CREATE_TEST,
         requestData,
         { withCredentials: true }
       );
-
-      if (response.status === 200) {
+      if (response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
@@ -132,8 +123,6 @@ const TestForm = ({ toast }) => {
       });
     }
   };
-
-  // Toggle Proctoring Options
   const toggleProctorSetting = (option) => {
     let updatedSettings = [...testData.proctor_settings];
     if (updatedSettings.includes(option)) {
@@ -143,9 +132,12 @@ const TestForm = ({ toast }) => {
     }
     setTestData({ ...testData, proctor_settings: updatedSettings });
   };
-
+  const navigateBack = () => {
+    window.history.back();
+  }
   return (
     <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <Button onClick={navigateBack}>Back</Button>
       <h2 className="text-center mb-4">Create a Test</h2>
       <form onSubmit={handleSubmit} className="p-fluid grid gap-3">
         <div className="col-12">
@@ -159,7 +151,6 @@ const TestForm = ({ toast }) => {
             required
           />
         </div>
-
         <div className="col-12">
           <label>Description</label>
           <InputTextarea
@@ -171,7 +162,6 @@ const TestForm = ({ toast }) => {
             required
           />
         </div>
-
         <div className="col-12">
           <label>Start Date</label>
           <Calendar
@@ -182,7 +172,6 @@ const TestForm = ({ toast }) => {
             required
           />
         </div>
-
         <div className="col-12">
           <label>End Date</label>
           <Calendar
@@ -193,7 +182,6 @@ const TestForm = ({ toast }) => {
             required
           />
         </div>
-
         <div className="col-12">
           <label>Duration (Minutes)</label>
           <InputText
@@ -206,8 +194,6 @@ const TestForm = ({ toast }) => {
             required
           />
         </div>
-
-        {/* Proctoring Settings */}
         <h3 className="col-12 mt-4">Proctor Settings</h3>
         <div className="col-12 flex flex-wrap gap-2">
           {proctorOptions.map((option) => (
@@ -223,8 +209,6 @@ const TestForm = ({ toast }) => {
             </div>
           ))}
         </div>
-
-        {/* Questions Section */}
         <h3 className="col-12 mt-4">Questions</h3>
         {testData.questions.map((question, qIndex) => (
           <div
@@ -268,7 +252,6 @@ const TestForm = ({ toast }) => {
                 updateQuestion(qIndex, "negativeMarks", e.target.value)
               }
             />
-
             {["choose-one", "choose-multiple"].includes(question.type) && (
               <div className="mt-3">
                 <h4>Options</h4>
@@ -300,8 +283,6 @@ const TestForm = ({ toast }) => {
                 />
               </div>
             )}
-
-            {/* Correct Answer for Choose One */}
             {question.type === "choose-one" && question.options.length > 0 && (
               <div className="mt-3">
                 <h4>Select Correct Answer</h4>
@@ -319,8 +300,6 @@ const TestForm = ({ toast }) => {
                 />
               </div>
             )}
-
-            {/* Correct Answers for Choose Multiple */}
             {question.type === "choose-multiple" &&
               question.options.length > 0 && (
                 <div className="mt-3">
@@ -340,8 +319,6 @@ const TestForm = ({ toast }) => {
                   />
                 </div>
               )}
-
-            {/* Input for Fill in the Blanks */}
             {question.type === "fill-in-the-blanks" && (
               <div className="mt-3">
                 <h4>Correct Answer</h4>
@@ -355,8 +332,6 @@ const TestForm = ({ toast }) => {
                 />
               </div>
             )}
-
-            {/* True/False Options */}
             {question.type === "true-false" && (
               <div className="mt-3">
                 <h4>Select Correct Answer</h4>
@@ -374,8 +349,6 @@ const TestForm = ({ toast }) => {
                 />
               </div>
             )}
-
-            {/* Image Upload */}
             <div className="mt-3">
               <label>Upload Image</label>
               <input
@@ -384,16 +357,23 @@ const TestForm = ({ toast }) => {
                 onChange={(e) => handleImageUpload(e, qIndex)}
               />
               {question.image && (
-                <img
-                  src={question.image}
-                  alt="Uploaded"
-                  className="mt-2"
-                  style={{ maxWidth: "100px" }}
-                />
+                <div className="mt-2">
+                  <img
+                    src={question.image}
+                    alt="Uploaded"
+                    className="mt-2"
+                    style={{ maxWidth: "100px" }}
+                  />
+                  <button
+                    type="button"
+                    className="p-button-danger p-button-sm mt-2"
+                    onClick={() => removeImage(qIndex)}
+                  >
+                    Remove Image
+                  </button>
+                </div>
               )}
             </div>
-
-            {/* Remove Question Button */}
             <Button
               type="button"
               label="Remove Question"
@@ -403,8 +383,6 @@ const TestForm = ({ toast }) => {
             />
           </div>
         ))}
-
-        {/* Add Question & Submit Button */}
         <Button
           type="button"
           label="Add Question"
@@ -422,5 +400,4 @@ const TestForm = ({ toast }) => {
     </div>
   );
 };
-
 export default TestForm;
