@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
@@ -8,8 +8,10 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
+import {useParams} from "react-router-dom";
 const TestForm = ({ toast }) => {
   const [testData, setTestData] = useState({
+    test_id: null,
     testname: "",
     description: "",
     start_date: null,
@@ -18,6 +20,17 @@ const TestForm = ({ toast }) => {
     proctor_settings: [],
     questions: [],
   });
+  const { testId } = useParams();
+  useEffect(() => {
+    if (testId) {
+      axios
+        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/${testId}`, { withCredentials: true })
+        .then((response) => {
+          setTestData(response.data);
+        })
+        .catch((error) => console.error("Error fetching test data:", error));
+    }
+  }, [testId]);
   const questionTypes = [
     { label: "Fill in the Blanks", value: "fill-in-the-blanks" },
     { label: "Choose One", value: "choose-one" },
@@ -84,21 +97,34 @@ const TestForm = ({ toast }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const requestData = { ...testData, email };
+  
     try {
-      console.log(requestData);
-
-      const response = await axios.post(
-        process.env.REACT_APP_TEACHER_CREATE_TEST,
-        requestData,
-        { withCredentials: true }
-      );
-      if (response.status === 201) {
+      let response;
+      if (testData.test_id) {
+        // Update existing test
+        response = await axios.put(
+          `${process.env.REACT_APP_UPDATE_TEST}/${testData.test_id}`,
+          requestData,
+          { withCredentials: true }
+        );
+      } else {
+        // Create new test
+        response = await axios.post(
+          process.env.REACT_APP_TEACHER_CREATE_TEST,
+          requestData,
+          { withCredentials: true }
+        );
+      }
+  
+      if (response.status === 200 || response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
-          detail: "Test Created Successfully",
+          detail: testData.test_id ? "Test Updated Successfully" : "Test Created Successfully",
         });
+  
         setTestData({
+          test_id: null,
           testname: "",
           description: "",
           start_date: null,
@@ -111,18 +137,18 @@ const TestForm = ({ toast }) => {
         toast.current.show({
           severity: "error",
           summary: "Error",
-          detail: "Failed to create test",
+          detail: "Failed to save test",
         });
       }
     } catch (error) {
-      console.error("Error creating test:", error);
+      console.error("Error saving test:", error);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "Failed to create test",
+        detail: "Failed to save test",
       });
     }
-  };
+  };  
   const toggleProctorSetting = (option) => {
     let updatedSettings = [...testData.proctor_settings];
     if (updatedSettings.includes(option)) {

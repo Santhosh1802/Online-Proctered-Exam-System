@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
@@ -8,43 +8,29 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
-import { useParams } from "react-router-dom";
-
-const EditTestForm = ({ toast}) => {
+import {useParams} from "react-router-dom";
+const EditTestForm = ({ toast }) => {
+  const [testData, setTestData] = useState({
+    test_id: null,
+    testname: "",
+    description: "",
+    start_date: null,
+    end_date: null,
+    duration: "",
+    proctor_settings: [],
+    questions: [],
+  });
   const { testId } = useParams();
-  const email = useSelector((store) => store.user.email);
-
-  const [testData, setTestData] = useState(null);
-
   useEffect(() => {
-    const fetchTest = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/?id=${testId}`,
-          { withCredentials: true }
-        );
-        if (response.status === 200) {
+    if (testId) {
+      axios
+        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/${testId}`, { withCredentials: true })
+        .then((response) => {
           setTestData(response.data);
-        } else {
-          toast.current.show({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to load test data",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching test:", error);
-        toast.current.show({
-          severity: "error",
-          summary: "Error",
-          detail: "Failed to load test data",
-        });
-      }
-    };
-
-    fetchTest();
-  }, [testId, toast]);
-
+        })
+        .catch((error) => console.error("Error fetching test data:", error));
+    }
+  }, [testId]);
   const questionTypes = [
     { label: "Fill in the Blanks", value: "fill-in-the-blanks" },
     { label: "Choose One", value: "choose-one" },
@@ -52,17 +38,32 @@ const EditTestForm = ({ toast}) => {
     { label: "True/False", value: "true-false" },
   ];
   const proctorOptions = ["Face Detection", "Tab Switching", "Noise Detection"];
-
-  const updateTestData = (key, value) => {
-    setTestData((prev) => ({ ...prev, [key]: value }));
+  const addQuestion = () => {
+    setTestData({
+      ...testData,
+      questions: [
+        ...testData.questions,
+        {
+          questionText: "",
+          type: "",
+          options: [],
+          correctAnswers: [],
+          marks: 1,
+          negativeMarks: 0,
+          image: null,
+        },
+      ],
+    });
   };
-
+  const removeQuestion = (index) => {
+    const updatedQuestions = testData.questions.filter((_, i) => i !== index);
+    setTestData({ ...testData, questions: updatedQuestions });
+  };
   const updateQuestion = (index, key, value) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[index][key] = value;
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const addOption = (index) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[index].options.push("");
@@ -74,13 +75,11 @@ const EditTestForm = ({ toast}) => {
     updatedQuestions[qIndex].options.splice(oIndex, 1);
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const updateOption = (qIndex, oIndex, value) => {
     const updatedQuestions = [...testData.questions];
     updatedQuestions[qIndex].options[oIndex] = value;
     setTestData({ ...testData, questions: updatedQuestions });
   };
-
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     if (file) {
@@ -91,115 +90,151 @@ const EditTestForm = ({ toast}) => {
       reader.readAsDataURL(file);
     }
   };
-
+  const removeImage = (index) => {
+    updateQuestion(index, "image", "");
+};
+  const email = useSelector((store) => store.user.email);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const requestData = { ...testData, email };
-
+  
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_UPDATE_TEST}/${testId}`,
-        requestData,
-        { withCredentials: true }
-      );
-
-      if (response.status === 200) {
+      let response;
+      if (testData.test_id) {
+        // Update existing test
+        response = await axios.put(
+          `${process.env.REACT_APP_UPDATE_TEST}/${testData.test_id}`,
+          requestData,
+          { withCredentials: true }
+        );
+      } else {
+        // Create new test
+        response = await axios.post(
+          process.env.REACT_APP_TEACHER_CREATE_TEST,
+          requestData,
+          { withCredentials: true }
+        );
+      }
+  
+      if (response.status === 200 || response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
-          detail: "Test Updated Successfully",
+          detail: testData.test_id ? "Test Updated Successfully" : "Test Created Successfully",
+        });
+  
+        setTestData({
+          test_id: null,
+          testname: "",
+          description: "",
+          start_date: null,
+          end_date: null,
+          duration: "",
+          proctor_settings: [],
+          questions: [],
         });
       } else {
         toast.current.show({
           severity: "error",
           summary: "Error",
-          detail: "Failed to update test",
+          detail: "Failed to save test",
         });
       }
     } catch (error) {
-      console.error("Error updating test:", error);
+      console.error("Error saving test:", error);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "Failed to update test",
+        detail: "Failed to save test",
       });
     }
+  };  
+  const toggleProctorSetting = (option) => {
+    let updatedSettings = [...testData.proctor_settings];
+    if (updatedSettings.includes(option)) {
+      updatedSettings = updatedSettings.filter((setting) => setting !== option);
+    } else {
+      updatedSettings.push(option);
+    }
+    setTestData({ ...testData, proctor_settings: updatedSettings });
   };
-
-  if (!testData) {
-    return <div>Loading test data...</div>;
+  const navigateBack = () => {
+    window.history.back();
   }
-
   return (
     <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h2 className="text-center mb-4">Edit Test</h2>
+      <Button onClick={navigateBack}>Back</Button>
+      <h2 className="text-center mb-4">Create a Test</h2>
       <form onSubmit={handleSubmit} className="p-fluid grid gap-3">
-        {/* Test Name */}
         <div className="col-12">
           <label>Test Name</label>
           <InputText
             className="w-full"
             value={testData.testname}
-            onChange={(e) => updateTestData("testname", e.target.value)}
+            onChange={(e) =>
+              setTestData({ ...testData, testname: e.target.value })
+            }
             required
           />
         </div>
-
-        {/* Description */}
         <div className="col-12">
           <label>Description</label>
           <InputTextarea
             className="w-full"
             value={testData.description}
-            onChange={(e) => updateTestData("description", e.target.value)}
+            onChange={(e) =>
+              setTestData({ ...testData, description: e.target.value })
+            }
             required
           />
         </div>
-
-        {/* Start Date */}
         <div className="col-12">
           <label>Start Date</label>
           <Calendar
             className="w-full"
             value={testData.start_date}
-            onChange={(e) => updateTestData("start_date", e.value)}
+            onChange={(e) => setTestData({ ...testData, start_date: e.value })}
             showTime
             required
           />
         </div>
-
-        {/* End Date */}
         <div className="col-12">
           <label>End Date</label>
           <Calendar
             className="w-full"
             value={testData.end_date}
-            onChange={(e) => updateTestData("end_date", e.value)}
+            onChange={(e) => setTestData({ ...testData, end_date: e.value })}
             showTime
             required
           />
         </div>
-
-        {/* Proctor Settings */}
         <div className="col-12">
-          <label>Proctor Settings</label>
-          <div className="flex flex-wrap gap-2">
-            {proctorOptions.map((option) => (
-              <div key={option} className="flex align-items-center">
-                <Checkbox
-                  inputId={option}
-                  value={option}
-                  onChange={(e) => updateTestData("proctor_settings", e.value)}
-                  checked={testData.proctor_settings.includes(option)}
-                />
-                <label htmlFor={option} className="ml-2">
-                  {option}
-                </label>
-              </div>
-            ))}
-          </div>
+          <label>Duration (Minutes)</label>
+          <InputText
+            className="w-full"
+            type="number"
+            value={testData.duration}
+            onChange={(e) =>
+              setTestData({ ...testData, duration: e.target.value })
+            }
+            required
+          />
         </div>
-
+        <h3 className="col-12 mt-4">Proctor Settings</h3>
+        <div className="col-12 flex flex-wrap gap-2">
+          {proctorOptions.map((option) => (
+            <div key={option} className="flex align-items-center">
+              <Checkbox
+                inputId={option}
+                checked={testData.proctor_settings.includes(option)}
+                onChange={() => toggleProctorSetting(option)}
+              />
+              <label htmlFor={option} className="ml-2">
+                {option}
+              </label>
+            </div>
+          ))}
+        </div>
         <h3 className="col-12 mt-4">Questions</h3>
         {testData.questions.map((question, qIndex) => (
           <div
@@ -209,14 +244,14 @@ const EditTestForm = ({ toast}) => {
             <h3>Question {qIndex + 1}</h3>
             <InputText
               className="w-full"
+              placeholder="Enter question"
               value={question.questionText}
               onChange={(e) =>
                 updateQuestion(qIndex, "questionText", e.target.value)
               }
               required
             />
-
-            {/* Question Type */}
+            <label className="mt-2">Type</label>
             <Dropdown
               className="w-full mt-2"
               value={question.type}
@@ -225,58 +260,24 @@ const EditTestForm = ({ toast}) => {
               placeholder="Select Type"
               required
             />
-
-            {/* Marks */}
-            <div className="col-12 mt-2">
-              <label>Marks</label>
-              <InputText
-                className="w-full"
-                type="number"
-                value={question.marks}
-                onChange={(e) =>
-                  updateQuestion(qIndex, "marks", e.target.value)
-                }
-                required
-              />
-            </div>
-
-            {/* Negative Marks */}
-            <div className="col-12 mt-2">
-              <label>Negative Marks</label>
-              <InputText
-                className="w-full"
-                type="number"
-                value={question.negativeMarks}
-                onChange={(e) =>
-                  updateQuestion(qIndex, "negativeMarks", e.target.value)
-                }
-              />
-            </div>
-
-            {/* Image Upload */}
-            <div className="col-12 mt-2">
-              <label>Upload Image (Optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(e, qIndex)}
-              />
-              {question.image && (
-                <div className="mt-2">
-                  <img
-                    src={question.image}
-                    alt="Uploaded"
-                    style={{
-                      maxWidth: "100%",
-                      height: "auto",
-                      borderRadius: "5px",
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Options for MCQ */}
+            <label className="mt-2">Marks</label>
+            <InputText
+              className="w-full mt-2"
+              type="number"
+              placeholder="Marks"
+              value={question.marks}
+              onChange={(e) => updateQuestion(qIndex, "marks", e.target.value)}
+            />
+            <label className="mt-2">Negative Marks</label>
+            <InputText
+              className="w-full mt-2"
+              type="number"
+              placeholder="Negative Marks"
+              value={question.negativeMarks}
+              onChange={(e) =>
+                updateQuestion(qIndex, "negativeMarks", e.target.value)
+              }
+            />
             {["choose-one", "choose-multiple"].includes(question.type) && (
               <div className="mt-3">
                 <h4>Options</h4>
@@ -303,43 +304,126 @@ const EditTestForm = ({ toast}) => {
                   type="button"
                   label="Add Option"
                   icon="pi pi-plus"
+                  className="p-button-secondary mt-2"
                   onClick={() => addOption(qIndex)}
                 />
               </div>
             )}
-            {question.type === "choose-multiple" && (
+            {question.type === "choose-one" && question.options.length > 0 && (
               <div className="mt-3">
-                <h4>Select Correct Answers</h4>
-                <MultiSelect
+                <h4>Select Correct Answer</h4>
+                <Dropdown
                   className="w-full"
-                  value={question.correctAnswers}
-                  options={question.options}
+                  value={question.correctAnswers[0] || ""}
+                  options={question.options.map((opt) => ({
+                    label: opt,
+                    value: opt,
+                  }))}
                   onChange={(e) =>
-                    updateQuestion(qIndex, "correctAnswers", e.value)
+                    updateQuestion(qIndex, "correctAnswers", [e.value])
                   }
-                  placeholder="Select Correct Options"
-                  required
+                  placeholder="Choose Correct Answer"
                 />
               </div>
             )}
+            {question.type === "choose-multiple" &&
+              question.options.length > 0 && (
+                <div className="mt-3">
+                  <h4>Select Correct Answers</h4>
+                  <MultiSelect
+                    className="w-full"
+                    value={question.correctAnswers}
+                    options={question.options.map((opt) => ({
+                      label: opt,
+                      value: opt,
+                    }))}
+                    onChange={(e) =>
+                      updateQuestion(qIndex, "correctAnswers", e.value)
+                    }
+                    placeholder="Select Correct Answers"
+                    display="chip"
+                  />
+                </div>
+              )}
+            {question.type === "fill-in-the-blanks" && (
+              <div className="mt-3">
+                <h4>Correct Answer</h4>
+                <InputText
+                  className="w-full"
+                  value={question.correctAnswers[0] || ""}
+                  onChange={(e) =>
+                    updateQuestion(qIndex, "correctAnswers", [e.target.value])
+                  }
+                  placeholder="Enter the correct answer"
+                />
+              </div>
+            )}
+            {question.type === "true-false" && (
+              <div className="mt-3">
+                <h4>Select Correct Answer</h4>
+                <Dropdown
+                  className="w-full"
+                  value={question.correctAnswers[0] || ""}
+                  options={[
+                    { label: "True", value: "true" },
+                    { label: "False", value: "false" },
+                  ]}
+                  onChange={(e) =>
+                    updateQuestion(qIndex, "correctAnswers", [e.value])
+                  }
+                  placeholder="Choose Correct Answer"
+                />
+              </div>
+            )}
+            <div className="mt-3">
+              <label>Upload Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, qIndex)}
+              />
+              {question.image && (
+                <div className="mt-2">
+                  <img
+                    src={question.image}
+                    alt="Uploaded"
+                    className="mt-2"
+                    style={{ maxWidth: "100px" }}
+                  />
+                  <button
+                    type="button"
+                    className="p-button-danger p-button-sm mt-2"
+                    onClick={() => removeImage(qIndex)}
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
+            </div>
             <Button
               type="button"
-              label="Update Question"
-              icon="pi pi-check"
-              className="p-button-success mt-3"
+              label="Remove Question"
+              icon="pi pi-trash"
+              className="p-button-danger mt-3"
+              onClick={() => removeQuestion(qIndex)}
             />
           </div>
         ))}
-
+        <Button
+          type="button"
+          label="Add Question"
+          icon="pi pi-plus"
+          className="p-button-secondary mt-3"
+          onClick={addQuestion}
+        />
         <Button
           type="submit"
-          label="Save Changes"
-          icon="pi pi-save"
+          label="Create Test"
+          icon="pi pi-check"
           className="p-button-success mt-3 w-full"
         />
       </form>
     </div>
   );
 };
-
 export default EditTestForm;

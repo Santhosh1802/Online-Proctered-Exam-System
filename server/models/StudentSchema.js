@@ -21,6 +21,19 @@ const StudentSchema=new mongoose.Schema({
         type:String,
         require:true,
     },
+    registerNumber: { 
+        type: String,
+        required: true,
+        unique: true 
+    },
+    batch: { 
+        type: String,
+        required: true
+    },
+    section: {
+        type: String,
+        required: true
+    },
     ongoingTests: [{
         testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" }, 
         startedAt: { type: Date, default: Date.now } 

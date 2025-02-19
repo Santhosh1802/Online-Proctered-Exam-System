@@ -1,3 +1,4 @@
+const bcrypt=require("bcrypt");
 const Login = require("../models/LoginSchema");
 const Admin = require("../models/AdminSchema");
 const Student = require("../models/StudentSchema");
@@ -200,6 +201,7 @@ const deleteStudent = async (req, res) => {
     return res.status(500).send(response);
   }
 };
+
 const createTeacher = async (req, res) => {
   const response = {
     message: "",
@@ -207,7 +209,18 @@ const createTeacher = async (req, res) => {
     data: {},
   };
   try {
-    const { name, email, phone, department, profile } = req.body;
+    const { name, email, phone, department, profile, password } = req.body;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const login = new Login({
+      email_id: email,
+      password: hashedPassword, 
+      user_name: name,
+      role: "teacher",
+    });
+    await login.save();
+
     const teacher = new Teacher({
       name: name,
       email: email,
@@ -216,6 +229,7 @@ const createTeacher = async (req, res) => {
       profile: profile,
     });
     await teacher.save();
+
     response.message = "Teacher created successfully";
     return res.status(200).send(response);
   } catch (error) {
@@ -224,6 +238,7 @@ const createTeacher = async (req, res) => {
     return res.status(500).send(response);
   }
 };
+
 const createStudent = async (req, res) => {
   const response = {
     message: "",
@@ -231,15 +246,30 @@ const createStudent = async (req, res) => {
     data: {},
   };
   try {
-    const { name, email, phone, department, profile } = req.body;
+    const { name, email, phone, department, profile,registerNumber,batch,section,password } = req.body;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const login = new Login({
+      email_id: email,
+      password: hashedPassword,
+      user_name: name,
+      role: "student",
+    });
+    await login.save();
+
     const student = new Student({
       name: name,
       email: email,
       phone: phone,
       department: department,
       profile: profile,
+      registerNumber:registerNumber,
+      batch:batch,
+      section:section,
     });
     await student.save();
+
     response.message = "Student created successfully";
     return res.status(200).send(response);
   } catch (error) {
@@ -249,30 +279,74 @@ const createStudent = async (req, res) => {
   }
 };
 
-const BulkUploadStudents=async (req,res)=>{
+const BulkUploadStudents = async (req, res) => {
   const response = {
     message: "",
-    error: "",
+    error: [],
     data: {},
   };
+
   try {
     const students = req.body.students;
-    if (!students || students==null) {
-      response.message = "No data found";
-      return res.status(404).json(response);
+    if (!students || students.length === 0) {
+      return res.status(400).json({ error: "No data found in the request." });
     }
-    students.forEach(async (student) => {
-      const newStudent = new Student(student);
-      await newStudent.save();
+
+    let validationErrors = [];
+
+    students.forEach((student, index) => {
+      const row = index + 2; 
+
+      if (!student.name || typeof student.name !== "string") {
+        validationErrors.push(`Row ${row}, Column 'name': Invalid or missing value`);
+      }
+      if (!student.email || !/^\S+@\S+\.\S+$/.test(student.email)) {
+        validationErrors.push(`Row ${row}, Column 'email': Invalid email format`);
+      }
+      if (!student.phone || !/^\d{10}$/.test(student.phone)) {
+        validationErrors.push(`Row ${row}, Column 'phone': Must be a 10-digit number`);
+      }
+      if (!student.department || typeof student.department !== "string") {
+        validationErrors.push(`Row ${row}, Column 'department': Invalid or missing value`);
+      }
+      if (!student.registerNumber || typeof student.registerNumber !== "string") {
+        validationErrors.push(`Row ${row}, Column 'registerNumber': Invalid or missing value`);
+      }
+      if (!student.batch || typeof student.batch !== "string") {
+        validationErrors.push(`Row ${row}, Column 'batch': Invalid or missing value`);
+      }
+      if (!student.section || typeof student.section !== "string") {
+        validationErrors.push(`Row ${row}, Column 'section': Invalid or missing value`);
+      }
     });
-    response.message = "Students created successfully";
-    return res.status(200).send(response);
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ error: validationErrors });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash("Student@123", saltRounds);
+
+    const studentDocs = students.map((student) => ({
+      ...student,
+    }));
+
+    const loginDocs = students.map((student) => ({
+      user_name: student.name,
+      email: student.email,
+      password: hashedPassword,
+      role: "student",
+    }));
+
+    await Promise.all([Student.insertMany(studentDocs), Login.insertMany(loginDocs)]);
+
+    response.message = "Students and login records created successfully";
+    return res.status(200).json(response);
   } catch (error) {
-    response.error = error.message;
-    console.log(error.message);
-    return res.status(500).send(response);
+    console.log("Error:", error.message);
+    return res.status(500).json({ error: error.message });
   }
-}
+};
 
 const getStats=async (req,res) => {
   const response = {

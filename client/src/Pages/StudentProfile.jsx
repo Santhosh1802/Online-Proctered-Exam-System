@@ -13,6 +13,10 @@ export default function StudentProfile({ toast }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [department, setDepartment] = useState("");
+  const [registerNumber,setRegisterNumber]=useState("");
+  const [batch,setBatch]=useState("");
+  const [section,setSection]=useState("");
+
   const userEmail = useSelector((state) => state.user.email);
   useEffect(() => {
     if (userEmail) {
@@ -27,6 +31,9 @@ export default function StudentProfile({ toast }) {
             setPhone(res.data.data.phone);
             setProfile(res.data.data.profile);
             setDepartment(res.data.data.department);
+            setRegisterNumber(res.data.data.registerNumber);
+            setBatch(res.data.data.batch);
+            setSection(res.data.data.section);
           }
         });
     } else {
@@ -154,6 +161,42 @@ export default function StudentProfile({ toast }) {
             value={department}
             placeholder="Enter your department"
             onChange={(e) => setDepartment(e.target.value)}
+            style={{ width: "20em" }}
+          />
+          <br />
+          <br />
+          <label htmlFor="registerNumber">Register Number</label>
+          <br />
+          <InputText
+            id="registerNumber"
+            keyfilter={"alphanum"}
+            value={registerNumber}
+            placeholder="Enter your Register Number"
+            onChange={(e) => setRegisterNumber(e.target.value)}
+            style={{ width: "20em" }}
+          />
+          <br />
+          <br />
+          <label htmlFor="batch">Batch</label>
+          <br />
+          <InputText
+            id="batch"
+            keyfilter={"alphanum"}
+            value={batch}
+            placeholder="Enter your Batch"
+            onChange={(e) => setBatch(e.target.value)}
+            style={{ width: "20em" }}
+          />
+          <br />
+          <br />
+          <label htmlFor="section">Section</label>
+          <br />
+          <InputText
+            id="section"
+            keyfilter={"alphanum"}
+            value={section}
+            placeholder="Enter your Section"
+            onChange={(e) => setSection(e.target.value)}
             style={{ width: "20em" }}
           />
           <br />

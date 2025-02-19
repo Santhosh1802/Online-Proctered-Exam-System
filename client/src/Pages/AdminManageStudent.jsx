@@ -48,6 +48,9 @@ export default function AdminManageStudent({ toast }) {
           <InputText name="email" placeholder="Email" type="email" value={studentData.email} onChange={handleChange} required />
           <InputText name="phone" placeholder="Phone" value={studentData.phone} onChange={handleChange} required />
           <InputText name="department" placeholder="Department" value={studentData.department} onChange={handleChange} required />
+          <InputText name="registerNumber" placeholder="Register Number" value={studentData.registerNumber} onChange={handleChange} required />
+          <InputText name="batch" placeholder="Batch" value={studentData.batch} onChange={handleChange} required />
+          <InputText name="section" placeholder="Section" value={studentData.section} onChange={handleChange} required />
           <Button label="Create" onClick={handleSubmit} />
         </div>
       </Dialog>

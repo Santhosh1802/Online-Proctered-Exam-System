@@ -1,5 +1,6 @@
 const Teacher = require("../models/TeacherSchema");
 const Test = require("../models/TestSchema");
+const Student=require("../models/StudentSchema");
 
 const getTecherProfile = async (req, res) => {
   const response = {
@@ -150,5 +151,40 @@ const getOneTest=async (req,res) => {
   }
 }
 
+const assignTestToStudents = async (req, res) => {
+  try {
+    const { department, batch, section, testId } = req.body;
 
-module.exports = { getTecherProfile, updateTeacherProfile,createTest,getAllTest,getOneTest };
+    if (!department || !batch || !section || !testId) {
+      return res.status(400).json({
+        error: "Missing required parameters: department, batch, section, or testId",
+      });
+    }
+
+    const students = await Student.find({ department, batch, section });
+
+    if (students.length === 0) {
+      return res.status(404).json({ message: "No students found for the given filters" });
+    }
+    const updates = students.map(async (student) => {
+      const alreadyAssigned = student.ongoingTests.some(
+        (test) => test.testId.toString() === testId
+      );
+
+      if (!alreadyAssigned) {
+        student.ongoingTests.push({ testId, startedAt: new Date() });
+        await student.save();
+      }
+    });
+
+    await Promise.all(updates);
+
+    return res.status(200).json({ message: "Test assigned successfully to students." });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
+module.exports = { getTecherProfile, updateTeacherProfile,createTest,getAllTest,getOneTest,assignTestToStudents };
