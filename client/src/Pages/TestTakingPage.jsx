@@ -8,24 +8,21 @@ import { InputText } from "primereact/inputtext";
 import axios from "axios";
 
 export default function TestTakingPage() {
-  const { testId } = useParams(); // Get testId from URL
+  let { testId } = useParams();
   const [test, setTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-
-  // Fetch test details
+  testId="67b34ed10205063ce21aac54";
   useEffect(() => {
     axios
-      .get(`/api/test/${testId}`)
-      .then((res) => setTest(res.data))
+      .get(`http://localhost:5000/getOnetest-teacher?id=${testId}`)
+      .then((res) => setTest(res.data.data))
       .catch((err) => console.error("Error fetching test:", err));
   }, [testId]);
 
-  // Handle Answer Selection
   const handleAnswerChange = (questionId, value, isMultiple = false) => {
     setAnswers((prevAnswers) => {
       if (isMultiple) {
-        // For multiple-choice: Toggle selection
         const updatedAnswers = prevAnswers[questionId] || [];
         const index = updatedAnswers.indexOf(value);
         if (index === -1) updatedAnswers.push(value);
@@ -36,7 +33,6 @@ export default function TestTakingPage() {
     });
   };
 
-  // Navigation
   const nextQuestion = () => {
     if (currentQuestionIndex < test.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -49,7 +45,6 @@ export default function TestTakingPage() {
     }
   };
 
-  // Submit Test
   const handleSubmit = () => {
     axios
       .post("/api/student/submit-test", { testId, answers })
@@ -62,89 +57,104 @@ export default function TestTakingPage() {
   const question = test.questions[currentQuestionIndex];
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "600px", margin: "auto" }}>
-      <h2>{test.testname}</h2>
-      <Card title={`Question ${currentQuestionIndex + 1}`}>
-        <p>{question.questionText}</p>
+    <div style={{ display: "flex", height: "100vh" }}>
+      <div style={{ width: "20%", overflowY: "auto", borderRight: "1px solid #ddd", padding: "1rem" }}>
+        <h3>Questions</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+          {test.questions.map((q, index) => (
+            <Button
+              key={q._id}
+              label={`${index + 1}`}
+              onClick={() => setCurrentQuestionIndex(index)}
+              className={answers[q._id] ? "p-button-success" : "p-button-secondary"}
+              style={{ width: "50px", height: "50px" }}
+            />
+          ))}
+        </div>
+      </div>
 
-        {/* Show Image if available */}
-        {question.image && (
-          <img src={question.image} alt="question" style={{ width: "100%", marginBottom: "1rem" }} />
-        )}
+      <div style={{ flex: 1, padding: "2rem", overflowY: "auto" }}>
+        <h2>{test.testname}</h2>
+        <Card title={`Question ${currentQuestionIndex + 1}`}>
+          <p>{question.questionText}</p>
 
-        {/* Render Different Question Types */}
-        {question.type === "choose-one" && (
-          question.options.map((option, index) => (
-            <div key={index} className="p-field-radiobutton">
-              <RadioButton
-                inputId={option}
-                name="answer"
-                value={option}
-                onChange={() => handleAnswerChange(question._id, option)}
-                checked={answers[question._id] === option}
+          {question.image && (
+            <img src={question.image} alt="question" style={{ width: "100%", marginBottom: "1rem" }} />
+          )}
+
+          <div style={{ marginBottom: "1rem" }}>
+            {question.type === "choose-one" &&
+              question.options.map((option, index) => (
+                <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <RadioButton
+                    inputId={option}
+                    name="answer"
+                    value={option}
+                    onChange={() => handleAnswerChange(question._id, option)}
+                    checked={answers[question._id] === option}
+                  />
+                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>{option}</label>
+                </div>
+              ))}
+
+            {question.type === "choose-multiple" &&
+              question.options.map((option, index) => (
+                <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <Checkbox
+                    inputId={option}
+                    name="answer"
+                    value={option}
+                    onChange={() => handleAnswerChange(question._id, option, true)}
+                    checked={answers[question._id]?.includes(option)}
+                  />
+                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>{option}</label>
+                </div>
+              ))}
+
+            {question.type === "true-false" && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <RadioButton
+                    inputId="true"
+                    name="answer"
+                    value="true"
+                    onChange={() => handleAnswerChange(question._id, "true")}
+                    checked={answers[question._id] === "true"}
+                  />
+                  <label htmlFor="true" style={{ marginLeft: "0.5rem" }}>True</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <RadioButton
+                    inputId="false"
+                    name="answer"
+                    value="false"
+                    onChange={() => handleAnswerChange(question._id, "false")}
+                    checked={answers[question._id] === "false"}
+                  />
+                  <label htmlFor="false" style={{ marginLeft: "0.5rem" }}>False</label>
+                </div>
+              </>
+            )}
+
+            {question.type === "fill-in-the-blanks" && (
+              <InputText
+                value={answers[question._id] || ""}
+                onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                placeholder="Type your answer..."
+                style={{ width: "100%", marginTop: "0.5rem" }}
               />
-              <label htmlFor={option}>{option}</label>
-            </div>
-          ))
-        )}
+            )}
+          </div>
+        </Card>
 
-        {question.type === "choose-multiple" && (
-          question.options.map((option, index) => (
-            <div key={index} className="p-field-checkbox">
-              <Checkbox
-                inputId={option}
-                name="answer"
-                value={option}
-                onChange={() => handleAnswerChange(question._id, option, true)}
-                checked={answers[question._id]?.includes(option)}
-              />
-              <label htmlFor={option}>{option}</label>
-            </div>
-          ))
-        )}
-
-        {question.type === "true-false" && (
-          <>
-            <div className="p-field-radiobutton">
-              <RadioButton
-                inputId="true"
-                name="answer"
-                value="true"
-                onChange={() => handleAnswerChange(question._id, "true")}
-                checked={answers[question._id] === "true"}
-              />
-              <label htmlFor="true">True</label>
-            </div>
-            <div className="p-field-radiobutton">
-              <RadioButton
-                inputId="false"
-                name="answer"
-                value="false"
-                onChange={() => handleAnswerChange(question._id, "false")}
-                checked={answers[question._id] === "false"}
-              />
-              <label htmlFor="false">False</label>
-            </div>
-          </>
-        )}
-
-        {question.type === "fill-in-the-blanks" && (
-          <InputText
-            value={answers[question._id] || ""}
-            onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-            placeholder="Type your answer..."
-          />
-        )}
-      </Card>
-
-      {/* Navigation & Submission */}
-      <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-between" }}>
-        <Button label="Previous" onClick={prevQuestion} disabled={currentQuestionIndex === 0} />
-        {currentQuestionIndex === test.questions.length - 1 ? (
-          <Button label="Submit Test" onClick={handleSubmit} className="p-button-success" />
-        ) : (
-          <Button label="Next" onClick={nextQuestion} />
-        )}
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-between" }}>
+          <Button label="Previous" onClick={prevQuestion} disabled={currentQuestionIndex === 0} />
+          {currentQuestionIndex === test.questions.length - 1 ? (
+            <Button label="Submit Test" onClick={handleSubmit} className="p-button-success" />
+          ) : (
+            <Button label="Next" onClick={nextQuestion} />
+          )}
+        </div>
       </div>
     </div>
   );
