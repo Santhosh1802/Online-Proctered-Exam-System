@@ -76,7 +76,7 @@ export default function TeacherDataView() {
   };
 
   return (
-    <div className="card">
+    <div className="card" style={{marginBottom:"1em"}}>
       <h1>Teachers</h1>
       <DataTable value={teacher} paginator rows={10}>
         <Column

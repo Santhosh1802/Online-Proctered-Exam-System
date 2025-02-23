@@ -54,7 +54,7 @@ export default function AdminManageStudent({ toast }) {
         }}
       >
         <ExcelToJson />
-        <Button label="Create Student" onClick={() => setVisible(true)} style={{marginTop:"1em",marginLeft:"-85%"}}/>
+        <Button label="Create One Student" onClick={() => setVisible(true)} style={{margin:"2em",marginLeft:"-75%"}}/>
       </div>
       <div style={{width:"80%"}}>
       <StudentDataView />

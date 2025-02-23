@@ -43,7 +43,7 @@ export default function AdminNavBar() {
         },
     ];
 
-    const start = <img alt="logo" src="https://primefaces.org/cdn/primereact/images/logo.png" height="40" className="mr-2"></img>;
+    //const start = <img alt="logo" src="https://primefaces.org/cdn/primereact/images/logo.png" height="40" className="mr-2"></img>;
     const end = (
         <div className="flex align-items-center gap-2">
         </div>
@@ -51,7 +51,7 @@ export default function AdminNavBar() {
 
     return (
         <div className="card" style={{marginTop:"8px", position:"fixed",width:"99%",alignItems:"center",zIndex:"1"}}>
-            <Menubar model={items} start={start} end={end} />
+            <Menubar model={items}  end={end} />
         </div>
     )
 }

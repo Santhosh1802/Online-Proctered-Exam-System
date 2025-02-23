@@ -80,9 +80,12 @@ export default function TestTakingPage() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
-
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+  };
   return (
     <div style={{ display: "flex", height: "100vh" }}>
+      {window.addEventListener("contextmenu", handleContextMenu)}
       <div
         style={{
           width: "20%",
@@ -93,9 +96,9 @@ export default function TestTakingPage() {
       >
         <div style={{width:"100%",height:"300px",border:"2px solid black"}}>
           <p style={{marginLeft:"5px"}}>Proctor Details</p>
-          {/* <FaceDetection />
-          <NoiseDetection /> */}
-          <TabSwitchDetector/>
+          {/* {test.proctor_settings.includes("Face Detection") && <FaceDetection />}
+          {test.proctor_settings.includes("Noise Detection") && <NoiseDetection />} */}
+          {/* <TabSwitchDetector/> */}
         </div>
         <h3>Questions</h3>
         <div

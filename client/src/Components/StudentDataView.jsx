@@ -81,7 +81,7 @@ export default function StudentDataView() {
   return (
     <div className="card">
       <h1>Students</h1>
-      <DataTable value={student} paginator rows={10}>
+      <DataTable value={student} paginator rows={10} style={{ marginBottom:"1em"}}>
         <Column
           field="serialNumber"
           header="S.No."
