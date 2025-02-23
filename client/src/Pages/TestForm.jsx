@@ -213,6 +213,7 @@ const TestForm = ({ toast }) => {
           <InputText
             className="w-full"
             type="number"
+            keyfilter={"num"}
             value={testData.duration}
             onChange={(e) =>
               setTestData({ ...testData, duration: e.target.value })

@@ -18,12 +18,13 @@ const AdminProfile = lazy(() => import("./Pages/AdminProfile"));
 const AdminManageStudent = lazy(() => import("./Pages/AdminManageStudent"));
 const AdminManageTeacher = lazy(() => import("./Pages/AdminManageTeacher"));
 const TeacherDashboard = lazy(() => import("./Pages/TeacherDashboard"));
-const TeacherViewStudent = lazy(() => import("./Pages/TeacherViewStudent"));
+const TeacherAssignTest = lazy(() => import("./Pages/TeacherAssignTest"));
 const TeacherManageTest = lazy(() => import("./Pages/TeacherManageTest"));
 const TeacherProfile = lazy(() => import("./Pages/TeacherProfile"));
 const TestForm = lazy(() => import("./Pages/TestForm"));
 const EditTestForm = lazy(() => import("./Pages/EditTestForm"));
 const TestTakingPage=lazy(()=>import("./Pages/TestTakingPage"));
+const InstructionsPage =lazy(()=>import("./Pages/InstructionsPage"));
 function App() {
   const toast = useRef(null);
 
@@ -129,7 +130,7 @@ function AppRoutes({ toast }) {
         />
         <Route
           path="/teacherstudent"
-          element={<TeacherViewStudent toast={toast} />}
+          element={<TeacherAssignTest toast={toast} />}
         />
         <Route
           path="/teachertest"
@@ -141,7 +142,8 @@ function AppRoutes({ toast }) {
           path="/teacherprofile"
           element={<TeacherProfile toast={toast} />}
         />
-        <Route path="/test" element={<TestTakingPage/>}/>
+        <Route path="/test/:testId" element={<TestTakingPage/>}/>
+        <Route path="/instructions/:testId" element={<InstructionsPage/>}/>
         <Route path="*" element={<Login toast={toast} />} />
       </Routes>
     </div>

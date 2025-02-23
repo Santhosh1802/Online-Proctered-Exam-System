@@ -1,6 +1,6 @@
 const Teacher = require("../models/TeacherSchema");
 const Test = require("../models/TestSchema");
-const Student=require("../models/StudentSchema");
+const Student = require("../models/StudentSchema");
 
 const getTecherProfile = async (req, res) => {
   const response = {
@@ -15,7 +15,7 @@ const getTecherProfile = async (req, res) => {
   const teacher = await Teacher.findOne({ email: email });
   if (teacher) {
     response.message = "Teacher Found";
-    response.data.id=teacher._id;
+    response.data.id = teacher._id;
     response.data.profile = teacher.profile;
     response.data.name = teacher.name;
     response.data.phone = teacher.phone;
@@ -94,7 +94,7 @@ const createTest = async (req, res) => {
       teacher_id: teacher._id,
       start_date,
       end_date,
-      duration,
+      duration: parseInt(duration, 10),
       status: status || "pending",
       proctor_settings,
       questions: validatedQuestions, // Include questions with marks & negativeMarks
@@ -107,11 +107,14 @@ const createTest = async (req, res) => {
     teacher.tests.push(savedTest._id);
     await teacher.save();
 
-    return res.status(201).json({ message: "Test created successfully", test: savedTest });
-
+    return res
+      .status(201)
+      .json({ message: "Test created successfully", test: savedTest });
   } catch (error) {
     console.error("Error creating test:", error.message);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -122,7 +125,7 @@ const getAllTest = async (req, res) => {
     data: [],
   };
   try {
-    const {teacher_id} = req.query;
+    const { teacher_id } = req.query;
     const tests = await Test.find({ teacher_id: teacher_id });
     response.message = "Tests Found";
     response.data = tests;
@@ -130,18 +133,18 @@ const getAllTest = async (req, res) => {
   } catch (error) {
     response.error = "An error occurred while fetching tests";
     return res.status(500).send(response);
-  }  
-}
-
-const getOneTest=async (req,res) => {
-  const response ={
-    message:"",
-    error:"",
-    data:{},
   }
+};
+
+const getOneTest = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
   try {
-    const {id}=req.query;
-    const test=await Test.findOne({_id:id});
+    const { id } = req.query;
+    const test = await Test.findOne({ _id: id });
     response.message = "Tests Found";
     response.data = test;
     return res.status(200).send(response);
@@ -149,7 +152,7 @@ const getOneTest=async (req,res) => {
     response.error = "An error occurred while fetching tests";
     return res.status(500).send(response);
   }
-}
+};
 
 const assignTestToStudents = async (req, res) => {
   try {
@@ -157,14 +160,17 @@ const assignTestToStudents = async (req, res) => {
 
     if (!department || !batch || !section || !testId) {
       return res.status(400).json({
-        error: "Missing required parameters: department, batch, section, or testId",
+        error:
+          "Missing required parameters: department, batch, section, or testId",
       });
     }
 
     const students = await Student.find({ department, batch, section });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: "No students found for the given filters" });
+      return res
+        .status(404)
+        .json({ message: "No students found for the given filters" });
     }
     const updates = students.map(async (student) => {
       const alreadyAssigned = student.ongoingTests.some(
@@ -179,12 +185,107 @@ const assignTestToStudents = async (req, res) => {
 
     await Promise.all(updates);
 
-    return res.status(200).json({ message: "Test assigned successfully to students." });
+    return res
+      .status(200)
+      .json({ message: "Test assigned successfully to students." });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
 
+const updateOneTest = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+  };
+  try {
+    const { id } = req.query;
+    const {
+      testname,
+      description,
+      start_date,
+      end_date,
+      duration,
+      status,
+      proctor_settings,
+      questions,
+    } = req.body;
+    console.log(id);
 
-module.exports = { getTecherProfile, updateTeacherProfile,createTest,getAllTest,getOneTest,assignTestToStudents };
+    if (!id) {
+      return res.status(400).json({ error: "Missing required parameter: id" });
+    }
+
+    const updatedTest = await Test.findByIdAndUpdate(
+      id,
+      {
+        testname,
+        description,
+        start_date,
+        end_date,
+        duration: parseInt(duration, 10),
+        status,
+        proctor_settings,
+        questions,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedTest) {
+      return res.status(404).json({ error: "Test not found" });
+    }
+
+    response.message = "Test updated successfully";
+    response.data = updatedTest;
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while updating the test";
+    return res.status(500).send(response);
+  }
+};
+
+const getUniqueDepartments = async (req, res) => {
+  try {
+    const departments = await Student.distinct("department");
+    return res.status(200).json({ departments });
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getUniqueBatches = async (req, res) => {
+  try {
+    const { department } = req.query;
+    const batches = await Student.distinct("batch", { department });
+    return res.status(200).json({ batches });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getUniqueSections = async (req, res) => {
+  try {
+    const { department, batch } = req.query;
+    const sections = await Student.distinct("section", { department, batch });
+    return res.status(200).json({ sections });
+  } catch (error) {
+    console.error("Error fetching sections:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  getTecherProfile,
+  updateTeacherProfile,
+  createTest,
+  getAllTest,
+  getOneTest,
+  assignTestToStudents,
+  updateOneTest,
+  getUniqueDepartments,
+  getUniqueBatches,
+  getUniqueSections,
+};

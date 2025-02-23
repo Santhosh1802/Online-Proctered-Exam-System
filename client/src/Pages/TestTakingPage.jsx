@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "primereact/button";
@@ -6,19 +7,37 @@ import { RadioButton } from "primereact/radiobutton";
 import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import axios from "axios";
+import FaceDetection from "../Components/FaceDetection";
+import NoiseDetection from "../Components/NoiseDetection";
+import TabSwitchDetector from "../Components/TabSwitcherDetector";
 
 export default function TestTakingPage() {
   let { testId } = useParams();
   const [test, setTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  testId="67b34ed10205063ce21aac54";
+  const [timeLeft, setTimeLeft] = useState(0);
+
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/getOnetest-teacher?id=${testId}`)
-      .then((res) => setTest(res.data.data))
+      .get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${testId}`)
+      .then((res) => {
+        setTest(res.data.data);
+        setTimeLeft(res.data.data.duration * 60);
+      })
       .catch((err) => console.error("Error fetching test:", err));
   }, [testId]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0) {
+      handleSubmit();
+    }
+  }, [timeLeft]);
 
   const handleAnswerChange = (questionId, value, isMultiple = false) => {
     setAnswers((prevAnswers) => {
@@ -47,7 +66,7 @@ export default function TestTakingPage() {
 
   const handleSubmit = () => {
     axios
-      .post("/api/student/submit-test", { testId, answers })
+      .post("/api/student/submit-tes", { testId, answers })
       .then((res) => alert("Test submitted successfully!"))
       .catch((err) => console.error("Error submitting test:", err));
   };
@@ -56,17 +75,44 @@ export default function TestTakingPage() {
 
   const question = test.questions[currentQuestionIndex];
 
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: "20%", overflowY: "auto", borderRight: "1px solid #ddd", padding: "1rem" }}>
+      <div
+        style={{
+          width: "20%",
+          overflowY: "auto",
+          borderRight: "1px solid #ddd",
+          padding: "1rem",
+        }}
+      >
+        <div style={{width:"100%",height:"300px",border:"2px solid black"}}>
+          <p style={{marginLeft:"5px"}}>Proctor Details</p>
+          {/* <FaceDetection />
+          <NoiseDetection /> */}
+          <TabSwitchDetector/>
+        </div>
         <h3>Questions</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "10px",
+          }}
+        >
           {test.questions.map((q, index) => (
             <Button
               key={q._id}
               label={`${index + 1}`}
               onClick={() => setCurrentQuestionIndex(index)}
-              className={answers[q._id] ? "p-button-success" : "p-button-secondary"}
+              className={
+                answers[q._id] ? "p-button-success" : "p-button-secondary"
+              }
               style={{ width: "50px", height: "50px" }}
             />
           ))}
@@ -75,17 +121,45 @@ export default function TestTakingPage() {
 
       <div style={{ flex: 1, padding: "2rem", overflowY: "auto" }}>
         <h2>{test.testname}</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h3
+            style={{
+              backgroundColor: "red",
+              padding: "1em",
+              borderRadius: "1em",
+            }}
+          >
+            Time Left: {formatTime(timeLeft)}
+          </h3>
+        </div>
         <Card title={`Question ${currentQuestionIndex + 1}`}>
           <p>{question.questionText}</p>
 
           {question.image && (
-            <img src={question.image} alt="question" style={{ width: "100%", marginBottom: "1rem" }} />
+            <img
+              src={question.image}
+              alt="question"
+              style={{ width: "100%", marginBottom: "1rem" }}
+            />
           )}
 
           <div style={{ marginBottom: "1rem" }}>
             {question.type === "choose-one" &&
               question.options.map((option, index) => (
-                <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <RadioButton
                     inputId={option}
                     name="answer"
@@ -93,27 +167,46 @@ export default function TestTakingPage() {
                     onChange={() => handleAnswerChange(question._id, option)}
                     checked={answers[question._id] === option}
                   />
-                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>{option}</label>
+                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>
+                    {option}
+                  </label>
                 </div>
               ))}
 
             {question.type === "choose-multiple" &&
               question.options.map((option, index) => (
-                <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <Checkbox
                     inputId={option}
                     name="answer"
                     value={option}
-                    onChange={() => handleAnswerChange(question._id, option, true)}
+                    onChange={() =>
+                      handleAnswerChange(question._id, option, true)
+                    }
                     checked={answers[question._id]?.includes(option)}
                   />
-                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>{option}</label>
+                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>
+                    {option}
+                  </label>
                 </div>
               ))}
 
             {question.type === "true-false" && (
               <>
-                <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <RadioButton
                     inputId="true"
                     name="answer"
@@ -121,9 +214,17 @@ export default function TestTakingPage() {
                     onChange={() => handleAnswerChange(question._id, "true")}
                     checked={answers[question._id] === "true"}
                   />
-                  <label htmlFor="true" style={{ marginLeft: "0.5rem" }}>True</label>
+                  <label htmlFor="true" style={{ marginLeft: "0.5rem" }}>
+                    True
+                  </label>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <RadioButton
                     inputId="false"
                     name="answer"
@@ -131,7 +232,9 @@ export default function TestTakingPage() {
                     onChange={() => handleAnswerChange(question._id, "false")}
                     checked={answers[question._id] === "false"}
                   />
-                  <label htmlFor="false" style={{ marginLeft: "0.5rem" }}>False</label>
+                  <label htmlFor="false" style={{ marginLeft: "0.5rem" }}>
+                    False
+                  </label>
                 </div>
               </>
             )}
@@ -139,7 +242,9 @@ export default function TestTakingPage() {
             {question.type === "fill-in-the-blanks" && (
               <InputText
                 value={answers[question._id] || ""}
-                onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                onChange={(e) =>
+                  handleAnswerChange(question._id, e.target.value)
+                }
                 placeholder="Type your answer..."
                 style={{ width: "100%", marginTop: "0.5rem" }}
               />
@@ -147,10 +252,24 @@ export default function TestTakingPage() {
           </div>
         </Card>
 
-        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-between" }}>
-          <Button label="Previous" onClick={prevQuestion} disabled={currentQuestionIndex === 0} />
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button
+            label="Previous"
+            onClick={prevQuestion}
+            disabled={currentQuestionIndex === 0}
+          />
           {currentQuestionIndex === test.questions.length - 1 ? (
-            <Button label="Submit Test" onClick={handleSubmit} className="p-button-success" />
+            <Button
+              label="Submit Test"
+              onClick={handleSubmit}
+              className="p-button-success"
+            />
           ) : (
             <Button label="Next" onClick={nextQuestion} />
           )}

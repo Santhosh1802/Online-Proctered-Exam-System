@@ -55,12 +55,12 @@ export default function AdminDashboard() {
     <div className="flex flex-column align-items-center">
       <AdminNavBar />
       <div className="mt-5 mb-5 flex flex-column align-items-center" style={{width:"100%"}}>
-        <Card className="w-8 text-center" style={{marginTop:"3em"}}>
+        <Card className="w-7 text-center" style={{marginTop:"3em",boxShadow: "0px 2px 8px 0px"}}>
           <Avatar label={name[0]} size="xlarge" shape="circle" className="mb-3" />
           <h2 className="text-2xl font-bold">Welcome, {name} 👋</h2>
           <p className="text-gray-500">{email}</p>
         </Card>
-        <Divider />
+        <Divider className="w-7"/>
         <div className="grid mt-4 w-10 flex justify-content-center gap-4">
           <div className="col-12 md:col-2">
             <Card className="shadow-2 text-center p-4" style={{ backgroundColor: "#007bff", borderRadius: "0" }}>

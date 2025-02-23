@@ -8,25 +8,33 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 const EditTestForm = ({ toast }) => {
   const [testData, setTestData] = useState({
-    test_id: null,
+    test_id: "",
     testname: "",
     description: "",
-    start_date: null,
-    end_date: null,
-    duration: "",
+    start_date: "",
+    end_date: "",
+    duration: 0,
     proctor_settings: [],
     questions: [],
   });
   const { testId } = useParams();
+  const navigate=useNavigate();
+  
   useEffect(() => {
     if (testId) {
       axios
-        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/${testId}`, { withCredentials: true })
+        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}`,{params:{id:testId},withCredentials:true})
         .then((response) => {
-          setTestData(response.data);
+          const test=response.data.data;
+          setTestData({
+            ...test,
+            start_date:new Date(test.start_date),
+            end_date:new Date(test.end_date),
+            test_id:testId,
+          });
         })
         .catch((error) => console.error("Error fetching test data:", error));
     }
@@ -100,39 +108,35 @@ const EditTestForm = ({ toast }) => {
   
     try {
       let response;
+      console.log(testData);
+      
       if (testData.test_id) {
         // Update existing test
         response = await axios.put(
-          `${process.env.REACT_APP_UPDATE_TEST}/${testData.test_id}`,
+          `${process.env.REACT_APP_TEACHER_UPDATE_ONE_TEST}`,
           requestData,
-          { withCredentials: true }
+          { params:{id:testData.test_id},withCredentials: true }
         );
-      } else {
-        // Create new test
-        response = await axios.post(
-          process.env.REACT_APP_TEACHER_CREATE_TEST,
-          requestData,
-          { withCredentials: true }
-        );
-      }
+      } 
   
       if (response.status === 200 || response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
-          detail: testData.test_id ? "Test Updated Successfully" : "Test Created Successfully",
+          detail: "Test Updated Successfully",
         });
   
         setTestData({
-          test_id: null,
+          test_id: "",
           testname: "",
           description: "",
-          start_date: null,
-          end_date: null,
+          start_date: "",
+          end_date: "",
           duration: "",
           proctor_settings: [],
           questions: [],
         });
+        navigate("/teachertest");
       } else {
         toast.current.show({
           severity: "error",
@@ -164,7 +168,7 @@ const EditTestForm = ({ toast }) => {
   return (
     <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
       <Button onClick={navigateBack}>Back</Button>
-      <h2 className="text-center mb-4">Create a Test</h2>
+      <h2 className="text-center mb-4">Editting {testData.testname}</h2>
       <form onSubmit={handleSubmit} className="p-fluid grid gap-3">
         <div className="col-12">
           <label>Test Name</label>
@@ -212,7 +216,7 @@ const EditTestForm = ({ toast }) => {
           <label>Duration (Minutes)</label>
           <InputText
             className="w-full"
-            type="number"
+            keyfilter={"num"}
             value={testData.duration}
             onChange={(e) =>
               setTestData({ ...testData, duration: e.target.value })
@@ -418,7 +422,7 @@ const EditTestForm = ({ toast }) => {
         />
         <Button
           type="submit"
-          label="Create Test"
+          label="Update Test"
           icon="pi pi-check"
           className="p-button-success mt-3 w-full"
         />

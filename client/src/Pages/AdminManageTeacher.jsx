@@ -33,7 +33,7 @@ export default function AdminManageTeacher({ toast }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <AdminNavBar />
-      <div style={{ marginTop: "7em" }}>
+      <div style={{ marginTop: "7em",width:"80%" }}>
         <Button label="Create Teacher" onClick={() => setVisible(true)} />
         <TeacherDataView />
       </div>
@@ -44,6 +44,7 @@ export default function AdminManageTeacher({ toast }) {
           <InputText name="email" placeholder="Email" type="email" value={teacherData.email} onChange={handleChange} required />
           <InputText name="phone" placeholder="Phone" value={teacherData.phone} onChange={handleChange} required />
           <InputText name="department" placeholder="Department" value={teacherData.department} onChange={handleChange} required />
+          <InputText name="password" placeholder="Password" value={teacherData.password} onChange={handleChange} required />
           <Button label="Create" onClick={handleSubmit} />
         </div>
       </Dialog>

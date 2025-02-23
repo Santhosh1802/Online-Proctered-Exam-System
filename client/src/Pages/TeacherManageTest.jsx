@@ -11,18 +11,15 @@ export default function TeacherManageTest({ toast}) {
   const [tests, setTests] = useState([]);
   const navigate = useNavigate();
   const id=useSelector((state)=>state.user.id);
-  console.log(id);
   
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        console.log(id);
         
         const res = await axios.get(process.env.REACT_APP_TEACHER_GET_TESTS, {
           params:{teacher_id:id},
           withCredentials: true,
         });
-        console.log(res.data.data);
         
         setTests(res.data.data||[]);
       } catch (error) {
@@ -54,15 +51,14 @@ export default function TeacherManageTest({ toast}) {
         <h1>Manage Tests</h1>
         <Button onClick={handleCreateTest}>Create Test</Button>
 
-        {/* List of Tests */}
-        <div style={{ marginTop: "2em", width: "100%" }}>
+        <div style={{ margin: "2em", width: "500px",height:"200px"}}>
           {tests.length === 0 ? (
             <p>No tests available.</p>
           ) : (
             tests.map((test, index) => (
-              <Card key={test._id || index} title={test.testname} style={{ marginBottom: "1em" }}>
+              <Card key={test._id || index} title={test.testname} style={{ marginBottom: "2em",boxShadow: "0px 2px 8px 0px", }}>
                 <p><strong>Description:</strong> {test.description}</p>
-                <p><strong>Duration:</strong> {new Date(test.createdAt).toLocaleDateString()}</p>
+                <p><strong>Duration:</strong> {test.duration} min</p>
                 <Button label="Edit" onClick={() => navigate(`/edittest/${test._id}`)} />
               </Card>
             ))

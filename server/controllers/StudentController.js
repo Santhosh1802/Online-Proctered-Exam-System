@@ -16,6 +16,7 @@ const getStudentProfile = async (req, res) => {
   const student = await Student.findOne({ email: email });
   if (student) {
     response.message = "Student Found";
+    response.data.id=student._id;
     response.data.profile = student.profile;
     response.data.name = student.name;
     response.data.phone = student.phone;
@@ -127,8 +128,24 @@ const getStudentTests = async (req, res) => {
   }
 };
 
+const getOneTest = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: {},
+  };
+  try {
+    const { id } = req.query;
+    const test = await Test.findOne({ _id: id });
+    response.message = "Tests Found";
+    response.data = test;
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while fetching tests";
+    return res.status(500).send(response);
+  }
+};
 
 
 
-
-module.exports={getStudentProfile,updateStudentProfile,getStudentTests};
+module.exports={getStudentProfile,updateStudentProfile,getStudentTests,getOneTest};

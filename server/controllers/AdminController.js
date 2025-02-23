@@ -22,7 +22,7 @@ const getAdminProfile = async (req, res) => {
       response.data.name = admin.name;
       response.data.phone = admin.phone;
       response.data.email = admin.email;
-      console.log(req.cookies.token);
+      //console.log(req.cookies.token);
 
       return res.status(200).send(response);
     } else {
@@ -247,6 +247,7 @@ const createStudent = async (req, res) => {
   };
   try {
     const { name, email, phone, department, profile,registerNumber,batch,section,password } = req.body;
+    
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 

@@ -26,7 +26,7 @@ export default function StudentNavBar() {
             command:()=>navigate("/teacherprofile")
         },
         {
-            label:'View Student',
+            label:'Assign Test',
             icon:'pi pi-user',
             command:()=>navigate("/teacherstudent")
         },

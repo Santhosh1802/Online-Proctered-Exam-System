@@ -55,7 +55,7 @@ const ExcelToJson = () => {
 
   return (
     <div style={{ width: "100%" }}>
-      <Card title="Upload Excel File" className="p-4">
+      <Card title="Bulk Upload Students" className="p-4">
       <Button
           label="Download Bulk Upload Template"
           icon="pi pi-download"
