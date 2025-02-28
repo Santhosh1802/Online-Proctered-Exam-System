@@ -46,7 +46,7 @@ export default function AdminManageStudent({ toast }) {
       <AdminNavBar />
       <div
         style={{
-          marginTop: "5em",
+          marginTop: "7em",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -54,7 +54,7 @@ export default function AdminManageStudent({ toast }) {
         }}
       >
         <ExcelToJson />
-        <Button label="Create One Student" onClick={() => setVisible(true)} style={{margin:"2em",marginLeft:"-75%"}}/>
+        <Button label="Create One Student" onClick={() => setVisible(true)} style={{margin:"2em",alignSelf:"flex-start"}}/>
       </div>
       <div style={{width:"80%"}}>
       <StudentDataView />
@@ -64,7 +64,7 @@ export default function AdminManageStudent({ toast }) {
         visible={visible}
         onHide={() => setVisible(false)}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em",padding:"2em" }}>
           <InputText
             name="name"
             placeholder="Name"

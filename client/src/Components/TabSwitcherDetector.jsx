@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { updateProctoring } from "../Store/testSlice";
 
 const TabSwitchDetector = () => {
-  const [isTabActive, setIsTabActive] = useState(true); 
   const [switchCount, setSwitchCount] = useState(0); 
-
+  const dispatch=useDispatch();
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        setIsTabActive(false);
         setSwitchCount((prevCount) => prevCount + 1);
-      } else {
-        setIsTabActive(true);
       }
     };
 
@@ -20,16 +18,13 @@ const TabSwitchDetector = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
+  useEffect(()=>{
+    if(switchCount>0){
+      dispatch(updateProctoring({tab_score:switchCount}));
+    }
+  })
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      {/* <h1>Tab Switch Detection</h1> */}
-      {/* <p>
-        Tab is currently: <b>{isTabActive ? "Active" : "Inactive"}</b>
-      </p> */}
-      <p>
-        You have switched tabs <b>{switchCount}</b> times.
-      </p>
+    <div>
     </div>
   );
 };

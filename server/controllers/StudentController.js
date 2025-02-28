@@ -147,5 +147,96 @@ const getOneTest = async (req, res) => {
 };
 
 
+const submitTest = async (req, res) => {
+  try {
+    const { test_id, student_id, answers, proctor_scores, test_duration } = req.body;
 
-module.exports={getStudentProfile,updateStudentProfile,getStudentTests,getOneTest};
+    // Fetch test data
+    const test = await Test.findById(test_id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    let totalMarks = 0;
+    let studentScore = 0;
+
+    // Process each question
+    test.questions.forEach((question) => {
+      const studentAnswer = answers[question._id.toString()];
+      const correctAnswers = question.correctAnswers;
+
+      if (studentAnswer) {
+        // Check based on question type
+        const isCorrect =
+          (question.type === "choose-multiple" && Array.isArray(studentAnswer)
+            ? arraysEqualIgnoreOrder(studentAnswer, correctAnswers)
+            : studentAnswer.toString().trim() === correctAnswers[0]);
+
+        if (isCorrect) {
+          studentScore += question.marks;
+        } else {
+          studentScore -= question.negativeMarks;
+        }
+      }
+
+      totalMarks += question.marks;
+    });
+
+    // Ensure score isn't negative
+    studentScore = Math.max(0, studentScore);
+
+    // Calculate final score considering proctoring
+    const proctorPenalty = calculateProctorPenalty(proctor_scores);
+    const finalScore = Math.max(0, studentScore - proctorPenalty);
+
+    // Create report
+    const report = new Report({
+      test_id,
+      student_id,
+      total_marks: totalMarks,
+      obtained_marks: finalScore,
+      answers,
+      proctor_scores,
+      test_duration,
+      submitted_at: new Date(),
+    });
+
+    await report.save();
+
+    // Link report to test
+    test.report.push(report._id);
+    await test.save();
+
+    res.status(200).json({
+      message: "Test submitted successfully",
+      report_id: report._id,
+      final_score: finalScore,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Helper function to compare arrays regardless of order
+const arraysEqualIgnoreOrder = (a, b) => {
+  if (a.length !== b.length) return false;
+  return a.sort().every((val, index) => val === b.sort()[index]);
+};
+
+// Calculate proctoring penalty (customize as needed)
+const calculateProctorPenalty = (scores) => {
+  const { noise_score, face_score, mobile_score, tab_score } = scores;
+
+  // Example: Deduct 1 mark for each proctor violation over a threshold
+  let penalty = 0;
+  if (noise_score > 5) penalty += 1;
+  if (face_score < 70) penalty += 2; // e.g., face not detected enough
+  if (mobile_score > 3) penalty += 2;
+  if (tab_score > 2) penalty += 2;
+
+  return penalty;
+};
+
+module.exports = { submitTest };
+
+
+module.exports={getStudentProfile,updateStudentProfile,getStudentTests,getOneTest,submitTest};

@@ -39,7 +39,7 @@ export default function AdminManageTeacher({ toast }) {
       </div>
 
       <Dialog header="Create Teacher" visible={visible} onHide={() => setVisible(false)}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em",padding:"2em" }}>
           <InputText name="name" placeholder="Name" value={teacherData.name} onChange={handleChange} required />
           <InputText name="email" placeholder="Email" type="email" value={teacherData.email} onChange={handleChange} required />
           <InputText name="phone" placeholder="Phone" value={teacherData.phone} onChange={handleChange} required />

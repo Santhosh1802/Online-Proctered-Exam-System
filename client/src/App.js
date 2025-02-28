@@ -48,10 +48,10 @@ function App() {
     const themeLink = document.getElementById("theme-link");
     if (isDarkTheme) {
       themeLink.href =
-        "https://unpkg.com/primereact/resources/themes/lara-dark-cyan/theme.css";
+        "https://unpkg.com/primereact/resources/themes/md-dark-indigo/theme.css";
     } else {
       themeLink.href =
-        "https://unpkg.com/primereact/resources/themes/lara-light-cyan/theme.css";
+        "https://unpkg.com/primereact/resources/themes/md-light-indigo/theme.css";
     }
   }, [isDarkTheme]);
   return (

@@ -334,7 +334,7 @@ const BulkUploadStudents = async (req, res) => {
 
     const loginDocs = students.map((student) => ({
       user_name: student.name,
-      email: student.email,
+      email_id: student.email,
       password: hashedPassword,
       role: "student",
     }));

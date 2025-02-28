@@ -61,27 +61,21 @@ export default function StudentDashboard() {
       <StudentNavBar />
       <div style={{ marginTop: "5em", width: "70%" }}>
         <h1>Welcome {name} 👋</h1>
-        <div className="p-grid" style={{ display: "flex", justifyContent: "space-around", marginBottom: "2em" }}>
-          <div className="p-col-12 p-md-6 p-lg-4" style={{ margin: "1em", textAlign: "center",borderRadius:"1em" }}>
-            <div style={{ width: "200px", height: "200px", backgroundColor: "#007bff", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "8px" }}>
-              <div>
-                <h2>Ongoing Test</h2>
-                <h2>{assignedTests.length}</h2>
-              </div>
+        <Card style={{ marginBottom: "2em", textAlign: "center", borderRadius: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-around" }}>
+            <div>
+              <h2>Ongoing Test</h2>
+              <h2>{assignedTests.length}</h2>
+            </div>
+            <div>
+              <h2>Completed Test</h2>
+              <h2>{completedTests.length}</h2>
             </div>
           </div>
-          <div className="p-col-12 p-md-6 p-lg-4" style={{ margin: "1em", textAlign: "center",borderRadius:"1em" }}>
-            <div style={{ width: "200px", height: "200px", backgroundColor: "#ffc107", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "8px" }}>
-              <div>
-                <h2>Completed Test</h2>
-                <h2>{completedTests.length}</h2>
-              </div>
-            </div>
-          </div>
-        </div>
+        </Card>
         <div className="p-grid">
           {assignedTests.map((test) => (
-            <div key={test.testId} className="p-col-12 p-md-6 p-lg-4" style={{ margin: "2em",borderRadius:"2em" }}>
+            <div key={test.testId} className="p-col-12 p-md-6 p-lg-4" style={{ margin: "2em", borderRadius: "2em" }}>
               <Card title={test.testname} subTitle={`Duration: ${test.duration} minutes`}>
                 <p>{test.description}</p>
                 <p>Start Date: {new Date(test.startedAt).toLocaleString()}</p>

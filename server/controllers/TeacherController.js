@@ -165,6 +165,11 @@ const assignTestToStudents = async (req, res) => {
       });
     }
 
+    const test = await Test.findById(testId);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
     const students = await Student.find({ department, batch, section });
 
     if (students.length === 0) {
@@ -172,13 +177,20 @@ const assignTestToStudents = async (req, res) => {
         .status(404)
         .json({ message: "No students found for the given filters" });
     }
+
     const updates = students.map(async (student) => {
       const alreadyAssigned = student.ongoingTests.some(
-        (test) => test.testId.toString() === testId
+        (ongoingTest) => ongoingTest.testId.toString() === testId
       );
 
       if (!alreadyAssigned) {
-        student.ongoingTests.push({ testId, startedAt: new Date() });
+        student.ongoingTests.push({
+          testId,
+          startedAt: new Date(),
+          startDate: test.start_date,
+          endDate: test.end_date,
+          duration: test.duration,
+        });
         await student.save();
       }
     });
@@ -188,6 +200,48 @@ const assignTestToStudents = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Test assigned successfully to students." });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const deassignTestFromStudents = async (req, res) => {
+  try {
+    const { department, batch, section, testId } = req.body;
+
+    if (!department || !batch || !section || !testId) {
+      return res.status(400).json({
+        error:
+          "Missing required parameters: department, batch, section, or testId",
+      });
+    }
+
+    const test = await Test.findById(testId);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    const students = await Student.find({ department, batch, section });
+
+    if (students.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No students found for the given filters" });
+    }
+
+    const updates = students.map(async (student) => {
+      student.ongoingTests = student.ongoingTests.filter(
+        (ongoingTest) => ongoingTest.testId.toString() !== testId
+      );
+      await student.save();
+    });
+
+    await Promise.all(updates);
+
+    return res
+      .status(200)
+      .json({ message: "Test deassigned successfully from students." });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
@@ -284,6 +338,7 @@ module.exports = {
   getAllTest,
   getOneTest,
   assignTestToStudents,
+  deassignTestFromStudents,
   updateOneTest,
   getUniqueDepartments,
   getUniqueBatches,

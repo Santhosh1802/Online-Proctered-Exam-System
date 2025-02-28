@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+// eslint-disable-next-line
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs";
 
@@ -104,7 +105,7 @@ const MobileDetection = () => {
           }}
         />
       </div>
-      {/* <p>{loading ? "Loading model and video..." : message}</p> */}
+      <p>{loading ? "Loading model and video..." : message}</p>
       <p>{mobileDetected ? "Mobile device detected!" : "No mobile device detected."}</p>
     </div>
   );

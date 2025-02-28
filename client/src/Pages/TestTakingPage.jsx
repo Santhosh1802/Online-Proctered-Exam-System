@@ -65,6 +65,8 @@ export default function TestTakingPage() {
   };
 
   const handleSubmit = () => {
+    console.log(answers);
+    
     axios
       .post("/api/student/submit-tes", { testId, answers })
       .then((res) => alert("Test submitted successfully!"))
@@ -85,7 +87,7 @@ export default function TestTakingPage() {
   };
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {window.addEventListener("contextmenu", handleContextMenu)}
+      {/* {window.addEventListener("contextmenu", handleContextMenu)} */}
       <div
         style={{
           width: "20%",
@@ -98,7 +100,7 @@ export default function TestTakingPage() {
           <p style={{marginLeft:"5px"}}>Proctor Details</p>
           {/* {test.proctor_settings.includes("Face Detection") && <FaceDetection />}
           {test.proctor_settings.includes("Noise Detection") && <NoiseDetection />} */}
-          {/* <TabSwitchDetector/> */}
+          <TabSwitchDetector/>
         </div>
         <h3>Questions</h3>
         <div

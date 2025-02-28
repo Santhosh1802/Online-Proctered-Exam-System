@@ -87,7 +87,6 @@ const handleFileUpload = (e) => {
               border: "px solid black",
               zIndex:"0",
               marginLeft:"3em",
-              boxShadow: "0px 2px 8px 0px",
             }}
             width="200px"
             height="200px"

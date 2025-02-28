@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menubar } from 'primereact/menubar';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import {useDispatch} from "react-redux";
 import {persistor} from "../store";
 import axios from "axios";
@@ -18,7 +18,7 @@ export default function StudentNavBar() {
         {
             label: 'Home',
             icon: 'pi pi-home',
-            command:()=>navigate("/teacherdashboard")
+            command:()=>navigate("/teacherdashboard"),
         },
         {
             label:'Profile',
@@ -49,8 +49,8 @@ export default function StudentNavBar() {
     );
 
     return (
-        <div className="card" style={{marginTop:"8px", position:"fixed",width:"99%",alignItems:"center",zIndex:"1"}}>
-            <Menubar model={items}  end={end} />
+        <div className="card" style={{position:"fixed",width:"100%",alignItems:"center",zIndex:"1",backgroundColor:"white"}}>
+            <Menubar model={items}  end={end}/>
         </div>
     )
 }
