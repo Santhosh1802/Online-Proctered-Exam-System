@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { updateProctoring } from '../Store/testSlice';
 
-const NoiseDetection = () => {
+const NoiseDetection = ({ toast }) => {
   const [volume, setVolume] = useState(0);
   const [isViolation, setIsViolation] = useState(false);
   const threshold = 80; 
   const smoothingFactor = 0.9; 
+  const dispatch = useDispatch();
+  const violationTimeout = useRef(null); // Ref to manage timeout
 
   useEffect(() => {
     let audioContext, analyser, dataArray;
     let previousVolume = 0;
+    let hasDispatched = false; // Prevents multiple dispatches
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -21,16 +26,24 @@ const NoiseDetection = () => {
 
         const monitorAudio = () => {
           analyser.getByteFrequencyData(dataArray);
-
           const avgVolume = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-
-          
           const smoothedVolume = smoothingFactor * previousVolume + (1 - smoothingFactor) * avgVolume;
 
           setVolume(smoothedVolume);
+
           if (smoothedVolume > threshold) {
-            setIsViolation(true);
-            console.log("Violation detected: High noise level!");
+            if (!hasDispatched) {
+              setIsViolation(true);
+              toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'High noise detected!', life: 3000 });
+              dispatch(updateProctoring({ noise_score: 1 })); // Update noise score once
+              hasDispatched = true; // Prevent further updates
+
+              // Reset after 5 seconds to allow future detections
+              if (violationTimeout.current) clearTimeout(violationTimeout.current);
+              violationTimeout.current = setTimeout(() => {
+                hasDispatched = false;
+              }, 5000);
+            }
           } else {
             setIsViolation(false);
           }
@@ -47,14 +60,15 @@ const NoiseDetection = () => {
       if (audioContext) {
         audioContext.close();
       }
+      if (violationTimeout.current) {
+        clearTimeout(violationTimeout.current);
+      }
     };
-  }, []);
+  }, [toast, dispatch]);
 
   return (
     <div>
-      {/* <h2>Audio Monitoring</h2>
-      <p>Current Volume: {volume.toFixed(2)}</p> */}
-      {isViolation && <p style={{ color: 'red' }}>Violation detected: High noise level!</p>}
+      {/* {isViolation && <p style={{ color: 'red' }}>Violation detected: High noise level!</p>} */}
     </div>
   );
 };

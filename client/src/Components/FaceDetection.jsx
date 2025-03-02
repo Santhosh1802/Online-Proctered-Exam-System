@@ -2,19 +2,22 @@ import React, { useRef, useEffect, useState } from "react";
 import * as faceDetection from "@tensorflow-models/face-detection";
 import "@tensorflow/tfjs";
 import MobileDetection from "./MobileDetection";
+import { useDispatch } from "react-redux";
+import { updateProctoring } from "../Store/testSlice";
 
-const FaceDetection = () => {
+const FaceDetection = ({ toast }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("Initializing face detection...");
+  const [message, setMessage] = useState("");
   const [faceCount, setFaceCount] = useState(0);
   const [detector, setDetector] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const loadModel = async () => {
       try {
-        setMessage("Loading face detection model...");
+        setMessage("");
 
         const modelConfig = {
           runtime: "tfjs",
@@ -26,7 +29,6 @@ const FaceDetection = () => {
         );
 
         setDetector(model);
-        setMessage("Model loaded successfully.");
         setLoading(false);
         startVideo();
       } catch (error) {
@@ -61,6 +63,8 @@ const FaceDetection = () => {
           setFaceCount(newFaceCount);
           if (newFaceCount === 0) {
             setMessage("No face detected. Please stay in front of the camera.");
+            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'No face detected. Please stay in front of the camera.', life: 3000 });
+            dispatch(updateProctoring({ face_score: 1 })); // Update face score
           } else if (newFaceCount > 1) {
             setMessage(`${newFaceCount} faces detected!`);
           } else {
@@ -94,19 +98,19 @@ const FaceDetection = () => {
 
     const interval = setInterval(detectFaces, 500);
     return () => clearInterval(interval);
-  }, [detector]);
+  }, [detector, dispatch]);
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <div style={{ position: "relative", display: "inline-block", width: "100px", height: "100px" }}>
+      <div style={{ position: "relative", display: "inline-block", width: "260px", height: "240px" }}>
         <video
           ref={videoRef}
           autoPlay
           muted
-          width="100"
-          height="100"
+          width="260"
+          height="240"
           style={{
-            border: "1px solid black",
+            //border: "1px solid black",
             position: "absolute",
             top: 0,
             left: 0,
@@ -115,8 +119,8 @@ const FaceDetection = () => {
         />
         <canvas
           ref={canvasRef}
-          width="100"
-          height="100"
+          width="260"
+          height="240"
           style={{
             position: "absolute",
             top: 0,
@@ -126,9 +130,7 @@ const FaceDetection = () => {
           }}
         />
       </div>
-      <p>{loading ? "Loading model and video..." : message}</p>
-      {/* <p>Detected Faces: {faceCount}</p> */}
-      <MobileDetection />
+      <MobileDetection toast={toast} />
     </div>
   );
 };

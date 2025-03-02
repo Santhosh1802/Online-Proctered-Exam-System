@@ -331,6 +331,47 @@ const getUniqueSections = async (req, res) => {
   }
 };
 
+const getTeacherDashboardData = async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const teacher = await Teacher.findOne({ email });
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    const testCount = await Test.countDocuments({ teacher_id: teacher._id });
+    const tests = await Test.find({ teacher_id: teacher._id });
+    const studentCount = await Student.countDocuments({
+      "ongoingTests.testId": { $in: tests.map((test) => test._id) },
+    });
+    const completedTestCount = await Student.countDocuments({
+      "completedTests.testId": { $in: tests.map((test) => test._id) },
+    });
+
+    return res.status(200).json({
+      message: "Teacher data fetched successfully",
+      data: {
+        name: teacher.name,
+        email: teacher.email,
+        testCount,
+        studentCount,
+        completedTestCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching teacher dashboard data:", error.message);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+
 module.exports = {
   getTecherProfile,
   updateTeacherProfile,
@@ -343,4 +384,5 @@ module.exports = {
   getUniqueDepartments,
   getUniqueBatches,
   getUniqueSections,
+  getTeacherDashboardData,
 };

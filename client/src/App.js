@@ -142,7 +142,7 @@ function AppRoutes({ toast }) {
           path="/teacherprofile"
           element={<TeacherProfile toast={toast} />}
         />
-        <Route path="/test/:testId" element={<TestTakingPage/>}/>
+        <Route path="/test/:testId" element={<TestTakingPage toast={toast}/>}/>
         <Route path="/instructions/:testId" element={<InstructionsPage/>}/>
         <Route path="*" element={<Login toast={toast} />} />
       </Routes>

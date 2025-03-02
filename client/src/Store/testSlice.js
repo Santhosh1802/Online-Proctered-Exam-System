@@ -6,9 +6,9 @@ export const testSlice = createSlice({
     test_id: "",
     student_id: "",
     proctor_settings: [],
-    test_duration: "",
-    test_current_time: 0,
-    lastUpdateTime:null,
+    test_duration: 0, // in seconds
+    test_current_time: 0, // in seconds
+    lastUpdateTime: null,
     noise_score: 0,
     face_score: 0,
     mobile_score: 0,
@@ -31,21 +31,42 @@ export const testSlice = createSlice({
       state.test_duration = action.payload;
     },
     IncrementTestCurrentTime: (state) => {
-        const currentTime = Date.now();
-        const lastUpdateTime = state.lastUpdateTime || currentTime;
-      
-        const timeElapsed = Math.floor((currentTime - lastUpdateTime) / 1000);
-      
-        if (state.test_duration > state.test_current_time + timeElapsed) {
-          state.test_current_time += timeElapsed;
-          state.lastUpdateTime = currentTime;
-        } else {
-          state.test_current_time = state.test_duration; // Test time is up
-        }
-      },      
+      const currentTime = new Date().getTime();
+      const lastUpdateTime = state.lastUpdateTime ? new Date(state.lastUpdateTime).getTime() : currentTime;
+
+      const timeElapsed = Math.floor((currentTime - lastUpdateTime) / 1000);
+
+      if (state.test_duration > state.test_current_time + timeElapsed) {
+        state.test_current_time += timeElapsed;
+        state.lastUpdateTime = new Date().toISOString();
+      } else {
+        state.test_current_time = state.test_duration; // Test time is up
+      }
+    },
     saveAnswer: (state, action) => {
-      const { question_id, answer } = action.payload;
-      state.answers[question_id] = answer;
+      const { questionId, answer, isMultiple } = action.payload;
+    
+      if (isMultiple) {
+        if (!Array.isArray(state.answers[questionId])) {
+          state.answers[questionId] = []; // Ensure the value starts as an array
+        }
+    
+        const index = state.answers[questionId].indexOf(answer);
+        if (index !== -1) {
+          // If the answer already exists, remove it (unchecking)
+          state.answers[questionId] = state.answers[questionId].filter(ans => ans !== answer);
+        } else {
+          // If not selected, add the new answer
+          state.answers[questionId].push(answer);
+        }
+      } else {
+        // Single-choice: replace with new answer
+        state.answers[questionId] = [answer];
+      }
+    },    
+         
+    setAnswers: (state, action) => {
+      state.answers = action.payload;
     },
     updateProctoring: (state, action) => {
       const { noise_score, face_score, mobile_score, tab_score } = action.payload;
@@ -84,7 +105,8 @@ export const testSlice = createSlice({
       state.student_id = "";
       state.proctor_settings = [];
       state.test_duration = "";
-      state.test_current_time = "";
+      state.test_current_time = 0;
+      state.lastUpdateTime = null;
       state.noise_score = 0;
       state.face_score = 0;
       state.mobile_score = 0;
@@ -103,6 +125,7 @@ export const {
   setTestDuration,
   IncrementTestCurrentTime,
   saveAnswer,
+  setAnswers,
   updateProctoring,
   addFlag,
   setFinalScore,

@@ -150,7 +150,9 @@ const getOneTest = async (req, res) => {
 const submitTest = async (req, res) => {
   try {
     const { test_id, student_id, answers, proctor_scores, test_duration } = req.body;
-
+    console.log(req.body);
+    throw new Error("Test submission not implemented yet");
+    
     // Fetch test data
     const test = await Test.findById(test_id);
     if (!test) return res.status(404).json({ message: "Test not found" });

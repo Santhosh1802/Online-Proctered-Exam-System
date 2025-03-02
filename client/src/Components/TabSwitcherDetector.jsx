@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { updateProctoring } from "../Store/testSlice";
 
-const TabSwitchDetector = () => {
-  const [switchCount, setSwitchCount] = useState(0); 
-  const dispatch=useDispatch();
+const TabSwitchDetector = ({toast}) => {
+  const [isInactive, setIsInactive] = useState(false); // Track window state
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setSwitchCount((prevCount) => prevCount + 1);
+      if (document.hidden && !isInactive) {
+        setIsInactive(true);
+        dispatch(updateProctoring({ tab_score: 1 })); // Dispatch only once
+        toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Tab switched!', life: 3000 });
+      } else if (!document.hidden) {
+        setIsInactive(false); // Reset when window becomes active again
       }
     };
 
@@ -17,16 +22,9 @@ const TabSwitchDetector = () => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
-  useEffect(()=>{
-    if(switchCount>0){
-      dispatch(updateProctoring({tab_score:switchCount}));
-    }
-  })
-  return (
-    <div>
-    </div>
-  );
+  }, [dispatch, isInactive,toast]);
+
+  return null;
 };
 
 export default TabSwitchDetector;

@@ -1,5 +1,5 @@
 const express=require("express");
-const { getTecherProfile, updateTeacherProfile, createTest,getAllTest,getOneTest, assignTestToStudents, updateOneTest, getUniqueDepartments, getUniqueBatches, getUniqueSections, deassignTestFromStudents } = require("../controllers/TeacherController");
+const { getTecherProfile, updateTeacherProfile, createTest,getAllTest,getOneTest, assignTestToStudents, updateOneTest, getUniqueDepartments, getUniqueBatches, getUniqueSections, deassignTestFromStudents, getTeacherDashboardData } = require("../controllers/TeacherController");
 const router=express.Router();
 
 router.get("/teacherprofile",getTecherProfile);
@@ -13,5 +13,6 @@ router.get("/getuniquedepts",getUniqueDepartments);
 router.get("/getuniquebatch",getUniqueBatches);
 router.get("/getuniquesections",getUniqueSections);
 router.post("/deassign-test",deassignTestFromStudents);
+router.get("/getTeacherDashboardData",getTeacherDashboardData);
 
 module.exports=router;

@@ -1,23 +1,23 @@
 import React, { useRef, useEffect, useState } from "react";
-// eslint-disable-next-line
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs";
+import { useDispatch } from "react-redux";
+import { updateProctoring } from "../Store/testSlice";
 
-const MobileDetection = () => {
+const MobileDetection = ({ toast }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("Initializing mobile detection...");
+  const [message, setMessage] = useState("");
   const [mobileDetected, setMobileDetected] = useState(false);
   const [model, setModel] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const loadModel = async () => {
       try {
-        setMessage("Loading mobile detection model...");
         const loadedModel = await cocoSsd.load();
         setModel(loadedModel);
-        setMessage("Model loaded successfully.");
         setLoading(false);
         startVideo();
       } catch (error) {
@@ -51,6 +51,10 @@ const MobileDetection = () => {
             (prediction) => prediction.class === "cell phone"
           );
           setMobileDetected(mobileDetected);
+          if (mobileDetected) {
+            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Mobile device detected!', life: 3000 });
+            dispatch(updateProctoring({ mobile_score: 1 })); // Update mobile score
+          }
 
           const canvas = canvasRef.current;
           const context = canvas.getContext("2d");
@@ -73,10 +77,10 @@ const MobileDetection = () => {
 
     const interval = setInterval(detectMobile, 500);
     return () => clearInterval(interval);
-  }, [model]);
+  }, [model, toast, dispatch]);
 
   return (
-    <div style={{ textAlign: "center"}}>
+    <div style={{ textAlign: "center" }}>
       <div style={{ position: "relative", display: "inline-block", width: "0px", height: "0px" }}>
         <video
           ref={videoRef}
@@ -105,8 +109,6 @@ const MobileDetection = () => {
           }}
         />
       </div>
-      <p>{loading ? "Loading model and video..." : message}</p>
-      <p>{mobileDetected ? "Mobile device detected!" : "No mobile device detected."}</p>
     </div>
   );
 };
