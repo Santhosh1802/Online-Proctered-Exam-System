@@ -6,6 +6,6 @@ router.get("/studentprofile",getStudentProfile);
 router.post("/updatestudentprofile",updateStudentProfile);
 router.get("/get-test-student",getStudentTests);
 router.get("/getOne-test-student",getOneTest);
-router.get("/submit-test",submitTest);
+router.post("/submit-test",submitTest);
 
 module.exports=router;

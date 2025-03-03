@@ -150,7 +150,17 @@ const getOneTest = async (req, res) => {
 const submitTest = async (req, res) => {
   try {
     const { test_id, student_id, answers, proctor_scores, test_duration } = req.body;
-    console.log(req.body);
+    console.log(req.body.answers);
+    for (const key in req.body.answers) {
+      const value = req.body.answers[key];
+    
+      if (Array.isArray(value)) {
+        // Flatten nested arrays and join the elements with a comma
+        const flattenedValues = value.flat().join(', ');
+        console.log(flattenedValues);
+      }
+    }
+    
     throw new Error("Test submission not implemented yet");
     
     // Fetch test data
