@@ -78,7 +78,7 @@ export default function InstructionsPage() {
           <label htmlFor="acknowledge"> I have read and understood the instructions.</label>
         </div>
 
-        <div style={{ marginTop: "1em" }}>
+        <div style={{ marginTop: "1em" ,display:"flex",flexDirection:"row",justifyContent:"space-between"}}>
           <Button label="Test Camera and Audio" onClick={() => window.open("https://www.onlinemictest.com/webcam-test/", "_blank")} />
           <Button label="Start Test" onClick={handleStartTest} disabled={!acknowledged} className="p-button-success" style={{ marginLeft: "1em" }} />
         </div>

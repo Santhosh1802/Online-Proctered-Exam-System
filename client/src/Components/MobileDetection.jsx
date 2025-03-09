@@ -1,8 +1,9 @@
+/* eslint-disable no-unused-vars */
 import React, { useRef, useEffect, useState } from "react";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs";
 import { useDispatch } from "react-redux";
-import { updateProctoring } from "../Store/testSlice";
+import { updateProctoring,addFlag } from "../Store/testSlice";
 
 const MobileDetection = ({ toast }) => {
   const videoRef = useRef(null);
@@ -54,6 +55,7 @@ const MobileDetection = ({ toast }) => {
           if (mobileDetected) {
             toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Mobile device detected!', life: 3000 });
             dispatch(updateProctoring({ mobile_score: 1 })); // Update mobile score
+            dispatch(addFlag("Mobile Phone detected at "+new Date().toLocaleString()))
           }
 
           const canvas = canvasRef.current;

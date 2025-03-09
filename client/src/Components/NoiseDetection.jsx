@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateProctoring } from '../Store/testSlice';
+import { addFlag, updateProctoring } from '../Store/testSlice';
 
 const NoiseDetection = ({ toast }) => {
   const [volume, setVolume] = useState(0);
@@ -36,6 +37,7 @@ const NoiseDetection = ({ toast }) => {
               setIsViolation(true);
               toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'High noise detected!', life: 3000 });
               dispatch(updateProctoring({ noise_score: 1 })); // Update noise score once
+              dispatch(addFlag("Heavy Noise detected at "+new Date().toLocaleString()));
               hasDispatched = true; // Prevent further updates
 
               // Reset after 5 seconds to allow future detections

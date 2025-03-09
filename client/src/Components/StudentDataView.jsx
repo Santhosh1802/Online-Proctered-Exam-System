@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-vars */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+
 export default function StudentDataView() {
   const [student, setStudent] = useState([]);
   const [visible, setVisible] = useState(false);
@@ -11,6 +14,17 @@ export default function StudentDataView() {
   const [loading, setLoading] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+  const [globalFilter, setGlobalFilter] = useState(null);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: 'contains' },
+    name: { value: null, matchMode: 'contains' },
+    email: { value: null, matchMode: 'contains' },
+    department: { value: null, matchMode: 'contains' },
+    batch: { value: null, matchMode: 'contains' },
+    section: { value: null, matchMode: 'contains' },
+    registerNumber: { value: null, matchMode: 'contains' },
+  });
+
   useEffect(() => {
     const getStudents = async () => {
       const res = await axios.get(process.env.REACT_APP_ADMIN_GET_STUDENTS, {
@@ -20,15 +34,17 @@ export default function StudentDataView() {
     };
     getStudents();
   }, []);
+
   const serialNumberTemplate = (rowData, { rowIndex }) => {
     return <strong>{rowIndex + 1}</strong>;
   };
+
   const handleView = async (user) => {
     setVisible(true);
     setLoading(true);
     try {
       const res = await axios.get(process.env.REACT_APP_ADMIN_GET_ONE_STUDENT, {
-        params: { email: user.email_id },
+        params: { email: user.email },
         withCredentials: true,
       });
       setSelectedStudent(res.data.data);
@@ -38,20 +54,22 @@ export default function StudentDataView() {
     }
     setLoading(false);
   };
+
   const confirmDelete = (user) => {
     setStudentToDelete(user);
     setDeleteDialog(true);
   };
+
   const handleDelete = async () => {
     if (!studentToDelete) return;
     try {
       await axios.delete(process.env.REACT_APP_ADMIN_DELETE_STUDENT, {
-        params: { email: studentToDelete.email_id },
+        params: { email: studentToDelete.email },
         withCredentials: true,
       });
 
       setStudent((prevStudents) =>
-        prevStudents.filter((t) => t.email_id !== studentToDelete.email_id)
+        prevStudents.filter((t) => t.email !== studentToDelete.email)
       );
     } catch (error) {
       console.error("Error deleting student:", error);
@@ -59,6 +77,7 @@ export default function StudentDataView() {
     setDeleteDialog(false);
     setStudentToDelete(null);
   };
+
   const actionButtons = (rowData) => {
     return (
       <div className="flex gap-2">
@@ -78,17 +97,114 @@ export default function StudentDataView() {
     );
   };
 
+  const onFilter = (e) => {
+    const { value, field } = e.target;
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [field]: { value, matchMode: 'contains' },
+    }));
+  };
+
   return (
-    <div className="card">
+    <div className="card" style={{ marginBottom: "1em" }}>
       <h1>Students</h1>
-      <DataTable value={student} paginator rows={10} style={{ marginBottom:"1em"}}>
+      <DataTable
+        value={student}
+        paginator
+        rows={10}
+        filters={filters}
+        globalFilterFields={['name', 'email', 'department', 'batch', 'section', 'registerNumber']}
+        header={
+          <div className="table-header">
+            <span className="p-input-icon-left">
+              <i className="pi pi-search" style={{marginLeft:"1em"}}/>
+              <InputText
+                type="search"
+                onInput={(e) => setGlobalFilter(e.target.value)}
+                placeholder="Global Search"
+                style={{paddingLeft:"2.5em"}}
+              />
+            </span>
+          </div>
+        }
+      >
         <Column
           field="serialNumber"
           header="S.No."
           body={serialNumberTemplate}
         ></Column>
-        <Column field="user_name" header="Name"></Column>
-        <Column field="email_id" header="Email"></Column>
+        <Column
+          field="name"
+          header="Name"
+          filter
+          filterElement={
+            <InputText
+              value={filters.name?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'name' } })}
+              placeholder="Search by Name"
+            />
+          }
+        ></Column>
+        <Column
+          field="email"
+          header="Email"
+          filter
+          filterElement={
+            <InputText
+              value={filters.email?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'email' } })}
+              placeholder="Search by Email"
+            />
+          }
+        ></Column>
+        <Column
+          field="department"
+          header="Department"
+          filter
+          filterElement={
+            <InputText
+              value={filters.department?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'department' } })}
+              placeholder="Search by Department"
+            />
+          }
+        ></Column>
+        <Column
+          field="batch"
+          header="Batch"
+          filter
+          filterElement={
+            <InputText
+              value={filters.batch?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'batch' } })}
+              placeholder="Search by Batch"
+            />
+          }
+        ></Column>
+        <Column
+          field="section"
+          header="Section"
+          filter
+          filterElement={
+            <InputText
+              value={filters.section?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'section' } })}
+              placeholder="Search by Section"
+            />
+          }
+        ></Column>
+        <Column
+          field="registerNumber"
+          header="Reg.no"
+          filter
+          filterElement={
+            <InputText
+              value={filters.registerNumber?.value || ''}
+              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'registerNumber' } })}
+              placeholder="Search by Reg.no"
+            />
+          }
+        ></Column>
         <Column
           header="Actions"
           body={actionButtons}
@@ -120,12 +236,28 @@ export default function StudentDataView() {
               {selectedStudent.name}
             </p>
             <p>
+              <span className="font-bold mr-2">Register Number:</span>
+              {selectedStudent.registerNumber}
+            </p>
+            <p>
+              <span className="font-bold mr-2">Email:</span>
+              {selectedStudent.email}
+            </p>
+            <p>
               <span className="font-bold mr-2">Department:</span>
               {selectedStudent.department}
             </p>
             <p>
               <span className="font-bold mr-2">Phone:</span>
               {selectedStudent.phone}
+            </p>
+            <p>
+              <span className="font-bold mr-2">Batch:</span>
+              {selectedStudent.batch}
+            </p>
+            <p>
+              <span className="font-bold mr-2">Section:</span>
+              {selectedStudent.section}
             </p>
           </div>
         ) : (
@@ -155,8 +287,7 @@ export default function StudentDataView() {
         }
       >
         <p>
-          Are you sure you want to delete{" "}
-          <strong>{studentToDelete?.user_name}</strong>?
+          Are you sure you want to delete <strong>{studentToDelete?.name}</strong>?
         </p>
       </Dialog>
     </div>

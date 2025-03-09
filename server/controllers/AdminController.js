@@ -68,8 +68,8 @@ const getAllTeacher = async (req, res) => {
     data: {},
   };
   try {
-    const teachers = await Login.find({ role: "teacher" });
-    if (!teachers || teachers==null) {
+    const teachers = await Teacher.find();
+    if (!teachers || teachers.length === 0) {
       response.message = "No data found";
       return res.status(404).json(response);
     }
@@ -89,8 +89,8 @@ const getAllStudent = async (req, res) => {
     data: {},
   };
   try {
-    const students = await Login.find({ role: "student" });
-    if (!students || students==null) {
+    const students = await Student.find();
+    if (!students || students.length === 0) {
       response.message = "No data found";
       return res.status(404).json(response);
     }
@@ -99,7 +99,7 @@ const getAllStudent = async (req, res) => {
   } catch (error) {
     console.log(error.message);
     response.error = error.message;
-    return  res.status(500).json(response);
+    return res.status(500).json(response);
   }
 };
 
@@ -313,7 +313,7 @@ const BulkUploadStudents = async (req, res) => {
       if (!student.registerNumber || typeof student.registerNumber !== "string") {
         validationErrors.push(`Row ${row}, Column 'registerNumber': Invalid or missing value`);
       }
-      if (!student.batch || typeof student.batch !== "string") {
+      if (!student.batch) {
         validationErrors.push(`Row ${row}, Column 'batch': Invalid or missing value`);
       }
       if (!student.section || typeof student.section !== "string") {
@@ -359,7 +359,13 @@ const getStats=async (req,res) => {
     const totalTeachers = await Teacher.countDocuments();
     const totalStudents = await Student.countDocuments();
     const activeUsers = await Login.countDocuments();
-    const ongoingQuizzes = await Test.countDocuments({ status: "ongoing" });
+    const ongoingQuizzesAggregation = await Student.aggregate([
+      { $unwind: "$ongoingTests" },
+      { $group: { _id: "$ongoingTests.testId" } },
+      { $count: "uniqueOngoingQuizzes" },
+    ]);
+
+    const ongoingQuizzes = ongoingQuizzesAggregation.length > 0 ? ongoingQuizzesAggregation[0].uniqueOngoingQuizzes : 0;
     response.data.totalTeachers = totalTeachers;
     response.data.totalStudents = totalStudents;
     response.data.activeUsers = activeUsers;
@@ -372,6 +378,7 @@ const getStats=async (req,res) => {
     return res.status(500).send(response);
   }
 }
+
 module.exports = {
   getAdminProfile,
   updateAdminProfile,

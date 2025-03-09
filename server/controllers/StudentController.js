@@ -1,5 +1,6 @@
 const Student = require("../models/StudentSchema");
-const Test=require("../models/TestSchema");
+const Test = require("../models/TestSchema");
+const Report = require("../models/ReportSchema");
 
 const getStudentProfile = async (req, res) => {
   const response = {
@@ -10,21 +11,21 @@ const getStudentProfile = async (req, res) => {
   const email = req.query.email;
   if (!email) {
     console.log("No Email");
-    response.error="No Email";
+    response.error = "No Email";
     return res.status(400).send(response);
   }
   const student = await Student.findOne({ email: email });
   if (student) {
     response.message = "Student Found";
-    response.data.id=student._id;
+    response.data.id = student._id;
     response.data.profile = student.profile;
     response.data.name = student.name;
     response.data.phone = student.phone;
     response.data.email = student.email;
     response.data.department = student.department;
-    response.data.registerNumber=student.registerNumber;
-    response.data.batch=student.batch;
-    response.data.section=student.section;
+    response.data.registerNumber = student.registerNumber;
+    response.data.batch = student.batch;
+    response.data.section = student.section;
     return res.status(200).send(response);
   } else {
     response.error = "Fill Details to continue";
@@ -38,7 +39,16 @@ const updateStudentProfile = async (req, res) => {
     error: "",
   };
   try {
-    const { profile, name, email, phone, department,registerNumber,batch,section } = req.body;
+    const {
+      profile,
+      name,
+      email,
+      phone,
+      department,
+      registerNumber,
+      batch,
+      section,
+    } = req.body;
     const student = await Student.findOneAndUpdate(
       { email: email },
       {
@@ -47,9 +57,9 @@ const updateStudentProfile = async (req, res) => {
         email: email,
         phone: phone,
         department: department,
-        registerNumber:registerNumber,
-        batch:batch,
-        section:section,
+        registerNumber: registerNumber,
+        batch: batch,
+        section: section,
       },
       { new: true, upsert: true, runValidators: true }
     );
@@ -63,7 +73,6 @@ const updateStudentProfile = async (req, res) => {
   }
 };
 
-
 const getStudentTests = async (req, res) => {
   const response = {
     message: "",
@@ -72,15 +81,15 @@ const getStudentTests = async (req, res) => {
   };
 
   try {
-    const { studentId } = req.query; 
-    console.log(req.query);
-    
+    const { studentId } = req.query;
     if (!studentId) {
       response.error = "Student ID is required";
       return res.status(400).json(response);
     }
 
-    const student = await Student.findById(studentId).select("ongoingTests completedTests");
+    const student = await Student.findById(studentId).select(
+      "ongoingTests completedTests"
+    );
 
     if (!student) {
       response.error = "Student not found";
@@ -89,27 +98,34 @@ const getStudentTests = async (req, res) => {
 
     const ongoingTests = await Promise.all(
       student.ongoingTests.map(async (test) => {
-        const testDetails = await Test.findById(test.testId).select("testname description duration");
+        const testDetails = await Test.findById(test.testId).select(
+          "testname description duration start_date end_date"
+        );
+        console.log(testDetails);
+
         return {
           testId: test.testId,
           testname: testDetails?.testname || "Unknown",
           description: testDetails?.description || "No description",
           duration: testDetails?.duration || 0,
-          startedAt: test.startedAt, 
+          start_date: testDetails.start_date,
+          end_date: testDetails.end_date,
         };
       })
     );
 
     const completedTests = await Promise.all(
       student.completedTests.map(async (test) => {
-        const testDetails = await Test.findById(test.testId).select("testname description duration");
+        const testDetails = await Test.findById(test.testId).select(
+          "testname description duration"
+        );
         return {
           testId: test.testId,
           testname: testDetails?.testname || "Unknown",
           description: testDetails?.description || "No description",
           duration: testDetails?.duration || 0,
           completedAt: test.completedAt,
-          score: test.score, 
+          score: test.score,
         };
       })
     );
@@ -146,25 +162,13 @@ const getOneTest = async (req, res) => {
   }
 };
 
-
 const submitTest = async (req, res) => {
   try {
-    const { test_id, student_id, answers, proctor_scores, test_duration } = req.body;
-    console.log(req.body.answers);
-    for (const key in req.body.answers) {
-      const value = req.body.answers[key];
-    
-      if (Array.isArray(value)) {
-        // Flatten nested arrays and join the elements with a comma
-        const flattenedValues = value.flat().join(', ');
-        console.log(flattenedValues);
-      }
-    }
-    
-    throw new Error("Test submission not implemented yet");
-    
+    const { testId, student_id, answers, proctor_scores, test_duration } = req.body;
+    console.log(req.body);
+
     // Fetch test data
-    const test = await Test.findById(test_id);
+    const test = await Test.findById(testId);
     if (!test) return res.status(404).json({ message: "Test not found" });
 
     let totalMarks = 0;
@@ -176,11 +180,16 @@ const submitTest = async (req, res) => {
       const correctAnswers = question.correctAnswers;
 
       if (studentAnswer) {
+        // Convert answer to string
+        const answerString = studentAnswer.toString().trim();
+
         // Check based on question type
-        const isCorrect =
-          (question.type === "choose-multiple" && Array.isArray(studentAnswer)
-            ? arraysEqualIgnoreOrder(studentAnswer, correctAnswers)
-            : studentAnswer.toString().trim() === correctAnswers[0]);
+        let isCorrect = false;
+        if (question.type === "choose-multiple" && Array.isArray(studentAnswer)) {
+          isCorrect = arraysEqualIgnoreOrder(answerString.split(','), correctAnswers);
+        } else {
+          isCorrect = answerString === correctAnswers[0];
+        }
 
         if (isCorrect) {
           studentScore += question.marks;
@@ -201,21 +210,44 @@ const submitTest = async (req, res) => {
 
     // Create report
     const report = new Report({
-      test_id,
+      test_id: testId,
       student_id,
-      total_marks: totalMarks,
-      obtained_marks: finalScore,
       answers,
-      proctor_scores,
-      test_duration,
+      score: finalScore,
+      proctoring_report: proctor_scores,
+      duration_taken: formatDuration(test_duration),
       submitted_at: new Date(),
+      flags: proctor_scores.flags,
     });
 
     await report.save();
 
-    // Link report to test
+    // Link report to test and student
+    if (!test.report) {
+      test.report = [];
+    }
     test.report.push(report._id);
     await test.save();
+
+    const student = await Student.findById(student_id);
+    if (!student.completedTests) {
+      student.completedTests = [];
+    }
+    student.completedTests.push({
+      testId,
+      completedAt: new Date(),
+      score: finalScore,
+      start_date: test.start_date,
+      end_date: test.end_date,
+      duration_taken: formatDuration(test_duration),
+    });
+
+    // Remove testId from ongoingTests
+    student.ongoingTests = student.ongoingTests.filter(
+      (test) => test.testId.toString() !== testId
+    );
+
+    await student.save();
 
     res.status(200).json({
       message: "Test submitted successfully",
@@ -248,7 +280,19 @@ const calculateProctorPenalty = (scores) => {
   return penalty;
 };
 
+// Helper function to format duration
+const formatDuration = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+};
+
 module.exports = { submitTest };
 
-
-module.exports={getStudentProfile,updateStudentProfile,getStudentTests,getOneTest,submitTest};
+module.exports = {
+  getStudentProfile,
+  updateStudentProfile,
+  getStudentTests,
+  getOneTest,
+  submitTest,
+};

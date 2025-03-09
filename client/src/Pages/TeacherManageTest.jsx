@@ -51,12 +51,12 @@ export default function TeacherManageTest({ toast}) {
         <h1>Manage Tests</h1>
         <Button onClick={handleCreateTest}>Create Test</Button>
 
-        <div style={{ margin: "2em", width: "600px",height:"200px"}}>
+        <div style={{ marginTop: "2em", width: "600px",height:"200px"}}>
           {tests.length === 0 ? (
             <p>No tests available.</p>
           ) : (
             tests.map((test, index) => (
-              <Card key={test._id || index} title={test.testname} style={{ margin: "2em",borderRadius:"1em" }}>
+              <Card key={test._id || index} title={test.testname} style={{ marginTop: "2em",borderRadius:"1em" }}>
                 <p><strong>Description:</strong> {test.description}</p>
                 <p><strong>Duration:</strong> {test.duration} min</p>
                 <Button label="Edit" onClick={() => navigate(`/edittest/${test._id}`)} />

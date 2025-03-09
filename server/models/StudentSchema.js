@@ -35,22 +35,28 @@ const StudentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  ongoingTests: [
-    {
+  ongoingTests: {
+    type:[{
       testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
       AssignedOn: { type: Date, default: Date.now },
       start_date: { type: Date },
       end_date: { type: Date },
       duration: { type: Number },
     },
-  ],
-  completedTests: [
-    {
+    ],
+    default:[],
+  },
+  completedTests: {
+    type:[{
       testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
       completedAt: { type: Date, default: Date.now },
       score: { type: Number },
-    },
-  ],
+      start_date: { type: Date },
+      end_date: { type: Date },
+      duration_taken: { type: String },
+    },],
+    default:[],
+  },
 });
 const Student = mongoose.model("Student", StudentSchema);
 module.exports = Student;

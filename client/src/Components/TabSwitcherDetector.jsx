@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { updateProctoring } from "../Store/testSlice";
+import { addFlag, updateProctoring } from "../Store/testSlice";
 
 const TabSwitchDetector = ({toast}) => {
   const [isInactive, setIsInactive] = useState(false); // Track window state
@@ -11,6 +11,7 @@ const TabSwitchDetector = ({toast}) => {
       if (document.hidden && !isInactive) {
         setIsInactive(true);
         dispatch(updateProctoring({ tab_score: 1 })); // Dispatch only once
+        dispatch(addFlag("Tab switched at "+new Date().toLocaleString()));
         toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Tab switched!', life: 3000 });
       } else if (!document.hidden) {
         setIsInactive(false); // Reset when window becomes active again

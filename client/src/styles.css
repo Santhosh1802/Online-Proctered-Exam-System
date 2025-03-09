@@ -1,0 +1,4 @@
+.active-tab {
+    background-color: gray; /* Change this to your desired active tab color */
+    color: white !important;
+}

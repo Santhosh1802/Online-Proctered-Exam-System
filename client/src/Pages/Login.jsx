@@ -13,7 +13,6 @@ function Login({ toast }) {
   const dispatch = useDispatch();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(setStoreEmail(email));
     if (!email || !password) {
       toast.current.show({
         severity: "warn",

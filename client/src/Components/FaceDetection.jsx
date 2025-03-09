@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import React, { useRef, useEffect, useState } from "react";
 import * as faceDetection from "@tensorflow-models/face-detection";
 import "@tensorflow/tfjs";
 import MobileDetection from "./MobileDetection";
 import { useDispatch } from "react-redux";
-import { updateProctoring } from "../Store/testSlice";
+import { updateProctoring,addFlag } from "../Store/testSlice";
 
 const FaceDetection = ({ toast }) => {
   const videoRef = useRef(null);
@@ -65,6 +67,7 @@ const FaceDetection = ({ toast }) => {
             setMessage("No face detected. Please stay in front of the camera.");
             toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'No face detected. Please stay in front of the camera.', life: 3000 });
             dispatch(updateProctoring({ face_score: 1 })); // Update face score
+            dispatch(addFlag("No Face Detected at "+new Date().toLocaleString()))
           } else if (newFaceCount > 1) {
             setMessage(`${newFaceCount} faces detected!`);
           } else {

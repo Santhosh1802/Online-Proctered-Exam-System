@@ -16,6 +16,11 @@ export const testSlice = createSlice({
     answers: {}, // Stores answers: { question_id: answer }
     flags: [],   // Stores malpractice flags
     final_score: 0, // Final score after submission
+    permissions: {
+      faceDetection: false,
+      noiseDetection: false,
+      tabSwitching:false,
+    },
   },
   reducers: {
     setTestId: (state, action) => {
@@ -47,23 +52,24 @@ export const testSlice = createSlice({
       const { questionId, answer, isMultiple } = action.payload;
     
       if (isMultiple) {
-        if (!Array.isArray(state.answers[questionId])) {
-          state.answers[questionId] = []; // Ensure the value starts as an array
-        }
+        state.answers[questionId]="";
+        const currentAnswers = state.answers[questionId] ? state.answers[questionId].split(',') : [];
+        const index = currentAnswers.indexOf(answer);
     
-        const index = state.answers[questionId].indexOf(answer);
         if (index !== -1) {
           // If the answer already exists, remove it (unchecking)
-          state.answers[questionId] = state.answers[questionId].filter(ans => ans !== answer);
+          currentAnswers.splice(index, 1);
         } else {
           // If not selected, add the new answer
-          state.answers[questionId].push(answer);
+          currentAnswers.push(answer);
         }
+    
+        state.answers[questionId] = currentAnswers.join(',');
       } else {
         // Single-choice: replace with new answer
-        state.answers[questionId] = [answer];
+        state.answers[questionId] = answer;
       }
-    },    
+    },  
          
     setAnswers: (state, action) => {
       state.answers = action.payload;
@@ -104,7 +110,7 @@ export const testSlice = createSlice({
       state.test_id = "";
       state.student_id = "";
       state.proctor_settings = [];
-      state.test_duration = "";
+      state.test_duration = 0;
       state.test_current_time = 0;
       state.lastUpdateTime = null;
       state.noise_score = 0;
@@ -115,7 +121,19 @@ export const testSlice = createSlice({
       state.flags = [];
       state.final_score = 0;
     },
+    setPermissions: (state, action) => {
+      const permissions = action.payload;
+      state.permissions = { ...state.permissions, ...permissions };
+    },
   },
+});
+
+export const selectProctoring = (state) => ({
+  noise_score: state.test.noise_score,
+  face_score: state.test.face_score,
+  mobile_score: state.test.mobile_score,
+  tab_score: state.test.tab_score,
+  flags: state.test.flags,
 });
 
 export const {
@@ -131,6 +149,7 @@ export const {
   setFinalScore,
   submitTest,
   resetTest,
+  setPermissions,
 } = testSlice.actions;
 
 export default testSlice.reducer;

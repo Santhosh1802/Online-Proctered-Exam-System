@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -11,20 +11,29 @@ import axios from "axios";
 import FaceDetection from "../Components/FaceDetection";
 import NoiseDetection from "../Components/NoiseDetection";
 import TabSwitchDetector from "../Components/TabSwitcherDetector";
+import PermissionDialog from "../Components/PermissionDialog";
 import {
   IncrementTestCurrentTime,
+  resetTest,
   saveAnswer,
+  selectProctoring,
   setAnswers,
+  setPermissions,
 } from "../Store/testSlice";
+
 export default function TestTakingPage({ toast }) {
   let { testId } = useParams();
   const dispatch = useDispatch();
   const testSlice = useSelector((state) => state.test);
+  const userSlice = useSelector((state) => state.user);
+  const proctoring = useSelector(selectProctoring);
   const [test, setTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswersState] = useState({});
   const [timeLeft, setTimeLeft] = useState(10);
-  const [submitted, setSubmitted] = useState(false); // New state to track submission
+  const [submitted, setSubmitted] = useState(false);
+  const [permissionDialogVisible, setPermissionDialogVisible] = useState(false);
+  const navigate=useNavigate();
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${testId}`)
@@ -34,9 +43,10 @@ export default function TestTakingPage({ toast }) {
         setTimeLeft(testSlice.test_duration - testSlice.test_current_time);
         // Initialize answers only if it's empty
         if (Object.keys(testSlice.answers).length === 0) {
-          dispatch(setAnswers(testData.answers || {}));
-          setAnswersState(testData.answers || {});
-          console.log("if", testSlice.answers);
+          const initialAnswers = testData.answers || {};
+          dispatch(setAnswers(initialAnswers));
+          setAnswersState(initialAnswers);
+          console.log("if", initialAnswers);
         } else {
           setAnswersState(testSlice.answers);
           console.log(testSlice.answers);
@@ -44,6 +54,7 @@ export default function TestTakingPage({ toast }) {
       })
       .catch((err) => console.error("Error fetching test:", err));
   }, [testId]);
+
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setInterval(() => {
@@ -61,57 +72,138 @@ export default function TestTakingPage({ toast }) {
     }, 5000);
     return () => clearInterval(interval);
   }, [dispatch]);
+
   const handleAnswerChange = (questionId, value, isMultiple = false) => {
     setAnswersState((prevAnswers) => {
       let updatedAnswers = { ...prevAnswers };
 
       if (isMultiple) {
-        // Ensure it's an array
-        let prevSelected = updatedAnswers[questionId] || [];
+        const currentAnswers = updatedAnswers[questionId]
+          ? updatedAnswers[questionId].split(",")
+          : [];
+        const index = currentAnswers.indexOf(value);
 
-        if (prevSelected.includes(value)) {
-          updatedAnswers[questionId] = prevSelected.filter(
-            (opt) => opt !== value
-          );
+        if (index !== -1) {
+          // If the answer already exists, remove it (unchecking)
+          currentAnswers.splice(index, 1);
         } else {
-          updatedAnswers[questionId] = [...prevSelected, value]; // Append new value
+          // If not selected, add the new answer
+          currentAnswers.push(value);
         }
-      } else {
-        updatedAnswers[questionId] = [value]; // Store as an array for consistency
-      }
 
-      // Dispatch the updated answers to Redux
-      dispatch(
-        saveAnswer({
-          questionId,
-          answer: updatedAnswers[questionId],
-          isMultiple,
-        })
-      );
-      console.log("Answers", updatedAnswers);
+        updatedAnswers[questionId] = currentAnswers.join(",");
+      } else {
+        updatedAnswers[questionId] = value;
+      }
 
       return updatedAnswers;
     });
   };
+
+  const clearAnswer = (questionId) => {
+    setAnswersState((prevAnswers) => {
+      let updatedAnswers = { ...prevAnswers };
+      updatedAnswers[questionId] = "";
+      return updatedAnswers;
+    });
+  };
+
+  const saveCurrentAnswer = () => {
+    const questionId = test.questions[currentQuestionIndex]._id;
+    const answer = answers[questionId];
+    const isMultiple =
+      test.questions[currentQuestionIndex].type === "choose-multiple";
+
+    dispatch(
+      saveAnswer({
+        questionId,
+        answer,
+        isMultiple,
+      })
+    );
+  };
+
   const nextQuestion = () => {
+    saveCurrentAnswer();
     if (currentQuestionIndex < test.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
 
   const prevQuestion = () => {
+    saveCurrentAnswer();
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
+  const requestPermissions = async () => {
+    const permissions = {
+      faceDetection: false,
+      noiseDetection: false,
+      tabSwitching: false,
+    };
+
+    if (test.proctor_settings.includes("Face Detection")) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        permissions.faceDetection = true;
+      } catch (error) {
+        permissions.faceDetection = false;
+      }
+    }
+
+    if (test.proctor_settings.includes("Noise Detection")) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        permissions.noiseDetection = true;
+      } catch (error) {
+        permissions.noiseDetection = false;
+      }
+    }
+
+    if (test.proctor_settings.includes("Tab Switching")) {
+      // Assuming tab switching detection does not require explicit permission
+      permissions.tabSwitching = true;
+    }
+
+    dispatch(setPermissions(permissions));
+  };
+
+  useEffect(() => {
+    if (test) {
+      setPermissionDialogVisible(true);
+    }
+  }, [test]);
+
+  const handleGrantPermissions = async () => {
+    await requestPermissions();
+    setPermissionDialogVisible(false);
+  };
+
+  const handleHideDialog = () => {
+    setPermissionDialogVisible(false);
+  };
+
   const handleSubmit = () => {
+    saveCurrentAnswer();
     setSubmitted(true); // Set submitted to true to prevent multiple submissions
     console.log(answers);
+    console.log(proctoring);
 
     axios
-      .post(process.env.REACT_APP_STUDENT_SUBMIT_TEST, { testId, answers })
-      .then((res) => alert("Test submitted successfully!"))
+      .post(process.env.REACT_APP_STUDENT_SUBMIT_TEST, {
+        testId,
+        answers,
+        test_duration: testSlice.test_current_time,
+        proctor_scores: proctoring,
+        student_id: userSlice.id,
+      })
+      .then((res) => {
+          dispatch(resetTest());
+          toast.current.show({severity:"success",summary:"Success",detail:"Test Submitted Successfully!"});
+          navigate("/studentdashboard");
+          })
       .catch((err) => console.error("Error submitting test:", err));
   };
 
@@ -131,10 +223,13 @@ export default function TestTakingPage({ toast }) {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {/* {window.addEventListener("contextmenu", handleContextMenu)} */}
+      <PermissionDialog
+        visible={permissionDialogVisible}
+        onHide={handleHideDialog}
+        onGrant={handleGrantPermissions}
+      />
       <div
         style={{
-          //width: "300px",
           overflowY: "auto",
           borderRight: "1px solid #ddd",
           padding: "1rem",
@@ -152,12 +247,10 @@ export default function TestTakingPage({ toast }) {
           {test.proctor_settings.includes("Noise Detection") && (
             <NoiseDetection toast={toast} />
           )}
-          {test.proctor_settings.includes("Tab Switching") && ( 
-
-          <TabSwitchDetector toast={toast}/>)}
-          <div>
-          {test.proctor_settings.lenght===0 ? test.testname:""}
-          </div>
+          {test.proctor_settings.includes("Tab Switching") && (
+            <TabSwitchDetector toast={toast} />
+          )}
+          <div>{test.proctor_settings.length === 0 ? test.testname : ""}</div>
         </div>
         <h3>Questions</h3>
         <div
@@ -165,7 +258,6 @@ export default function TestTakingPage({ toast }) {
             display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
             gap: "10px",
-            //border:"2px solid black",
             width: "300px",
           }}
         >
@@ -201,130 +293,191 @@ export default function TestTakingPage({ toast }) {
           </h3>
         </div>
         <Card title={`Question ${currentQuestionIndex + 1}`}>
-          <p>{question.questionText}</p>
-          {question.image && (
-            <img
-              src={question.image}
-              alt="question"
-              style={{ width: "100%", marginBottom: "1rem" }}
-            />
-          )}
-          <div style={{ marginBottom: "1rem" }}>
-            {question.type === "choose-one" &&
-              question.options.map((option, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <RadioButton
-                    inputId={option}
-                    name={question._id}
-                    value={option}
-                    onChange={(e) => handleAnswerChange(question._id, e.value)}
-                    checked={
-                      answers[question._id] &&
-                      answers[question._id][0].toString() === option
-                    }
-                  />
-                  <label
-                    htmlFor={question._id}
-                    style={{ marginLeft: "0.5rem" }}
-                  >
-                    {option}
-                  </label>
-                </div>
-              ))}
-            {question.type === "choose-multiple" &&
-              question.options.map((option, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <Checkbox
-                    inputId={option}
-                    name={question._id}
-                    value={option}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ flex: 1, marginRight: "2rem" }}>
+              <p>{question.questionText}</p>
+              {question.image && (
+                <img
+                  src={question.image}
+                  alt="question"
+                  style={{ width: "100%", marginBottom: "1rem" }}
+                />
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4>{question.type.replace("-", " ").toUpperCase()}</h4>
+              <div style={{ marginBottom: "1rem" }}>
+                {question.type === "choose-one" &&
+                  question.options.map((option, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "0.5rem",
+                        padding: "1em",
+                        border: "1px solid grey",
+                        backgroundColor:
+                          answers[question._id] &&
+                          answers[question._id].toString() === option
+                            ? "grey"
+                            : "",
+                        color:
+                          answers[question._id] &&
+                          answers[question._id].toString() === option
+                            ? "black"
+                            : "",
+                      }}
+                    >
+                      <RadioButton
+                        inputId={option}
+                        name={question._id}
+                        value={option}
+                        onChange={(e) =>
+                          handleAnswerChange(question._id, e.value)
+                        }
+                        checked={
+                          answers[question._id] &&
+                          answers[question._id].toString() === option
+                        }
+                      />
+                      <label
+                        htmlFor={option}
+                        style={{ width: "100%", marginLeft: "1rem" }}
+                      >
+                        {option}
+                      </label>
+                    </div>
+                  ))}
+                {question.type === "choose-multiple" &&
+                  question.options.map((option, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "0.5rem",
+                        padding: "1em",
+                        border: "1px solid grey",
+                      }}
+                    >
+                      <Checkbox
+                        inputId={option}
+                        name={question._id}
+                        value={option}
+                        onChange={(e) =>
+                          handleAnswerChange(question._id, e.value, true)
+                        }
+                        checked={
+                          answers[question._id] &&
+                          answers[question._id].split(",").includes(option)
+                        }
+                      />
+                      <label
+                        htmlFor={option}
+                        style={{ width: "100%", marginLeft: "1rem" }}
+                      >
+                        {option}
+                      </label>
+                    </div>
+                  ))}
+                {question.type === "true-false" && (
+                  <>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "0.5rem",
+                        padding: "1em",
+                        border: "1px solid grey",
+                        backgroundColor:
+                          answers[question._id] &&
+                          answers[question._id].toString() === "true"
+                            ? "grey"
+                            : "",
+                        color:
+                          answers[question._id] &&
+                          answers[question._id].toString() === "true"
+                            ? "black"
+                            : "",
+                      }}
+                    >
+                      <RadioButton
+                        inputId="true"
+                        name="answer"
+                        value="true"
+                        onChange={() =>
+                          handleAnswerChange(question._id, "true")
+                        }
+                        checked={
+                          answers[question._id] &&
+                          answers[question._id].toString() === "true"
+                        }
+                      />
+                      <label
+                        htmlFor="true"
+                        style={{ width: "100%", marginLeft: "1rem" }}
+                      >
+                        True
+                      </label>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "0.5rem",
+                        padding: "1em",
+                        border: "1px solid grey",
+                        backgroundColor:
+                          answers[question._id] &&
+                          answers[question._id].toString() === "false"
+                            ? "grey"
+                            : "",
+                        color:
+                          answers[question._id] &&
+                          answers[question._id].toString() === "false"
+                            ? "black"
+                            : "",
+                      }}
+                    >
+                      <RadioButton
+                        inputId="false"
+                        name="answer"
+                        value="false"
+                        onChange={() =>
+                          handleAnswerChange(question._id, "false")
+                        }
+                        checked={
+                          answers[question._id] &&
+                          answers[question._id].toString() === "false"
+                        }
+                      />
+                      <label
+                        htmlFor="false"
+                        style={{ width: "100%", marginLeft: "1rem" }}
+                      >
+                        False
+                      </label>
+                    </div>
+                  </>
+                )}
+                {question.type === "fill-in-the-blanks" && (
+                  <InputText
+                    value={answers[question._id] ? answers[question._id] : ""}
                     onChange={(e) =>
-                      handleAnswerChange(question._id, e.value, true)
+                      handleAnswerChange(question._id, e.target.value)
                     }
-                    checked={
-                      Array.isArray(answers[question._id]) &&
-                      (answers[question._id].includes(option) ||
-                        (answers[question._id].length > 0 &&
-                          answers[question._id][
-                            answers[question._id].length - 1
-                          ].includes(option)))
-                    }
+                    placeholder="Type your answer..."
+                    style={{ width: "100%", marginTop: "1rem" }}
                   />
-                  <label htmlFor={option} style={{ marginLeft: "0.5rem" }}>
-                    {option}
-                  </label>
-                </div>
-              ))}
-            {question.type === "true-false" && (
-              <>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <RadioButton
-                    inputId="true"
-                    name="answer"
-                    value="true"
-                    onChange={() => handleAnswerChange(question._id, "true")}
-                    checked={
-                      answers[question._id] &&
-                      answers[question._id][0].toString() === "true"
-                    }
-                  />
-                  <label htmlFor="true" style={{ marginLeft: "0.5rem" }}>
-                    True
-                  </label>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <RadioButton
-                    inputId="false"
-                    name="answer"
-                    value="false"
-                    onChange={() => handleAnswerChange(question._id, "false")}
-                    checked={
-                      answers[question._id] &&
-                      answers[question._id][0].toString() === "false"
-                    }
-                  />
-                  <label htmlFor="false" style={{ marginLeft: "0.5rem" }}>
-                    False
-                  </label>
-                </div>
-              </>
-            )}
-            {question.type === "fill-in-the-blanks" && (
-              <InputText
-                value={answers[question._id] ? answers[question._id][0] : ""}
-                onChange={(e) =>
-                  handleAnswerChange(question._id, e.target.value)
-                }
-                placeholder="Type your answer..."
-                style={{ width: "100%", marginTop: "0.5rem" }}
+                )}
+              </div>
+              <Button
+                label="Clear Selection"
+                onClick={() => clearAnswer(question._id)}
+                style={{ border: "none", color: "grey", background: "none" }}
               />
-            )}
+            </div>
           </div>
         </Card>
         <div

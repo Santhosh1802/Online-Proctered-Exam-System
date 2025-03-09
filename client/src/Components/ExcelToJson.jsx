@@ -4,6 +4,7 @@ import { FileUpload } from "primereact/fileupload";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Dialog } from "primereact/dialog";
+import axios from "axios";
 
 const ExcelToJson = () => {
   const [jsonData, setJsonData] = useState([]);
@@ -12,6 +13,7 @@ const ExcelToJson = () => {
   const fileUploadRef = useRef(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
   const handleFileUpload = (event) => {
     const uploadedFile = event.files[0];
     if (!uploadedFile) return;
@@ -36,11 +38,14 @@ const ExcelToJson = () => {
       setShowModal(true);
       return;
     }
-    //console.log("Submitted Data:", jsonData);
-    //const res=await AddStudent(jsonData);
-    //console.log(res);
-    //setError(res.error);
-    //setMessage(res.message);
+    try {
+      const res = await axios.post(process.env.REACT_APP_ADMIN_BULK_UPLOAD_STUDENT, { students: jsonData }, { withCredentials: true });
+      setError("");
+      setMessage(res.data.message);
+    } catch (error) {
+      setMessage("");
+      setError(error.response?.data?.error || "An error occurred while uploading the data.");
+    }
   };
 
   const handleReset = () => {
@@ -56,12 +61,12 @@ const ExcelToJson = () => {
   return (
     <div style={{ width: "100%" }}>
       <Card title="Bulk Upload Students" className="p-4">
-      <Button
+        <Button
           label="Download Bulk Upload Template"
           icon="pi pi-download"
           onClick={() => {
             const fileUrl =
-              "https://docs.google.com/spreadsheets/d/15JBCATtfP2EKIt7qow2UVY_V5X4i3Uhc/export?format=xlsx";
+              "https://docs.google.com/spreadsheets/d/1ScAFHTJN632P6vR_HY2DopjpaYKQqq0h/export?format=xlsx";
             const a = document.createElement("a");
             a.href = fileUrl;
             a.download = "Bulk Upload Template.xlsx";
@@ -105,8 +110,8 @@ const ExcelToJson = () => {
               />
             )}
           </div>
-          <p style={{ color: "red" }}>{error}</p>
-          <p style={{ color: "green" }}>{message}</p>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {message && <p style={{ color: "green" }}>{message}</p>}
         </form>
 
         <Dialog

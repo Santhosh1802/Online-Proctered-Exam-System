@@ -73,10 +73,10 @@ export default function TeacherDashboard({ toast }) {
           <p className="text-gray-500">{userEmail}</p>
         </Card>
         <Divider className="w-7" />
-        <div className="grid mt-4 w-10 flex justify-content-center gap-4">
+        <div className="grid mt-4 w-12 flex justify-content-center gap-4">
           <div className="col-12 md:col-2">
             <Card className="shadow-2 text-center p-4" style={{ backgroundColor: "#007bff", borderRadius: "0" }}>
-              <h4 className="text-white">Total Tests</h4>
+              <h4 className="text-white">Total Tests count</h4>
               <AnimatedNumber value={testCount} />
             </Card>
           </div>
