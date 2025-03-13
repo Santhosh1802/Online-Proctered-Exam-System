@@ -1,7 +1,7 @@
 const Teacher = require("../models/TeacherSchema");
 const Test = require("../models/TestSchema");
 const Student = require("../models/StudentSchema");
-
+const Report = require("../models/ReportSchema");
 const getTecherProfile = async (req, res) => {
   const response = {
     message: "",
@@ -370,6 +370,30 @@ const getTeacherDashboardData = async (req, res) => {
   }
 };
 
+// Get reports for a test by test_id
+const getTestReports = async (req, res) => {
+    try {
+        const { test_id } = req.query;
+
+        console.log("Fetching reports for test ID:", test_id);
+
+        // Fetch reports for the given test_id
+        const reports = await Report.find({ test_id });
+
+        if (!reports.length) {
+            return res.status(404).json({ message: "No reports found for this test." });
+        }
+
+        console.log("Reports fetched successfully:", reports);
+
+        res.status(200).json({ reports });
+    } catch (error) {
+        console.error("Error fetching test reports:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 
 
 module.exports = {
@@ -385,4 +409,5 @@ module.exports = {
   getUniqueBatches,
   getUniqueSections,
   getTeacherDashboardData,
+  getTestReports,
 };

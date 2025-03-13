@@ -56,7 +56,9 @@ export default function StudentDashboard() {
           setCompletedTests(completedTests);
           setExpiredTests(expiredTests);
         })
-        .catch((error) => console.error("Error fetching assigned tests:", error));
+        .catch((error) =>
+          console.error("Error fetching assigned tests:", error)
+        );
     }
   }, [id]);
 
@@ -75,7 +77,8 @@ export default function StudentDashboard() {
     switch (filter) {
       case "ongoing":
         return assignedTests.filter(
-          (test) => !expiredTests.some((expired) => expired.testId === test.testId)
+          (test) =>
+            !expiredTests.some((expired) => expired.testId === test.testId)
         );
       case "expired":
         return expiredTests;
@@ -97,7 +100,13 @@ export default function StudentDashboard() {
       <StudentNavBar />
       <div style={{ marginTop: "5em", width: "70%" }}>
         <h1>Welcome {name} 👋</h1>
-        <Card style={{ marginBottom: "2em", textAlign: "center", borderRadius: "8px" }}>
+        <Card
+          style={{
+            marginBottom: "2em",
+            textAlign: "center",
+            borderRadius: "8px",
+          }}
+        >
           <div style={{ display: "flex", justifyContent: "space-around" }}>
             <div>
               <h2>Ongoing Test</h2>
@@ -120,24 +129,48 @@ export default function StudentDashboard() {
           placeholder="Select a Filter"
           style={{ marginBottom: "2em" }}
         />
-        <div className="p-grid" style={{width:"100%"}}>
-          {filteredTests().map((test) => (
-            <div key={test.testId} className="p-col-12 p-md-6 p-lg-4" style={{ marginBottom: "2em", borderRadius: "2em" }}>
-              <Card title={test.testname} subTitle={`Duration: ${test.duration} minutes`}>
-                <p>{test.description}</p>
-                <p>Start Date: {new Date(test.start_date).toLocaleString()}</p>
-                <p>End Date: {new Date(test.end_date).toLocaleString()}</p>
-                {!expiredTests.some((expired) => expired.testId === test.testId) && (
-                  <Button
-                    label="Start Test"
-                    icon="pi pi-play"
-                    className="p-button-success"
-                    onClick={() => handleStartTest(test.testId)}
-                  />
-                )}
-              </Card>
-            </div>
-          ))}
+        <div className="p-grid" style={{ width: "100%" }}>
+          {filteredTests().map((test) => {
+            const isExpired = expiredTests.some(
+              (expired) => expired.testId === test.testId
+            );
+            // const isCompleted = completedTests.some(
+            //   (completed) => completed.testId === test.testId
+            // );
+
+            return (
+              <div
+                key={test.testId}
+                className="p-col-12 p-md-6 p-lg-4"
+                style={{ marginBottom: "2em", borderRadius: "2em" }}
+              >
+                <Card
+                  title={test.testname}
+                  subTitle={`Duration: ${test.duration} minutes`}
+                >
+                  <p>{test.description}</p>
+                  {!isExpired  && (
+                    <>
+                      <p>
+                        Start Date: {new Date(test.start_date).toLocaleString()}
+                      </p>
+                      <p>
+                        End Date: {new Date(test.end_date).toLocaleString()}
+                      </p>
+                    </>
+                  )}
+                  {!isExpired && (
+                    <Button
+                      label="Start Test"
+                      icon="pi pi-play"
+                      className="p-button-success"
+                      onClick={() => handleStartTest(test.testId)}
+                    />
+                  )}
+                </Card>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

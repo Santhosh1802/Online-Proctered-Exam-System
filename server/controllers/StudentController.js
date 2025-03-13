@@ -165,36 +165,53 @@ const getOneTest = async (req, res) => {
 const submitTest = async (req, res) => {
   try {
     const { testId, student_id, answers, proctor_scores, test_duration } = req.body;
-    console.log(req.body);
+    console.log("Received request body:", req.body);
 
     // Fetch test data
     const test = await Test.findById(testId);
-    if (!test) return res.status(404).json({ message: "Test not found" });
+    if (!test) {
+      console.log("Test not found:", testId);
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    console.log("Fetched test:", test.testname);
 
     let totalMarks = 0;
     let studentScore = 0;
 
     // Process each question
     test.questions.forEach((question) => {
-      const studentAnswer = answers[question._id.toString()];
-      const correctAnswers = question.correctAnswers;
+      const questionId = question._id.toString();
+      const studentAnswer = answers[questionId];
+      const correctAnswers = question.correctAnswers.map(ans => ans.toLowerCase().trim());
+
+      console.log(`\nProcessing Question: ${question.questionText}`);
+      console.log("Question ID:", questionId);
+      console.log("Expected Correct Answers:", correctAnswers);
+      console.log("Student Answer:", studentAnswer);
 
       if (studentAnswer) {
-        // Convert answer to string
-        const answerString = studentAnswer.toString().trim();
-
-        // Check based on question type
+        // Convert answer to string and normalize case
+        const answerString = studentAnswer.toString().trim().toLowerCase();
         let isCorrect = false;
-        if (question.type === "choose-multiple" && Array.isArray(studentAnswer)) {
-          isCorrect = arraysEqualIgnoreOrder(answerString.split(','), correctAnswers);
+
+        if (question.type === "choose-multiple") {
+          const studentAnswersArray = answerString.split(',').map(ans => ans.trim().toLowerCase());
+          console.log("Processed Student Answers (array):", studentAnswersArray);
+        
+          isCorrect = arraysEqualIgnoreOrder(studentAnswersArray, correctAnswers);
         } else {
-          isCorrect = answerString === correctAnswers[0];
+          isCorrect = correctAnswers.includes(answerString);
         }
+
+        console.log("Is Answer Correct:", isCorrect);
 
         if (isCorrect) {
           studentScore += question.marks;
+          console.log(`Correct! Added ${question.marks} points.`);
         } else {
           studentScore -= question.negativeMarks;
+          console.log(`Incorrect! Deducted ${question.negativeMarks} points.`);
         }
       }
 
@@ -203,13 +220,18 @@ const submitTest = async (req, res) => {
 
     // Ensure score isn't negative
     studentScore = Math.max(0, studentScore);
+    console.log("Total Score Before Proctoring:", studentScore);
 
     // Calculate final score considering proctoring
     const proctorPenalty = calculateProctorPenalty(proctor_scores);
-    const finalScore = Math.max(0, studentScore - proctorPenalty);
+    console.log("Proctoring Penalty:", proctorPenalty);
 
-    // Create report
+    const finalScore = Math.max(0, studentScore - proctorPenalty);
+    console.log("Final Score After Proctoring:", finalScore);
+
+    // Create report including testname
     const report = new Report({
+      testname: test.testname, 
       test_id: testId,
       student_id,
       answers,
@@ -221,6 +243,7 @@ const submitTest = async (req, res) => {
     });
 
     await report.save();
+    console.log("Report saved with ID:", report._id);
 
     // Link report to test and student
     if (!test.report) {
@@ -228,6 +251,7 @@ const submitTest = async (req, res) => {
     }
     test.report.push(report._id);
     await test.save();
+    console.log("Report linked to test.");
 
     const student = await Student.findById(student_id);
     if (!student.completedTests) {
@@ -248,6 +272,7 @@ const submitTest = async (req, res) => {
     );
 
     await student.save();
+    console.log("Student record updated successfully.");
 
     res.status(200).json({
       message: "Test submitted successfully",
@@ -255,16 +280,19 @@ const submitTest = async (req, res) => {
       final_score: finalScore,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error in submitTest:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Helper function to compare arrays regardless of order
-const arraysEqualIgnoreOrder = (a, b) => {
-  if (a.length !== b.length) return false;
-  return a.sort().every((val, index) => val === b.sort()[index]);
+
+// Utility function to check if two arrays contain the same elements (ignoring order)
+const arraysEqualIgnoreOrder = (arr1, arr2) => {
+  if (arr1.length !== arr2.length) return false;
+  return arr1.sort().join(',') === arr2.sort().join(',');
 };
+
+
 
 // Calculate proctoring penalty (customize as needed)
 const calculateProctorPenalty = (scores) => {
@@ -273,7 +301,7 @@ const calculateProctorPenalty = (scores) => {
   // Example: Deduct 1 mark for each proctor violation over a threshold
   let penalty = 0;
   if (noise_score > 5) penalty += 1;
-  if (face_score < 70) penalty += 2; // e.g., face not detected enough
+  if (face_score > 5) penalty += 2; // e.g., face not detected enough
   if (mobile_score > 3) penalty += 2;
   if (tab_score > 2) penalty += 2;
 
@@ -287,7 +315,32 @@ const formatDuration = (seconds) => {
   return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 };
 
-module.exports = { submitTest };
+
+// Get reports for a student by student_id
+const getStudentReports = async (req, res) => {
+    try {
+        const { student_id } = req.query;
+
+        console.log("Fetching reports for student ID:", student_id);
+
+        // Fetch reports for the given student_id
+        const reports = await Report.find({ student_id });
+
+        if (!reports.length) {
+            return res.status(200).json({ message: "No reports found for this student." });
+        }
+
+        console.log("Reports fetched successfully:", reports);
+
+        res.status(200).json({ reports });
+    } catch (error) {
+        console.error("Error fetching student reports:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+
 
 module.exports = {
   getStudentProfile,
@@ -295,4 +348,5 @@ module.exports = {
   getStudentTests,
   getOneTest,
   submitTest,
+  getStudentReports
 };
