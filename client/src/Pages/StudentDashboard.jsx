@@ -134,9 +134,9 @@ export default function StudentDashboard() {
             const isExpired = expiredTests.some(
               (expired) => expired.testId === test.testId
             );
-            // const isCompleted = completedTests.some(
-            //   (completed) => completed.testId === test.testId
-            // );
+            const isCompleted = completedTests.some(
+              (completed) => completed.testId === test.testId
+            );
 
             return (
               <div
@@ -149,7 +149,7 @@ export default function StudentDashboard() {
                   subTitle={`Duration: ${test.duration} minutes`}
                 >
                   <p>{test.description}</p>
-                  {!isExpired  && (
+                  {!isExpired  && !isCompleted &&(
                     <>
                       <p>
                         Start Date: {new Date(test.start_date).toLocaleString()}
@@ -159,7 +159,7 @@ export default function StudentDashboard() {
                       </p>
                     </>
                   )}
-                  {!isExpired && (
+                  {!isExpired && !isCompleted &&(
                     <Button
                       label="Start Test"
                       icon="pi pi-play"

@@ -44,6 +44,12 @@ export default function AdminNavBar() {
             className: location.pathname === "/adminstudent" ? "active-tab" : ""
         },
         {
+            label: 'View Report',
+            icon: 'pi pi-book',
+            command:()=>navigate("/adminreport"),
+            className: location.pathname === "/adminreport" ? "active-tab" : ""
+        },
+        {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             command: () => handleLogout()

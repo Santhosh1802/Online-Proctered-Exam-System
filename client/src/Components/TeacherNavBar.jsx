@@ -44,6 +44,12 @@ export default function TeacherNavBar() {
             className: location.pathname === "/teachertest" ? "active-tab" : ""
         },
         {
+            label: 'View Report',
+            icon: 'pi pi-book',
+            command:()=>navigate("/teacherreport"),
+            className:location.pathname==="/teacherreport"?"active-tab":""
+        },
+        {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             command: () => handleLogout()

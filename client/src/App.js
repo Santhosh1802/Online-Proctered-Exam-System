@@ -17,6 +17,7 @@ const AdminDashboard = lazy(() => import("./Pages/AdminDashboard"));
 const AdminProfile = lazy(() => import("./Pages/AdminProfile"));
 const AdminManageStudent = lazy(() => import("./Pages/AdminManageStudent"));
 const AdminManageTeacher = lazy(() => import("./Pages/AdminManageTeacher"));
+const AdminViewReport=lazy(()=>import("./Pages/AdminViewReport"));
 const TeacherDashboard = lazy(() => import("./Pages/TeacherDashboard"));
 const TeacherAssignTest = lazy(() => import("./Pages/TeacherAssignTest"));
 const TeacherManageTest = lazy(() => import("./Pages/TeacherManageTest"));
@@ -25,6 +26,7 @@ const TestForm = lazy(() => import("./Pages/TestForm"));
 const EditTestForm = lazy(() => import("./Pages/EditTestForm"));
 const TestTakingPage=lazy(()=>import("./Pages/TestTakingPage"));
 const InstructionsPage =lazy(()=>import("./Pages/InstructionsPage"));
+const TeacherViewReport=lazy(()=>import("./Pages/TeacherViewReport"));
 function App() {
   const toast = useRef(null);
 
@@ -124,6 +126,7 @@ function AppRoutes({ toast }) {
           path="/adminteacher"
           element={<AdminManageTeacher toast={toast} />}
         />
+        <Route path="/adminreport" element={<AdminViewReport toast={toast}/>}/>
         <Route
           path="/teacherdashboard"
           element={<TeacherDashboard toast={toast} />}
@@ -136,6 +139,7 @@ function AppRoutes({ toast }) {
           path="/teachertest"
           element={<TeacherManageTest toast={toast} />}
         />
+        <Route path="/teacherreport" element={<TeacherViewReport toast={toast}/>}/>
         <Route path="/createtest" element={<TestForm toast={toast} />} />
         <Route path="/edittest/:testId" element={<EditTestForm toast={toast} />} />
         <Route
@@ -143,7 +147,7 @@ function AppRoutes({ toast }) {
           element={<TeacherProfile toast={toast} />}
         />
         <Route path="/test/:testId" element={<TestTakingPage toast={toast}/>}/>
-        <Route path="/instructions/:testId" element={<InstructionsPage/>}/>
+        <Route path="/instructions/:testId" element={<InstructionsPage toast={toast}/>}/>
         <Route path="*" element={<Login toast={toast} />} />
       </Routes>
     </div>

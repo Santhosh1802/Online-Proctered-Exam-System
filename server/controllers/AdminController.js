@@ -379,6 +379,27 @@ const getStats=async (req,res) => {
   }
 }
 
+const getAllTestsForAdmin = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+    data: [],
+  };
+
+  try {
+    const tests = await Test.find(); // Fetch all tests without filtering by teacher_id
+
+    response.message = "All tests retrieved successfully";
+    response.data = tests;
+    return res.status(200).send(response);
+  } catch (error) {
+    response.error = "An error occurred while fetching tests";
+    return res.status(500).send(response);
+  }
+};
+
+
+
 module.exports = {
   getAdminProfile,
   updateAdminProfile,
@@ -391,5 +412,6 @@ module.exports = {
   createTeacher,
   createStudent,
   BulkUploadStudents,
-  getStats
+  getStats,
+  getAllTestsForAdmin
 };

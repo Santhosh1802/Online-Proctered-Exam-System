@@ -12,7 +12,8 @@ const {
   createTeacher,
   createStudent,
   BulkUploadStudents,
-  getStats
+  getStats,
+  getAllTestsForAdmin
 } = require("../controllers/AdminController");
 
 router.get("/adminprofile", getAdminProfile);
@@ -27,4 +28,5 @@ router.post("/createteacher", createTeacher);
 router.post("/createstudent", createStudent);
 router.post("/bulkuploadstudents", BulkUploadStudents);
 router.get("/getstats", getStats);
+router.get("/getalltestadmin",getAllTestsForAdmin);
 module.exports = router;

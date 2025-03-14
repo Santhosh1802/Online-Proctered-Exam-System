@@ -160,8 +160,7 @@ const assignTestToStudents = async (req, res) => {
 
     if (!department || !batch || !section || !testId) {
       return res.status(400).json({
-        error:
-          "Missing required parameters: department, batch, section, or testId",
+        error: "Missing required parameters: department, batch, section, or testId",
       });
     }
 
@@ -173,9 +172,7 @@ const assignTestToStudents = async (req, res) => {
     const students = await Student.find({ department, batch, section });
 
     if (students.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No students found for the given filters" });
+      return res.status(404).json({ message: "No students found for the given filters" });
     }
 
     const updates = students.map(async (student) => {
@@ -183,7 +180,11 @@ const assignTestToStudents = async (req, res) => {
         (ongoingTest) => ongoingTest.testId.toString() === testId
       );
 
-      if (!alreadyAssigned) {
+      const alreadyCompleted = student.completedTests.some(
+        (completedTest) => completedTest.testId.toString() === testId
+      );
+
+      if (!alreadyAssigned && !alreadyCompleted) {
         student.ongoingTests.push({
           testId,
           startedAt: new Date(),
@@ -197,14 +198,13 @@ const assignTestToStudents = async (req, res) => {
 
     await Promise.all(updates);
 
-    return res
-      .status(200)
-      .json({ message: "Test assigned successfully to students." });
+    return res.status(200).json({ message: "Test assigned successfully to students." });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 const deassignTestFromStudents = async (req, res) => {
   try {
@@ -372,26 +372,28 @@ const getTeacherDashboardData = async (req, res) => {
 
 // Get reports for a test by test_id
 const getTestReports = async (req, res) => {
-    try {
-        const { test_id } = req.query;
+  try {
+      const { test_id } = req.query;
 
-        console.log("Fetching reports for test ID:", test_id);
+      console.log("Fetching reports for test ID:", test_id);
 
-        // Fetch reports for the given test_id
-        const reports = await Report.find({ test_id });
+      // Fetch reports with student details populated
+      const reports = await Report.find({ test_id }).populate("student_id", "name department section batch");
 
-        if (!reports.length) {
-            return res.status(404).json({ message: "No reports found for this test." });
-        }
+      if (!reports.length) {
+          return res.status(404).json({ message: "No reports found for this test." });
+      }
 
-        console.log("Reports fetched successfully:", reports);
+      console.log("Reports fetched successfully:", reports);
 
-        res.status(200).json({ reports });
-    } catch (error) {
-        console.error("Error fetching test reports:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
+      res.status(200).json({ reports });
+  } catch (error) {
+      console.error("Error fetching test reports:", error);
+      res.status(500).json({ message: "Internal server error" });
+  }
 };
+
+
 
 
 

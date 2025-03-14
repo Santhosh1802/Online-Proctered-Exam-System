@@ -5,7 +5,7 @@ import axios from "axios";
 import { Button } from "primereact/button";
 import { setTestId, setTestDuration, setProctorSettings } from "../Store/testSlice";
 
-export default function InstructionsPage() {
+export default function InstructionsPage({toast}) {
   const { testId } = useParams();
   const [testDetails, setTestDetails] = useState({});
   const [acknowledged, setAcknowledged] = useState(false);
