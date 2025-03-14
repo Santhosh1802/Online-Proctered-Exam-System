@@ -14,6 +14,10 @@ export default function AdminManageStudent({ toast }) {
     email: "",
     phone: "",
     department: "",
+    registerNumber:"",
+    batch:"",
+    section:"",
+    password:"",
   });
 
   const handleChange = (e) => {
@@ -22,6 +26,14 @@ export default function AdminManageStudent({ toast }) {
 
   const handleSubmit = async () => {
     try {
+      if(studentData.name===""||studentData.email===""||studentData.phone===""||studentData.department===""||studentData.registerNumber===""||studentData.batch===""||studentData.section===""||studentData.password===""){
+        toast.current.show({
+          severity: "warn",
+          summary: "Warning",
+          detail: "Fill all details to create student",
+        });
+      }
+      else{
       await axios.post(process.env.REACT_APP_ADMIN_CREATE_STUDENT, studentData);
       toast.current.show({
         severity: "success",
@@ -29,7 +41,8 @@ export default function AdminManageStudent({ toast }) {
         detail: "Student Created",
       });
       setVisible(false);
-      setStudentData({ name: "", email: "", phone: "", department: "" });
+      setStudentData({ name: "", email: "", phone: "", department: "",registerNumber:"",section:"",batch:"",password:"" });
+    }
     } catch (error) {
       toast.current.show({
         severity: "error",

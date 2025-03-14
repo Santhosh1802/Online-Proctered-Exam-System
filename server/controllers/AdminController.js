@@ -398,6 +398,59 @@ const getAllTestsForAdmin = async (req, res) => {
   }
 };
 
+const getLoginTrends = async (req, res) => {
+  try {
+    const { days = 7 } = req.query; // Default to last 7 days if not specified
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days); // Set start date based on `days` param
+
+    const loginTrends = await Login.aggregate([
+      {
+        $match: {
+          last_login: { $gte: startDate }, // Get logins from the last X days
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$last_login" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
+          count: { $sum: 1 }, // Count logins per day
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by day of the week
+      },
+    ]);
+
+    // Convert numeric day of the week (1-7) to actual day names
+    const dayMapping = {
+      1: "Sunday",
+      2: "Monday",
+      3: "Tuesday",
+      4: "Wednesday",
+      5: "Thursday",
+      6: "Friday",
+      7: "Saturday",
+    };
+
+    const formattedTrends = loginTrends.map((entry) => ({
+      day: dayMapping[entry._id], // Convert numeric day to name
+      count: entry.count,
+    }));
+
+    res.status(200).json({
+      message: "Login trends retrieved successfully",
+      data: formattedTrends,
+    });
+  } catch (error) {
+    console.error("Error fetching login trends:", error);
+    res.status(500).json({
+      error: "An error occurred while retrieving login trends",
+    });
+  }
+};
+
+
+
 
 
 module.exports = {
@@ -413,5 +466,6 @@ module.exports = {
   createStudent,
   BulkUploadStudents,
   getStats,
-  getAllTestsForAdmin
+  getAllTestsForAdmin,
+  getLoginTrends,
 };

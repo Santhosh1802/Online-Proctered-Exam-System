@@ -16,6 +16,7 @@ export default function TeacherViewReport({ toast }) {
   const id = useSelector((state) => state.user.id);
 
   useEffect(() => {
+    if(id){
     axios
       .get(`${process.env.REACT_APP_TEACHER_GET_TESTS}`, {
         params: { teacher_id: id },
@@ -24,6 +25,7 @@ export default function TeacherViewReport({ toast }) {
       .then((response) => {
         setTests(response.data.data || []);
       });
+    }
   }, [id]);
 
   const handleGetReports = async () => {
@@ -36,7 +38,7 @@ export default function TeacherViewReport({ toast }) {
       });
       return;
     }
-
+    if(selectedTest){
     const response = await axios.get(
       `${process.env.REACT_APP_TEACHER_GET_REPORT_BY_TEST}`,
       {
@@ -52,6 +54,7 @@ export default function TeacherViewReport({ toast }) {
       detail: "Report data fetched successfully.",
       life: 3000,
     });
+  }
   };
 
   const exportToExcel = () => {

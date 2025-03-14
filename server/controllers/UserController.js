@@ -12,19 +12,34 @@ const handleUserLogin = async (req, res) => {
     usertype: "",
   };
   const { email, password } = req.body;
+
   try {
     const user = await Login.findOne({ email_id: email });
     if (!user) {
       response.error = "User not found";
       return res.status(401).json(response);
     }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (isValidPassword) {
       response.message = "Login Success";
       response.usertype = user.role;
-      response.email_id=user.email_id;
-      const token=jwt.sign({email:email,role:user.role},process.env.JWT_SECRET,{expiresIn:"1h"});
-      res.cookie("token",token,{httpOnly:false,maxAge:3600000});
+      response.email_id = user.email_id;
+
+      // Generate token
+      const token = jwt.sign(
+        { email: email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      res.cookie("token", token, { httpOnly: false, maxAge: 3600000 });
+
+      // Update last_login timestamp
+      await Login.findOneAndUpdate(
+        { email_id: email },
+        { last_login: new Date() }
+      );
+
       return res.status(202).json(response);
     } else {
       response.error = "Invalid Password";
@@ -173,10 +188,46 @@ const handleLogout=async (req,res) => {
     return res.status(500).json(response);
   }
 }
+
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, oldPassword, newPassword } = req.body;
+
+        // Step 1: Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Step 2: Compare old password with hashed password in DB
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Incorrect current password" });
+        }
+
+        // Step 3: Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Step 4: Update the user's password in the database
+        user.password = hashedPassword;
+        await user.save();
+
+        // Step 5: Send success response
+        return res.json({ error: "", message: "Password reset successful" });
+    } catch (error) {
+        console.error("Reset Password Error:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
 module.exports = {
   handleUserLogin,
   handleStudentRegister,
   handleForgotPassword,
   handleResetPassword,
   handleLogout,
+  resetPassword,
 };

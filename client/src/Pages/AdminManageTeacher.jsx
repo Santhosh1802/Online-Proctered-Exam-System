@@ -12,7 +12,8 @@ export default function AdminManageTeacher({ toast }) {
     name: '',
     email: '',
     phone: '',
-    department: ''
+    department: '',
+    password:"",
   });
 
   const handleChange = (e) => {
@@ -21,10 +22,15 @@ export default function AdminManageTeacher({ toast }) {
 
   const handleSubmit = async () => {
     try {
+      if(teacherData.name===""||teacherData.email===""||teacherData.department===""||teacherData.phone===""||teacherData.password===""){
+        toast.current.show({ severity: 'warn', summary: 'Warning', detail:'Fill all details and create teacher' });
+      }
+      else{
       await axios.post(process.env.REACT_APP_ADMIN_CREATE_TEACHER, teacherData);
       toast.current.show({ severity: 'success', summary: 'Success', detail: 'Teacher Created' });
       setVisible(false);
       setTeacherData({ name: '', email: '', phone: '', department: '' }); 
+      }
     } catch (error) {
       toast.current.show({ severity: 'error', summary: 'Error', detail: error.response?.data?.message || 'Failed to create teacher' });
     }

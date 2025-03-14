@@ -15,7 +15,7 @@ const teacherRoutes=require("./routes/Teacher");
 const studentRoutes=require("./routes/Student");
 
 const app=express();
-app.use(cors({origin:true,credentials:true}));
+app.use(cors({origin: process.env.FRONTEND_URL,credentials:true}));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
@@ -28,6 +28,7 @@ mongoose.connect(process.env.DBURL)
 .catch(()=>{
     console.log("Error Connecting to DB");
 })
+
 
 
 app.use(userRoutes);

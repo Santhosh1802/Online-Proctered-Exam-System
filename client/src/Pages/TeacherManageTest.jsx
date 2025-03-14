@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import TeacherNavBar from "../Components/TeacherNavBar";
 import { Button } from "primereact/button";
@@ -15,13 +14,13 @@ export default function TeacherManageTest({ toast}) {
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        
+        if(id){
         const res = await axios.get(process.env.REACT_APP_TEACHER_GET_TESTS, {
           params:{teacher_id:id},
           withCredentials: true,
         });
-        
         setTests(res.data.data||[]);
+      }
       } catch (error) {
         console.error("Error fetching tests:", error);
         toast.current.show({
@@ -33,7 +32,7 @@ export default function TeacherManageTest({ toast}) {
     };
 
     fetchTests();
-  }, [id]);
+  }, [toast,id]);
   const handleCreateTest = () => {
     navigate("/createtest");
   };

@@ -2,6 +2,7 @@ const Teacher = require("../models/TeacherSchema");
 const Test = require("../models/TestSchema");
 const Student = require("../models/StudentSchema");
 const Report = require("../models/ReportSchema");
+const nodemailer = require("nodemailer");
 const getTecherProfile = async (req, res) => {
   const response = {
     message: "",
@@ -175,7 +176,17 @@ const assignTestToStudents = async (req, res) => {
       return res.status(404).json({ message: "No students found for the given filters" });
     }
 
-    const updates = students.map(async (student) => {
+    // ✅ Create transporter only once
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.APP_PASS,
+      },
+    });
+
+    // ✅ Process students one by one using `for...of`
+    for (const student of students) {
       const alreadyAssigned = student.ongoingTests.some(
         (ongoingTest) => ongoingTest.testId.toString() === testId
       );
@@ -192,13 +203,64 @@ const assignTestToStudents = async (req, res) => {
           endDate: test.end_date,
           duration: test.duration,
         });
-        await student.save();
+        await student.save(); // ✅ Wait for DB update before sending email
+
+        const mailOptions = {
+          from: process.env.GMAIL_USER,
+          to: student.email,
+          subject: `📢 New Test Assigned: ${test.testname}`,
+          html: `
+            <div style="max-width: 600px; margin: auto; font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
+              <div style="background-color: #007bff; color: white; padding: 15px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h2>📢 New Test Assigned</h2>
+              </div>
+              <div style="padding: 20px; background-color: white;">
+                <p style="font-size: 18px;">Hello <strong>${student.name}</strong>,</p>
+                <p style="color: #333;">You have been assigned a new test. Please review the details below:</p>
+        
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">📌 Test Title:</td>
+                    <td style="padding: 10px;">${test.testname}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">📅 Start Date:</td>
+                    <td style="padding: 10px;">${test.start_date}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">⏳ Duration:</td>
+                    <td style="padding: 10px;">${test.duration} minutes</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">🕒 End Date:</td>
+                    <td style="padding: 10px;">${test.end_date}</td>
+                  </tr>
+                </table>
+        
+                <p style="margin-top: 20px; text-align: center;">
+                  <a href="${process.env.FRONTEND_URL}/login" target="_blank"
+                    style="background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+                    Take Test Now
+                  </a>
+                </p>
+        
+                <p style="color: #555; margin-top: 20px; text-align: center;">
+                  If you have any questions, feel free to contact your instructor.
+                </p>
+              </div>
+              <div style="background-color: #007bff; color: white; padding: 10px; text-align: center; border-radius: 0 0 10px 10px;">
+                <p style="margin: 0;">Best Regards, <br> Your Exam Team</p>
+              </div>
+            </div>
+          `,
+        };
+
+        // ✅ Send email only after student data is updated
+        await transporter.sendMail(mailOptions);
       }
-    });
+    }
 
-    await Promise.all(updates);
-
-    return res.status(200).json({ message: "Test assigned successfully to students." });
+    return res.status(200).json({ message: "Test assigned and emails sent successfully." });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
@@ -366,37 +428,39 @@ const getTeacherDashboardData = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching teacher dashboard data:", error.message);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
 // Get reports for a test by test_id
 const getTestReports = async (req, res) => {
   try {
-      const { test_id } = req.query;
+    const { test_id } = req.query;
 
-      console.log("Fetching reports for test ID:", test_id);
+    console.log("Fetching reports for test ID:", test_id);
 
-      // Fetch reports with student details populated
-      const reports = await Report.find({ test_id }).populate("student_id", "name department section batch");
+    // Fetch reports with student details populated
+    const reports = await Report.find({ test_id }).populate(
+      "student_id",
+      "name department section batch"
+    );
 
-      if (!reports.length) {
-          return res.status(404).json({ message: "No reports found for this test." });
-      }
+    if (!reports.length) {
+      return res
+        .status(404)
+        .json({ message: "No reports found for this test." });
+    }
 
-      console.log("Reports fetched successfully:", reports);
+    console.log("Reports fetched successfully:", reports);
 
-      res.status(200).json({ reports });
+    res.status(200).json({ reports });
   } catch (error) {
-      console.error("Error fetching test reports:", error);
-      res.status(500).json({ message: "Internal server error" });
+    console.error("Error fetching test reports:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
-
-
 
 module.exports = {
   getTecherProfile,
