@@ -35,10 +35,11 @@ export default function AdminManageTeacher({ toast }) {
           detail: "Fill all details and create teacher",
         });
       } else {
-        await axios.post(
+        const res=await axios.post(
           process.env.REACT_APP_ADMIN_CREATE_TEACHER,
-          teacherData
+          teacherData,{withCredentials:true}
         );
+        if(res.data.error===""){
         toast.current.show({
           severity: "success",
           summary: "Success",
@@ -46,6 +47,14 @@ export default function AdminManageTeacher({ toast }) {
         });
         setVisible(false);
         setTeacherData({ name: "", email: "", phone: "", department: "" });
+      }
+      if(res.data.message===""){
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: res.data.error,
+        });
+      }
       }
     } catch (error) {
       toast.current.show({

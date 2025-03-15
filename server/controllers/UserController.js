@@ -96,6 +96,13 @@ const handleForgotPassword = async (req, res) => {
   };
 
   const { email } = req.body;
+  const registered=Login.findOne({email_id:email});
+  console.log(registered);
+  
+  if(!registered.email_id){
+    response.error="User Not Registerd";
+    return res.status(200).json(response);
+  }
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -142,7 +149,6 @@ const handleForgotPassword = async (req, res) => {
     response.message = "Password reset email sent Successfully";
     return res.status(200).json(response);
   } catch (error) {
-    console.log(error.message);
     response.error = "Error sending password reset email.";
     return res.status(500).json(response);
   }
@@ -154,7 +160,12 @@ const handleResetPassword = async (req, res) => {
     error: "",
   };
   const { token, password } = req.body;
-
+  console.log(token);
+  
+  if(token===""||token===null){
+    response.error="Invalid or expired token";
+    return res.status(200).json(response);
+  }
   try {
     const secretKey = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secretKey);
@@ -164,9 +175,8 @@ const handleResetPassword = async (req, res) => {
     response.message = "Password reset successfully";
     return res.status(200).json(response);
   } catch (error) {
-    console.log(error.message);
     response.error = "Invalid or expired token";
-    return res.status(500).json(response);
+    return res.status(200).json(response);
   }
 };
 

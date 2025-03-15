@@ -41,7 +41,7 @@ export default function StudentViewReport() {
 
     fetchTestDetails();
   }, [reports]);
-  if (userEmail) {
+  useEffect(() => {
     axios
       .get(process.env.REACT_APP_GET_STUDENT_DATA, {
         params: { email: userEmail },
@@ -50,7 +50,8 @@ export default function StudentViewReport() {
       .then((response) => {
         setStudents(response.data.data);
       });
-  }
+  }, [userEmail]);
+
   useEffect(() => {
     const fetchReports = async () => {
       if (!student_id) return;

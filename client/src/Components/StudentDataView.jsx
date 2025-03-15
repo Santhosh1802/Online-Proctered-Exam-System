@@ -30,7 +30,9 @@ export default function StudentDataView() {
       const res = await axios.get(process.env.REACT_APP_ADMIN_GET_STUDENTS, {
         withCredentials: true,
       });
+      if(Array.isArray(res.data.data)){
       setStudent(res.data.data);
+      }
     };
     getStudents();
   }, []);
@@ -47,7 +49,9 @@ export default function StudentDataView() {
         params: { email: user.email },
         withCredentials: true,
       });
+      if(res.data.data){
       setSelectedStudent(res.data.data);
+      }
     } catch (error) {
       setSelectedStudent(null);
       console.error(error);
@@ -64,8 +68,7 @@ export default function StudentDataView() {
     if (!studentToDelete) return;
     try {
       await axios.delete(process.env.REACT_APP_ADMIN_DELETE_STUDENT, {
-        params: { email: studentToDelete.email },
-        withCredentials: true,
+        params: { email: studentToDelete.email },withCredentials:true
       });
 
       setStudent((prevStudents) =>
@@ -109,7 +112,7 @@ export default function StudentDataView() {
     <div className="card" style={{ marginBottom: "1em" }}>
       <h1>Students</h1>
       <DataTable
-        value={student}
+        value={student || []}
         paginator
         rows={10}
         filters={filters}

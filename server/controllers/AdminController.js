@@ -11,11 +11,13 @@ const getAdminProfile = async (req, res) => {
     data: {},
   };
   const email = req.query.email;
+  
   if (!email) {
     console.log("No Email");
   }
   try {
     const admin = await Admin.findOne({ email: email });
+    
     if (admin) {
       response.message = "Admin Found";
       response.data.profile = admin.profile;
@@ -41,9 +43,9 @@ const updateAdminProfile = async (req, res) => {
   };
   try {
     const { name, email, phone, profile } = req.body;
-    if (!req.body) {
+    if (name==="" || email==="" || phone==="" || !name || !email || !phone) {
       response.error = "missing details";
-      return res.status(400).send(response);
+      return res.status(200).send(response);
     }
     const admin = await Admin.findOneAndUpdate(
       { email: email },
@@ -70,7 +72,7 @@ const getAllTeacher = async (req, res) => {
     const teachers = await Teacher.find();
     if (!teachers || teachers.length === 0) {
       response.message = "No data found";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.data = teachers;
     return res.status(200).json(response);
@@ -91,7 +93,7 @@ const getAllStudent = async (req, res) => {
     const students = await Student.find();
     if (!students || students.length === 0) {
       response.message = "No data found";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.data = students;
     return res.status(200).json(response);
@@ -113,7 +115,7 @@ const getOneTeacher = async (req, res) => {
     const teacher = await Teacher.findOne({ email: req.query.email });
     if (!teacher || teacher == null) {
       response.message = "No data found";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.data = teacher;
     response.message = "Teacher found";
@@ -135,7 +137,7 @@ const getOneStudent = async (req, res) => {
     const student = await Student.findOne({ email: req.query.email });
     if (!student || student == null) {
       response.message = "No data found";
-      return res.status(404).json(response);
+      return res.status(200).json(response);
     }
     response.data = student;
     response.message = "Student found";
@@ -211,11 +213,24 @@ const createTeacher = async (req, res) => {
     error: "",
     data: {},
   };
+
   try {
     const { name, email, phone, department, profile, password } = req.body;
+
+    if (name==="" || email==="" || phone==="" || department==="" || password==="") {
+      response.error = "Missing details";
+      return res.status(400).json(response);
+    }
+
+    
+    const existingUser = await Login.findOne({ email_id: email });
+    if (existingUser) {
+      response.error = "Teacher Email already exists";
+      return res.status(200).json(response);
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     const login = new Login({
       email_id: email,
       password: hashedPassword,
@@ -225,22 +240,28 @@ const createTeacher = async (req, res) => {
     await login.save();
 
     const teacher = new Teacher({
-      name: name,
-      email: email,
-      phone: phone,
-      department: department,
-      profile: profile,
+      name,
+      email,
+      phone,
+      department,
+      profile,
     });
     await teacher.save();
 
     response.message = "Teacher created successfully";
-    return res.status(200).send(response);
+    return res.status(201).json(response);
   } catch (error) {
+    if (error.code === 11000) {
+      response.error = "Teacher Email already exists";
+      return res.status(200).json(response);
+    }
+
     response.error = error.message;
-    console.log(error.message);
-    return res.status(500).send(response);
+    console.error("Error creating teacher:", error);
+    return res.status(500).json(response);
   }
 };
+
 
 const createStudent = async (req, res) => {
   const response = {
@@ -248,6 +269,7 @@ const createStudent = async (req, res) => {
     error: "",
     data: {},
   };
+
   try {
     const {
       name,
@@ -261,9 +283,27 @@ const createStudent = async (req, res) => {
       password,
     } = req.body;
 
+    if (!name || !email || !phone || !department || !registerNumber || !batch || !section || !password) {
+      response.error = "Missing details";
+      return res.status(400).json(response);
+    }
+
+    const existingUser = await Login.findOne({ email_id: email });
+    if (existingUser) {
+      response.error = "Student Email already exists";
+      return res.status(200).json(response);
+    }
+
+    const existingStudent = await Student.findOne({ registerNumber });
+    if (existingStudent) {
+      response.error = "Student Register number already exists";
+      return res.status(200).json(response);
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+   
     const login = new Login({
       email_id: email,
       password: hashedPassword,
@@ -272,26 +312,35 @@ const createStudent = async (req, res) => {
     });
     await login.save();
 
+  
     const student = new Student({
-      name: name,
-      email: email,
-      phone: phone,
-      department: department,
-      profile: profile,
-      registerNumber: registerNumber,
-      batch: batch,
-      section: section,
+      name,
+      email,
+      phone,
+      department,
+      profile,
+      registerNumber,
+      batch,
+      section,
     });
     await student.save();
 
     response.message = "Student created successfully";
-    return res.status(200).send(response);
+    return res.status(201).json(response);
   } catch (error) {
+    
+    if (error.code === 11000) {
+      response.error = "Student already exists";
+      return res.status(200).json(response);
+    }
+
+    
     response.error = error.message;
-    console.log(error.message);
-    return res.status(500).send(response);
+    console.error("Error creating student:", error);
+    return res.status(500).json(response);
   }
 };
+
 
 const BulkUploadStudents = async (req, res) => {
   const response = {
@@ -308,6 +357,7 @@ const BulkUploadStudents = async (req, res) => {
 
     let validationErrors = [];
 
+    // Validate input data
     students.forEach((student, index) => {
       const row = index + 2;
 
@@ -331,10 +381,7 @@ const BulkUploadStudents = async (req, res) => {
           `Row ${row}, Column 'department': Invalid or missing value`
         );
       }
-      if (
-        !student.registerNumber ||
-        typeof student.registerNumber !== "string"
-      ) {
+      if (!student.registerNumber || typeof student.registerNumber !== "string") {
         validationErrors.push(
           `Row ${row}, Column 'registerNumber': Invalid or missing value`
         );
@@ -355,9 +402,26 @@ const BulkUploadStudents = async (req, res) => {
       return res.status(400).json({ error: validationErrors });
     }
 
+    // Check for duplicate emails and register numbers before inserting
+    const emails = students.map((s) => s.email);
+    const registerNumbers = students.map((s) => s.registerNumber);
+
+    const existingStudents = await Student.find({
+      $or: [{ email: { $in: emails } }, { registerNumber: { $in: registerNumbers } }],
+    });
+
+    if (existingStudents.length > 0) {
+      const duplicateErrors = existingStudents.map((s) => {
+        return `Duplicate entry: Email '${s.email}' or Register Number '${s.registerNumber}' already exists.`;
+      });
+      return res.status(400).json({ error: duplicateErrors });
+    }
+
+    // Hash default password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash("Student@123", saltRounds);
 
+    // Prepare documents
     const studentDocs = students.map((student) => ({
       ...student,
     }));
@@ -369,6 +433,7 @@ const BulkUploadStudents = async (req, res) => {
       role: "student",
     }));
 
+    // Insert documents
     await Promise.all([
       Student.insertMany(studentDocs),
       Login.insertMany(loginDocs),
@@ -377,10 +442,21 @@ const BulkUploadStudents = async (req, res) => {
     response.message = "Students and login records created successfully";
     return res.status(200).json(response);
   } catch (error) {
-    console.log("Error:", error.message);
+    console.error("Error:", error);
+
+    // Handle MongoDB duplicate key error (E11000)
+    if (error.code === 11000) {
+      let duplicateKey = Object.keys(error.keyValue)[0];
+      let duplicateValue = error.keyValue[duplicateKey];
+      return res.status(400).json({
+        error: `Duplicate key error: ${duplicateKey} '${duplicateValue}' already exists.`,
+      });
+    }
+
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 const getStats = async (req, res) => {
   const response = {
@@ -483,6 +559,32 @@ const getLoginTrends = async (req, res) => {
   }
 };
 
+const getTestReports = async (req, res) => {
+  try {
+    const { test_id } = req.query;
+
+    console.log("Fetching reports for test ID:", test_id);
+
+    const reports = await Report.find({ test_id }).populate(
+      "student_id",
+      "name department section batch"
+    );
+
+    if (!reports.length) {
+      return res
+        .status(404)
+        .json({ message: "No reports found for this test." });
+    }
+
+    console.log("Reports fetched successfully:", reports);
+
+    res.status(200).json({ reports });
+  } catch (error) {
+    console.error("Error fetching test reports:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getAdminProfile,
   updateAdminProfile,
@@ -498,4 +600,5 @@ module.exports = {
   getStats,
   getAllTestsForAdmin,
   getLoginTrends,
+  getTestReports,
 };

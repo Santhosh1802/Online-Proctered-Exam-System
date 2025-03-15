@@ -12,10 +12,18 @@ function ResetPassword({ toast }) {
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(password==="" || confirmpassword===""){
+      toast.current.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please fill both password and confirm password",
+      });
+      return;
+    }
     if (password !== confirmpassword) {
       toast.current.show({
-        severity: "error",
-        summary: "Error",
+        severity: "warn",
+        summary: "Warning",
         detail: "Passwords do not match",
       });
       return;

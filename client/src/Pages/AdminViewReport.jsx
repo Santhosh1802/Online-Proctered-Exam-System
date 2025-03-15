@@ -59,7 +59,7 @@ export default function AdminViewReport({ toast }) {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${process.env.REACT_APP_TEACHER_GET_REPORT_BY_TEST}`,
+        `${process.env.REACT_APP_ADMIN_GET_REPORT_BY_TEST}`,
         {
           params: { test_id: selectedTest },
           withCredentials: true,

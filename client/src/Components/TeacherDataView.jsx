@@ -27,7 +27,10 @@ export default function TeacherDataView() {
       const res = await axios.get(process.env.REACT_APP_ADMIN_GET_TEACHERS, {
         withCredentials: true,
       });
+      
+      if(Array.isArray(res.data.data)){
       setTeacher(res.data.data);
+      }
     };
     getTeachers();
   }, []);
@@ -44,10 +47,11 @@ export default function TeacherDataView() {
         params: { email: user.email },
         withCredentials: true,
       });
+      if(res.data.data!=="" && res.data.data.tests.length){
       setSelectedTeacher(res.data.data);
+      }
     } catch (error) {
       setSelectedTeacher(null);
-      console.error(error);
     }
     setLoading(false);
   };
@@ -106,7 +110,7 @@ export default function TeacherDataView() {
     <div className="card" style={{ marginBottom: "1em" }}>
       <h1>Teachers</h1>
       <DataTable
-        value={teacher}
+        value={teacher || []}
         paginator
         rows={10}
         filters={filters}

@@ -12,7 +12,7 @@ const ExcelToJson = () => {
   const [showModal, setShowModal] = useState(false);
   const fileUploadRef = useRef(null);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState([]); // Changed from string to array
 
   const handleFileUpload = (event) => {
     const uploadedFile = event.files[0];
@@ -44,19 +44,20 @@ const ExcelToJson = () => {
         { students: jsonData },
         { withCredentials: true }
       );
-      setError("");
+      setErrors([]); // Clear errors on success
       setMessage(res.data.message);
     } catch (error) {
       setMessage("");
-      setError(
-        error.response?.data?.error ||
-          "An error occurred while uploading the data."
+      setErrors(
+        Array.isArray(error.response?.data?.error)
+          ? error.response.data.error
+          : [error.response?.data?.error || "An error occurred while uploading the data."]
       );
     }
   };
 
   const handleReset = () => {
-    setError("");
+    setErrors([]);
     setMessage("");
     setJsonData([]);
     setFile(null);
@@ -117,8 +118,20 @@ const ExcelToJson = () => {
               />
             )}
           </div>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {message && <p style={{ color: "green" }}>{message}</p>}
+
+          {/* Display Errors as a List */}
+          {errors.length > 0 && (
+            <div style={{ color: "red", marginTop: "10px" }}>
+              <h4>Errors:</h4>
+              <ul style={{ paddingLeft: "20px" }}>
+                {errors.map((err, index) => (
+                  <li key={index}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {message && <p style={{ color: "green", marginTop: "10px" }}>{message}</p>}
         </form>
 
         <Dialog

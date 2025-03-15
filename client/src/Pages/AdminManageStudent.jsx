@@ -44,7 +44,7 @@ export default function AdminManageStudent({ toast }) {
       } else {
         await axios.post(
           process.env.REACT_APP_ADMIN_CREATE_STUDENT,
-          studentData
+          studentData,{withCredentials:true}
         );
         toast.current.show({
           severity: "success",

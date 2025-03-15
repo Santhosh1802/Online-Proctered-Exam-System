@@ -9,8 +9,8 @@ function ForgotPassword({ toast }) {
     e.preventDefault();
     if (email === "") {
       toast.current.show({
-        severity: "error",
-        summary: "Error",
+        severity: "warn",
+        summary: "Warning",
         detail: "Email Required",
       });
       return;

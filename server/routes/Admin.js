@@ -15,6 +15,7 @@ const {
   getStats,
   getAllTestsForAdmin,
   getLoginTrends,
+  getTestReports,
 } = require("../controllers/AdminController");
 const { isAdminAuthenticated } = require("../middlewares/authentication");
 
@@ -32,4 +33,5 @@ router.post("/bulkuploadstudents", isAdminAuthenticated, BulkUploadStudents);
 router.get("/getstats", isAdminAuthenticated, getStats);
 router.get("/getalltestadmin", isAdminAuthenticated, getAllTestsForAdmin);
 router.get("/getlogintrends", isAdminAuthenticated, getLoginTrends);
+router.get("/get-test-by-test-id-admin",isAdminAuthenticated,getTestReports);
 module.exports = router;

@@ -152,6 +152,9 @@ const getOneTest = async (req, res) => {
   };
   try {
     const { id } = req.query;
+    if(!id){
+      return res.status(200).send({message:"No Id"});
+    }
     const test = await Test.findOne({ _id: id });
     response.message = "Tests Found";
     response.data = test;
@@ -314,7 +317,9 @@ const formatDuration = (seconds) => {
 const getStudentReports = async (req, res) => {
   try {
     const { student_id } = req.query;
-
+    if(!student_id){
+      return res.status(200).send({message:"no id"});
+    }
     console.log("Fetching reports for student ID:", student_id);
 
     const reports = await Report.find({ student_id });

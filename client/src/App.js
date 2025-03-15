@@ -6,7 +6,6 @@ import { ToggleButton } from "primereact/togglebutton";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 const Login = lazy(() => import("./Pages/Login"));
-const Register = lazy(() => import("./Pages/Register"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./Pages/ResetPassword"));
 const StudentDashboard = lazy(() => import("./Pages/StudentDashboard"));
@@ -91,7 +90,6 @@ function AppRoutes({ toast }) {
       <Routes>
         <Route path="/" element={<Login toast={toast} />} />
         <Route path="/login" element={<Login toast={toast} />} />
-        <Route path="/register" element={<Register toast={toast} />} />
         <Route
           path="/forgotpassword"
           element={<ForgotPassword toast={toast} />}
