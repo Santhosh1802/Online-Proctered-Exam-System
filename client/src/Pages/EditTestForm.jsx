@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
@@ -8,7 +8,7 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 const EditTestForm = ({ toast }) => {
   const [testData, setTestData] = useState({
     test_id: "",
@@ -21,19 +21,22 @@ const EditTestForm = ({ toast }) => {
     questions: [],
   });
   const { testId } = useParams();
-  const navigate=useNavigate();
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (testId) {
       axios
-        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}`,{params:{id:testId},withCredentials:true})
+        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}`, {
+          params: { id: testId },
+          withCredentials: true,
+        })
         .then((response) => {
-          const test=response.data.data;
+          const test = response.data.data;
           setTestData({
             ...test,
-            start_date:new Date(test.start_date),
-            end_date:new Date(test.end_date),
-            test_id:testId,
+            start_date: new Date(test.start_date),
+            end_date: new Date(test.end_date),
+            test_id: testId,
           });
         })
         .catch((error) => console.error("Error fetching test data:", error));
@@ -100,32 +103,32 @@ const EditTestForm = ({ toast }) => {
   };
   const removeImage = (index) => {
     updateQuestion(index, "image", "");
-};
+  };
   const email = useSelector((store) => store.user.email);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const requestData = { ...testData, email };
-  
+
     try {
       let response;
       console.log(testData);
-      
+
       if (testData.test_id) {
         // Update existing test
         response = await axios.put(
           `${process.env.REACT_APP_TEACHER_UPDATE_ONE_TEST}`,
           requestData,
-          { params:{id:testData.test_id},withCredentials: true }
+          { params: { id: testData.test_id }, withCredentials: true }
         );
-      } 
-  
+      }
+
       if (response.status === 200 || response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
           detail: "Test Updated Successfully",
         });
-  
+
         setTestData({
           test_id: "",
           testname: "",
@@ -152,7 +155,7 @@ const EditTestForm = ({ toast }) => {
         detail: "Failed to save test",
       });
     }
-  };  
+  };
   const toggleProctorSetting = (option) => {
     let updatedSettings = [...testData.proctor_settings];
     if (updatedSettings.includes(option)) {
@@ -164,7 +167,7 @@ const EditTestForm = ({ toast }) => {
   };
   const navigateBack = () => {
     window.history.back();
-  }
+  };
   return (
     <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
       <Button onClick={navigateBack}>Back</Button>

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import TeacherNavBar from "../Components/TeacherNavBar";
 import axios from "axios";
@@ -46,15 +45,25 @@ export default function TeacherDashboard({ toast }) {
           setStudentCount(res.data.data.studentCount);
           setCompletedTestCount(res.data.data.completedTestCount);
         })
-        .catch((err) => console.error("Error fetching teacher dashboard data:", err));
+        .catch((err) =>
+          console.error("Error fetching teacher dashboard data:", err)
+        );
     } else {
       console.log("Error Call");
     }
-  }, [userEmail]);
+  }, [userEmail, dispatch, navigate]);
 
   const AnimatedNumber = ({ value }) => {
-    const props = useSpring({ number: value, from: 0, config: { duration: 1000 } });
-    return <animated.span className="text-3xl font-bold text-white">{props.number.to((n) => Math.floor(n))}</animated.span>;
+    const props = useSpring({
+      number: value,
+      from: 0,
+      config: { duration: 1000 },
+    });
+    return (
+      <animated.span className="text-3xl font-bold text-white">
+        {props.number.to((n) => Math.floor(n))}
+      </animated.span>
+    );
   };
 
   return (
@@ -66,28 +75,51 @@ export default function TeacherDashboard({ toast }) {
       }}
     >
       <TeacherNavBar />
-      <div style={{ marginTop: "5em", width: "70%", justifyContent: "center", alignItems: "center", display: "flex", flexDirection: "column" }}>
-        <Card className="w-7 text-center" style={{ marginTop: "3em" }}>
-          <Avatar label={name[0]} size="xlarge" shape="circle" className="mb-3" />
+      <div
+        style={{
+          marginTop: "5em",
+          width: "70%",
+          justifyContent: "center",
+          alignItems: "center",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Card className="w-8 text-center" style={{ marginTop: "3em" }}>
+          <Avatar
+            label={name[0]}
+            size="xlarge"
+            shape="circle"
+            className="mb-3"
+          />
           <h2 className="text-2xl font-bold">Welcome, {name} 👋</h2>
           <p className="text-gray-500">{userEmail}</p>
         </Card>
         <Divider className="w-7" />
         <div className="grid mt-4 w-12 flex justify-content-center gap-4">
           <div className="col-12 md:col-2">
-            <Card className="shadow-2 text-center p-4" style={{ backgroundColor: "#007bff", borderRadius: "0" }}>
-              <h4 className="text-white">Total Tests count</h4>
+            <Card
+              className="shadow-2 text-center p-4"
+              style={{ backgroundColor: "#007bff", borderRadius: "0" }}
+            >
+              <h4 className="text-white">Tests count</h4>
               <AnimatedNumber value={testCount} />
             </Card>
           </div>
           <div className="col-12 md:col-2">
-            <Card className="shadow-2 text-center p-4" style={{ backgroundColor: "#28a745", borderRadius: "0" }}>
-              <h4 className="text-white">Total Students</h4>
+            <Card
+              className="shadow-2 text-center p-4"
+              style={{ backgroundColor: "#28a745", borderRadius: "0" }}
+            >
+              <h4 className="text-white">Assigned Test</h4>
               <AnimatedNumber value={studentCount} />
             </Card>
           </div>
           <div className="col-12 md:col-2">
-            <Card className="shadow-2 text-center p-4" style={{ backgroundColor: "#ffc107", borderRadius: "0" }}>
+            <Card
+              className="shadow-2 text-center p-4"
+              style={{ backgroundColor: "#ffc107", borderRadius: "0" }}
+            >
               <h4 className="text-white">Completed Tests</h4>
               <AnimatedNumber value={completedTestCount} />
             </Card>

@@ -164,10 +164,10 @@ const getOneTest = async (req, res) => {
 
 const submitTest = async (req, res) => {
   try {
-    const { testId, student_id, answers, proctor_scores, test_duration } = req.body;
+    const { testId, student_id, answers, proctor_scores, test_duration } =
+      req.body;
     console.log("Received request body:", req.body);
 
-    // Fetch test data
     const test = await Test.findById(testId);
     if (!test) {
       console.log("Test not found:", testId);
@@ -179,11 +179,12 @@ const submitTest = async (req, res) => {
     let totalMarks = 0;
     let studentScore = 0;
 
-    // Process each question
     test.questions.forEach((question) => {
       const questionId = question._id.toString();
       const studentAnswer = answers[questionId];
-      const correctAnswers = question.correctAnswers.map(ans => ans.toLowerCase().trim());
+      const correctAnswers = question.correctAnswers.map((ans) =>
+        ans.toLowerCase().trim()
+      );
 
       console.log(`\nProcessing Question: ${question.questionText}`);
       console.log("Question ID:", questionId);
@@ -191,15 +192,22 @@ const submitTest = async (req, res) => {
       console.log("Student Answer:", studentAnswer);
 
       if (studentAnswer) {
-        // Convert answer to string and normalize case
         const answerString = studentAnswer.toString().trim().toLowerCase();
         let isCorrect = false;
 
         if (question.type === "choose-multiple") {
-          const studentAnswersArray = answerString.split(',').map(ans => ans.trim().toLowerCase());
-          console.log("Processed Student Answers (array):", studentAnswersArray);
-        
-          isCorrect = arraysEqualIgnoreOrder(studentAnswersArray, correctAnswers);
+          const studentAnswersArray = answerString
+            .split(",")
+            .map((ans) => ans.trim().toLowerCase());
+          console.log(
+            "Processed Student Answers (array):",
+            studentAnswersArray
+          );
+
+          isCorrect = arraysEqualIgnoreOrder(
+            studentAnswersArray,
+            correctAnswers
+          );
         } else {
           isCorrect = correctAnswers.includes(answerString);
         }
@@ -218,20 +226,17 @@ const submitTest = async (req, res) => {
       totalMarks += question.marks;
     });
 
-    // Ensure score isn't negative
     studentScore = Math.max(0, studentScore);
     console.log("Total Score Before Proctoring:", studentScore);
 
-    // Calculate final score considering proctoring
     const proctorPenalty = calculateProctorPenalty(proctor_scores);
     console.log("Proctoring Penalty:", proctorPenalty);
 
     const finalScore = Math.max(0, studentScore - proctorPenalty);
     console.log("Final Score After Proctoring:", finalScore);
 
-    // Create report including testname
     const report = new Report({
-      testname: test.testname, 
+      testname: test.testname,
       test_id: testId,
       student_id,
       answers,
@@ -245,7 +250,6 @@ const submitTest = async (req, res) => {
     await report.save();
     console.log("Report saved with ID:", report._id);
 
-    // Link report to test and student
     if (!test.report) {
       test.report = [];
     }
@@ -266,7 +270,6 @@ const submitTest = async (req, res) => {
       duration_taken: formatDuration(test_duration),
     });
 
-    // Remove testId from ongoingTests
     student.ongoingTests = student.ongoingTests.filter(
       (test) => test.testId.toString() !== testId
     );
@@ -285,62 +288,51 @@ const submitTest = async (req, res) => {
   }
 };
 
-
-// Utility function to check if two arrays contain the same elements (ignoring order)
 const arraysEqualIgnoreOrder = (arr1, arr2) => {
   if (arr1.length !== arr2.length) return false;
-  return arr1.sort().join(',') === arr2.sort().join(',');
+  return arr1.sort().join(",") === arr2.sort().join(",");
 };
 
-
-
-// Calculate proctoring penalty (customize as needed)
 const calculateProctorPenalty = (scores) => {
   const { noise_score, face_score, mobile_score, tab_score } = scores;
 
-  // Example: Deduct 1 mark for each proctor violation over a threshold
   let penalty = 0;
   if (noise_score > 5) penalty += 1;
-  if (face_score > 5) penalty += 2; // e.g., face not detected enough
+  if (face_score > 5) penalty += 2;
   if (mobile_score > 3) penalty += 2;
   if (tab_score > 2) penalty += 2;
 
   return penalty;
 };
 
-// Helper function to format duration
 const formatDuration = (seconds) => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 };
 
-
-// Get reports for a student by student_id
 const getStudentReports = async (req, res) => {
-    try {
-        const { student_id } = req.query;
+  try {
+    const { student_id } = req.query;
 
-        console.log("Fetching reports for student ID:", student_id);
+    console.log("Fetching reports for student ID:", student_id);
 
-        // Fetch reports for the given student_id
-        const reports = await Report.find({ student_id });
+    const reports = await Report.find({ student_id });
 
-        if (!reports.length) {
-            return res.status(200).json({ message: "No reports found for this student." });
-        }
-
-        console.log("Reports fetched successfully:", reports);
-
-        res.status(200).json({ reports });
-    } catch (error) {
-        console.error("Error fetching student reports:", error);
-        res.status(500).json({ message: "Internal server error" });
+    if (!reports.length) {
+      return res
+        .status(200)
+        .json({ message: "No reports found for this student." });
     }
+
+    console.log("Reports fetched successfully:", reports);
+
+    res.status(200).json({ reports });
+  } catch (error) {
+    console.error("Error fetching student reports:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
-
-
-
 
 module.exports = {
   getStudentProfile,
@@ -348,5 +340,5 @@ module.exports = {
   getStudentTests,
   getOneTest,
   submitTest,
-  getStudentReports
+  getStudentReports,
 };

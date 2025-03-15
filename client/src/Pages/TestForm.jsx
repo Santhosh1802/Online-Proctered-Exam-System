@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
@@ -8,7 +8,7 @@ import { Checkbox } from "primereact/checkbox";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MultiSelect } from "primereact/multiselect";
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 const TestForm = ({ toast }) => {
   const [testData, setTestData] = useState({
     test_id: null,
@@ -24,7 +24,9 @@ const TestForm = ({ toast }) => {
   useEffect(() => {
     if (testId) {
       axios
-        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/${testId}`, { withCredentials: true })
+        .get(`${process.env.REACT_APP_TEACHER_GET_ONE_TEST}/${testId}`, {
+          withCredentials: true,
+        })
         .then((response) => {
           setTestData(response.data);
         })
@@ -92,37 +94,37 @@ const TestForm = ({ toast }) => {
   };
   const removeImage = (index) => {
     updateQuestion(index, "image", "");
-};
+  };
   const email = useSelector((store) => store.user.email);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const requestData = { ...testData, email };
-  
+
     try {
       let response;
       if (testData.test_id) {
-        // Update existing test
         response = await axios.put(
           `${process.env.REACT_APP_UPDATE_TEST}/${testData.test_id}`,
           requestData,
           { withCredentials: true }
         );
       } else {
-        // Create new test
         response = await axios.post(
           process.env.REACT_APP_TEACHER_CREATE_TEST,
           requestData,
           { withCredentials: true }
         );
       }
-  
+
       if (response.status === 200 || response.status === 201) {
         toast.current.show({
           severity: "success",
           summary: "Success",
-          detail: testData.test_id ? "Test Updated Successfully" : "Test Created Successfully",
+          detail: testData.test_id
+            ? "Test Updated Successfully"
+            : "Test Created Successfully",
         });
-  
+
         setTestData({
           test_id: null,
           testname: "",
@@ -148,7 +150,7 @@ const TestForm = ({ toast }) => {
         detail: "Failed to save test",
       });
     }
-  };  
+  };
   const toggleProctorSetting = (option) => {
     let updatedSettings = [...testData.proctor_settings];
     if (updatedSettings.includes(option)) {
@@ -160,7 +162,7 @@ const TestForm = ({ toast }) => {
   };
   const navigateBack = () => {
     window.history.back();
-  }
+  };
   return (
     <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
       <Button onClick={navigateBack}>Back</Button>

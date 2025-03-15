@@ -52,36 +52,55 @@ export default function AdminDashboard() {
         })
         .catch((error) => console.log(error));
     }
-  }, [email,navigate]);
+  }, [email, navigate]);
+
+  const theme = localStorage.getItem("theme");
 
   const loginChartOptions = {
     chart: { type: "line", height: 250, toolbar: { show: false } },
     xaxis: {
-      categories: loginTrends.map((entry) => entry.day), 
-      labels: { style: { colors: "#666", fontSize: "12px" } },
+      categories: loginTrends.map((entry) => entry.day),
+      labels: {
+        style: {
+          colors: theme === "dark" ? "white" : "black",
+          fontSize: "12px",
+        },
+      },
     },
-    yaxis: { labels: { style: { colors: "#666", fontSize: "12px" } } },
+    yaxis: {
+      labels: {
+        style: {
+          colors: theme === "dark" ? "white" : "black",
+          fontSize: "12px",
+        },
+      },
+    },
     stroke: { curve: "smooth" },
     dataLabels: { enabled: false },
     colors: ["#007bff"],
+    title: {
+      text: "Logins per Day",
+      style: { color: theme === "dark" ? "white" : "black", fontSize: "16px" },
+    },
+    tooltip: {
+      theme: theme === "dark" ? "dark" : "light",
+      style: { fontSize: "12px", color: theme === "dark" ? "white" : "black" },
+    },
   };
-  
+
   const loginChartSeries = [
     { name: "Logins per Day", data: loginTrends.map((entry) => entry.count) },
   ];
-  
-  
-  
 
   const AnimatedNumber = ({ value }) => {
     const props = useSpring({
-      number: value || 0, 
+      number: value || 0,
       from: 0,
       config: { duration: 1000 },
     });
 
     return (
-      <animated.span className="text-3xl font-bold" style={{color:"white"}}>
+      <animated.span className="text-3xl font-bold" style={{ color: "white" }}>
         {props.number.to ? props.number.to((n) => Math.floor(n)) : 0}
       </animated.span>
     );
@@ -148,8 +167,13 @@ export default function AdminDashboard() {
             className="shadow-2 text-center p-4"
             style={{ borderRadius: "0" }}
           >
-            <h4 className="text-gray-700">All User Login Trends (Last 7 days)</h4>
-            <Chart options={loginChartOptions} series={loginChartSeries} type="line" height={250} />
+            <h4>All User Login Trends (Last 7 days)</h4>
+            <Chart
+              options={loginChartOptions}
+              series={loginChartSeries}
+              type="line"
+              height={250}
+            />
           </Card>
         </div>
       </div>

@@ -1,47 +1,61 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { addFlag, updateProctoring } from '../Store/testSlice';
+import React, { useEffect, useState, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { addFlag, updateProctoring } from "../Store/testSlice";
+import { convertToISTWithTime } from "../Utils/time";
 
 const NoiseDetection = ({ toast }) => {
   const [volume, setVolume] = useState(0);
   const [isViolation, setIsViolation] = useState(false);
-  const threshold = 80; 
-  const smoothingFactor = 0.9; 
+  const threshold = 80;
+  const smoothingFactor = 0.9;
   const dispatch = useDispatch();
-  const violationTimeout = useRef(null); // Ref to manage timeout
+  const violationTimeout = useRef(null);
 
   useEffect(() => {
     let audioContext, analyser, dataArray;
     let previousVolume = 0;
-    let hasDispatched = false; // Prevents multiple dispatches
+    let hasDispatched = false;
 
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
       .then((stream) => {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaStreamSource(stream);
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;  
+        analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         source.connect(analyser);
 
         const monitorAudio = () => {
           analyser.getByteFrequencyData(dataArray);
-          const avgVolume = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-          const smoothedVolume = smoothingFactor * previousVolume + (1 - smoothingFactor) * avgVolume;
+          const avgVolume =
+            dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+          const smoothedVolume =
+            smoothingFactor * previousVolume +
+            (1 - smoothingFactor) * avgVolume;
 
           setVolume(smoothedVolume);
 
           if (smoothedVolume > threshold) {
             if (!hasDispatched) {
               setIsViolation(true);
-              toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'High noise detected!', life: 3000 });
-              dispatch(updateProctoring({ noise_score: 1 })); // Update noise score once
-              dispatch(addFlag("Heavy Noise detected at "+new Date().toLocaleString()));
-              hasDispatched = true; // Prevent further updates
+              toast.current.show({
+                severity: "warn",
+                summary: "Warning",
+                detail: "High noise detected!",
+                life: 3000,
+              });
+              dispatch(updateProctoring({ noise_score: 1 }));
+              dispatch(
+                addFlag(
+                  "Heavy Noise detected at " + convertToISTWithTime(new Date())
+                )
+              );
+              hasDispatched = true;
 
-              // Reset after 5 seconds to allow future detections
-              if (violationTimeout.current) clearTimeout(violationTimeout.current);
+              if (violationTimeout.current)
+                clearTimeout(violationTimeout.current);
               violationTimeout.current = setTimeout(() => {
                 hasDispatched = false;
               }, 5000);
@@ -68,11 +82,7 @@ const NoiseDetection = ({ toast }) => {
     };
   }, [toast, dispatch]);
 
-  return (
-    <div>
-      {/* {isViolation && <p style={{ color: 'red' }}>Violation detected: High noise level!</p>} */}
-    </div>
-  );
+  return <div></div>;
 };
 
 export default NoiseDetection;

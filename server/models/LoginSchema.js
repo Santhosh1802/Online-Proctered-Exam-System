@@ -15,7 +15,7 @@ const LoginSchema = new mongoose.Schema({
     require: true,
     default: "student",
   },
-  last_login: { type: Date, default: null }
+  last_login: { type: Date, default: null },
 });
 
 const Login = mongoose.model("login", LoginSchema);

@@ -39,12 +39,19 @@ const ExcelToJson = () => {
       return;
     }
     try {
-      const res = await axios.post(process.env.REACT_APP_ADMIN_BULK_UPLOAD_STUDENT, { students: jsonData }, { withCredentials: true });
+      const res = await axios.post(
+        process.env.REACT_APP_ADMIN_BULK_UPLOAD_STUDENT,
+        { students: jsonData },
+        { withCredentials: true }
+      );
       setError("");
       setMessage(res.data.message);
     } catch (error) {
       setMessage("");
-      setError(error.response?.data?.error || "An error occurred while uploading the data.");
+      setError(
+        error.response?.data?.error ||
+          "An error occurred while uploading the data."
+      );
     }
   };
 

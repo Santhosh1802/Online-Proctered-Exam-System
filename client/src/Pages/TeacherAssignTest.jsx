@@ -14,20 +14,25 @@ export default function TeacherAssignTest({ toast }) {
   const [department, setDepartment] = useState("");
   const [batch, setBatch] = useState("");
   const [section, setSection] = useState("");
-  
+
   const id = useSelector((state) => state.user.id);
 
   useEffect(() => {
     axios
-      .get(`${process.env.REACT_APP_GET_UNIQUE_DEPARTMENTS}`, { withCredentials: true })
+      .get(`${process.env.REACT_APP_GET_UNIQUE_DEPARTMENTS}`, {
+        withCredentials: true,
+      })
       .then((response) => {
         console.log(response.data.departments);
-        
+
         setDepartments(response.data.departments || []);
       })
       .catch((error) => console.error("Error fetching departments:", error));
     axios
-      .get(`${process.env.REACT_APP_TEACHER_GET_TESTS}`, {params:{teacher_id:id}, withCredentials: true })
+      .get(`${process.env.REACT_APP_TEACHER_GET_TESTS}`, {
+        params: { teacher_id: id },
+        withCredentials: true,
+      })
       .then((response) => {
         setTests(response.data.data || []);
       })
@@ -60,7 +65,7 @@ export default function TeacherAssignTest({ toast }) {
         })
         .catch((error) => console.error("Error fetching sections:", error));
     }
-  }, [batch,department]);
+  }, [batch, department]);
 
   const handleAssignTest = async () => {
     try {
@@ -107,7 +112,7 @@ export default function TeacherAssignTest({ toast }) {
       }}
     >
       <TeacherNavBar />
-      <div style={{ marginTop: "5em" ,width:"500px"}}>
+      <div style={{ marginTop: "5em", width: "40%" }}>
         <h1>Assign Test to Students</h1>
         <div className="p-fluid grid">
           <div className="col-12">

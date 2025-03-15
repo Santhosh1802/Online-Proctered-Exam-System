@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
@@ -89,8 +89,8 @@ function Login({ toast }) {
           borderRadius: ".5em",
           height: "500px",
           marginTop: "8em",
-          backgroundColor:"white",
-          color:"black"
+          backgroundColor: "white",
+          color: "black",
         }}
       >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>Login</h1>

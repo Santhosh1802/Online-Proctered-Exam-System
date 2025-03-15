@@ -14,10 +14,10 @@ export default function AdminManageStudent({ toast }) {
     email: "",
     phone: "",
     department: "",
-    registerNumber:"",
-    batch:"",
-    section:"",
-    password:"",
+    registerNumber: "",
+    batch: "",
+    section: "",
+    password: "",
   });
 
   const handleChange = (e) => {
@@ -26,23 +26,43 @@ export default function AdminManageStudent({ toast }) {
 
   const handleSubmit = async () => {
     try {
-      if(studentData.name===""||studentData.email===""||studentData.phone===""||studentData.department===""||studentData.registerNumber===""||studentData.batch===""||studentData.section===""||studentData.password===""){
+      if (
+        studentData.name === "" ||
+        studentData.email === "" ||
+        studentData.phone === "" ||
+        studentData.department === "" ||
+        studentData.registerNumber === "" ||
+        studentData.batch === "" ||
+        studentData.section === "" ||
+        studentData.password === ""
+      ) {
         toast.current.show({
           severity: "warn",
           summary: "Warning",
           detail: "Fill all details to create student",
         });
+      } else {
+        await axios.post(
+          process.env.REACT_APP_ADMIN_CREATE_STUDENT,
+          studentData
+        );
+        toast.current.show({
+          severity: "success",
+          summary: "Success",
+          detail: "Student Created",
+        });
+        setVisible(false);
+        setStudentData({
+          name: "",
+          email: "",
+          phone: "",
+          department: "",
+          registerNumber: "",
+          section: "",
+          batch: "",
+          password: "",
+        });
       }
-      else{
-      await axios.post(process.env.REACT_APP_ADMIN_CREATE_STUDENT, studentData);
-      toast.current.show({
-        severity: "success",
-        summary: "Success",
-        detail: "Student Created",
-      });
-      setVisible(false);
-      setStudentData({ name: "", email: "", phone: "", department: "",registerNumber:"",section:"",batch:"",password:"" });
-    }
     } catch (error) {
       toast.current.show({
         severity: "error",
@@ -67,17 +87,28 @@ export default function AdminManageStudent({ toast }) {
         }}
       >
         <ExcelToJson />
-        <Button label="Create One Student" onClick={() => setVisible(true)} style={{marginTop:"2em",alignSelf:"flex-start"}}/>
+        <Button
+          label="Create One Student"
+          onClick={() => setVisible(true)}
+          style={{ marginTop: "2em", alignSelf: "flex-start" }}
+        />
       </div>
-      <div style={{width:"80%"}}>
-      <StudentDataView />
+      <div style={{ width: "80%" }}>
+        <StudentDataView />
       </div>
       <Dialog
         header="Create Student"
         visible={visible}
         onHide={() => setVisible(false)}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1em",padding:"2em" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1em",
+            padding: "2em",
+          }}
+        >
           <InputText
             name="name"
             placeholder="Name"

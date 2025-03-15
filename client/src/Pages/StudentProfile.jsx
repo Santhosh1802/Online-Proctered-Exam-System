@@ -1,26 +1,25 @@
-import React,{useState,useEffect} from "react";
-import StudentNavBar from '../Components/StudentNavBar'
+import React, { useState, useEffect } from "react";
+import StudentNavBar from "../Components/StudentNavBar";
 import { InputText } from "primereact/inputtext";
 import { useSelector } from "react-redux";
 import { Button } from "primereact/button";
 import { Image } from "primereact/image";
 import { FileUpload } from "primereact/fileupload";
 import axios from "axios";
-import {Dialog} from "primereact/dialog";
-import { Password } from "primereact/password";
-import {profileString} from "../Utils/profileString";
+import { Dialog } from "primereact/dialog";
+import { profileString } from "../Utils/profileString";
 export default function StudentProfile({ toast }) {
   const [profile, setProfile] = useState(profileString);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [department, setDepartment] = useState("");
-  const [registerNumber,setRegisterNumber]=useState("");
-  const [batch,setBatch]=useState("");
-  const [section,setSection]=useState("");
+  const [registerNumber, setRegisterNumber] = useState("");
+  const [batch, setBatch] = useState("");
+  const [section, setSection] = useState("");
 
   const userEmail = useSelector((state) => state.user.email);
 
-  const [showDialog, setShowDialog] = useState(false); // State for Dialog
+  const [showDialog, setShowDialog] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +27,8 @@ export default function StudentProfile({ toast }) {
     if (userEmail) {
       axios
         .get(process.env.REACT_APP_GET_STUDENT_DATA, {
-          params: { email: userEmail },withCredentials:true,
+          params: { email: userEmail },
+          withCredentials: true,
         })
         .then((res) => {
           console.log(res.data);
@@ -68,13 +68,17 @@ export default function StudentProfile({ toast }) {
       return;
     }
     try {
-      const res = await axios.post(process.env.REACT_APP_UPDATE_STUDENT_DATA, {
-        profile:profile,
-        email: userEmail,
-        name: name,
-        phone: phone,
-        department: department,
-      },{withCredentials:true});
+      const res = await axios.post(
+        process.env.REACT_APP_UPDATE_STUDENT_DATA,
+        {
+          profile: profile,
+          email: userEmail,
+          name: name,
+          phone: phone,
+          department: department,
+        },
+        { withCredentials: true }
+      );
       console.log(res.data);
       if (res.data.error === "") {
         toast.current.show({
@@ -96,7 +100,7 @@ export default function StudentProfile({ toast }) {
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
-    if (!oldPassword || !newPassword || !confirmPassword) {
+    if (oldPassword === "" || newPassword === "" || confirmPassword === "") {
       toast.current.show({
         severity: "error",
         summary: "Error",
@@ -118,7 +122,7 @@ export default function StudentProfile({ toast }) {
       const res = await axios.post(
         process.env.REACT_APP_RESET_PASSWORD,
         {
-          email:userEmail,
+          email: userEmail,
           oldPassword,
           newPassword,
         },
@@ -131,7 +135,7 @@ export default function StudentProfile({ toast }) {
           summary: "Success",
           detail: "Password reset successfully",
         });
-        setShowDialog(false); // Close the dialog after success
+        setShowDialog(false);
       } else {
         toast.current.show({
           severity: "error",
@@ -164,7 +168,7 @@ export default function StudentProfile({ toast }) {
             style={{
               border: "px solid black",
               marginLeft: "3em",
-              zIndex:"0"
+              zIndex: "0",
             }}
             width="200px"
             height="200px"
@@ -266,12 +270,13 @@ export default function StudentProfile({ toast }) {
           <Button
             label="Update Profile"
             type="submit"
-            style={{ width: "20em",marginBottom:"2em"}}
+            style={{ width: "20em", marginBottom: "2em" }}
           />
           <br />
           <Button
             label="Reset Password"
             severity="secondary"
+            type="button"
             onClick={() => setShowDialog(true)}
             style={{ width: "20em", marginBottom: "10vh" }}
           />
@@ -280,50 +285,57 @@ export default function StudentProfile({ toast }) {
       <Dialog
         header="Reset Password"
         visible={showDialog}
-        style={{ width: "20vw" }}
         onHide={() => setShowDialog(false)}
+        style={{ width: "25vw", textAlign: "center" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        modal
       >
-        <form onSubmit={handleResetPassword}>
+        <form
+          onSubmit={handleResetPassword}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <label htmlFor="oldPassword">Current Password</label>
-          <Password
+          <InputText
             id="oldPassword"
+            type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            required
-            toggleMask
-            feedback={false} // Hide password strength indicator for old password
             style={{ width: "100%" }}
+            placeholder="Enter current password"
           />
-          <br />
           <br />
 
           <label htmlFor="newPassword">New Password</label>
-          <Password
+          <InputText
             id="newPassword"
+            type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            required
-            toggleMask
-            feedback={true} // Show password strength indicator
             style={{ width: "100%" }}
+            placeholder="Enter new password"
           />
-          <br />
           <br />
 
           <label htmlFor="confirmPassword">Confirm New Password</label>
-          <Password
+          <InputText
             id="confirmPassword"
+            type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            toggleMask
-            feedback={false} // Hide password strength indicator for confirm password
             style={{ width: "100%" }}
+            placeholder="Confirm new password"
           />
           <br />
-          <br />
 
-          <Button label="Reset Password" type="submit" style={{ width: "100%" }} />
+          <Button
+            label="Reset Password"
+            type="submit"
+            style={{ width: "100%" }}
+          />
         </form>
       </Dialog>
     </div>

@@ -3,7 +3,8 @@ import React, { useRef, useEffect, useState } from "react";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs";
 import { useDispatch } from "react-redux";
-import { updateProctoring,addFlag } from "../Store/testSlice";
+import { updateProctoring, addFlag } from "../Store/testSlice";
+import { convertToISTWithTime } from "../Utils/time";
 
 const MobileDetection = ({ toast }) => {
   const videoRef = useRef(null);
@@ -53,9 +54,18 @@ const MobileDetection = ({ toast }) => {
           );
           setMobileDetected(mobileDetected);
           if (mobileDetected) {
-            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Mobile device detected!', life: 3000 });
-            dispatch(updateProctoring({ mobile_score: 1 })); // Update mobile score
-            dispatch(addFlag("Mobile Phone detected at "+new Date().toLocaleString()))
+            toast.current.show({
+              severity: "warn",
+              summary: "Warning",
+              detail: "Mobile device detected!",
+              life: 3000,
+            });
+            dispatch(updateProctoring({ mobile_score: 1 }));
+            dispatch(
+              addFlag(
+                "Mobile Phone detected at " + convertToISTWithTime(new Date())
+              )
+            );
           }
 
           const canvas = canvasRef.current;
@@ -83,7 +93,14 @@ const MobileDetection = ({ toast }) => {
 
   return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ position: "relative", display: "inline-block", width: "0px", height: "0px" }}>
+      <div
+        style={{
+          position: "relative",
+          display: "inline-block",
+          width: "0px",
+          height: "0px",
+        }}
+      >
         <video
           ref={videoRef}
           autoPlay

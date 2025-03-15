@@ -7,6 +7,7 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { useNavigate } from "react-router-dom";
 import { setId } from "../Store/userSlice";
+import { convertToISTWithTime } from "../Utils/time";
 
 export default function StudentDashboard() {
   const [name, setName] = useState("");
@@ -95,41 +96,46 @@ export default function StudentDashboard() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        width: "100%",
       }}
     >
       <StudentNavBar />
-      <div style={{ marginTop: "5em", width: "70%" }}>
-        <h1>Welcome {name} 👋</h1>
-        <Card
-          style={{
-            marginBottom: "2em",
-            textAlign: "center",
-            borderRadius: "8px",
-          }}
-        >
+      <div style={{ marginTop: "5em", width: "90%", maxWidth: "800px" }}>
+        <h1 style={{ textAlign: "center" }}>Welcome {name} 👋</h1>
+
+        <Card style={{ marginBottom: "2em", textAlign: "center" }}>
           <div style={{ display: "flex", justifyContent: "space-around" }}>
             <div>
-              <h2>Ongoing Test</h2>
+              <h2>Ongoing</h2>
               <h2>{assignedTests.length - expiredTests.length}</h2>
             </div>
             <div>
-              <h2>Completed Test</h2>
+              <h2>Completed</h2>
               <h2>{completedTests.length}</h2>
             </div>
             <div>
-              <h2>Expired Test</h2>
+              <h2>Expired</h2>
               <h2>{expiredTests.length}</h2>
             </div>
           </div>
         </Card>
+
         <Dropdown
           value={filter}
           options={filterOptions}
           onChange={(e) => setFilter(e.value)}
           placeholder="Select a Filter"
-          style={{ marginBottom: "2em" }}
+          style={{ marginBottom: "2em", width: "100%", maxWidth: "300px" }}
         />
-        <div className="p-grid" style={{ width: "100%" }}>
+
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           {filteredTests().map((test) => {
             const isExpired = expiredTests.some(
               (expired) => expired.testId === test.testId
@@ -139,36 +145,40 @@ export default function StudentDashboard() {
             );
 
             return (
-              <div
+              <Card
                 key={test.testId}
-                className="p-col-12 p-md-6 p-lg-4"
-                style={{ marginBottom: "2em", borderRadius: "2em" }}
+                title={test.testname}
+                subTitle={`Duration: ${test.duration} minutes`}
+                style={{
+                  width: "90%",
+                  maxWidth: "500px",
+                  marginBottom: "1em",
+                  padding: "1em",
+                  textAlign: "center",
+                }}
               >
-                <Card
-                  title={test.testname}
-                  subTitle={`Duration: ${test.duration} minutes`}
-                >
-                  <p>{test.description}</p>
-                  {!isExpired  && !isCompleted &&(
-                    <>
-                      <p>
-                        Start Date: {new Date(test.start_date).toLocaleString()}
-                      </p>
-                      <p>
-                        End Date: {new Date(test.end_date).toLocaleString()}
-                      </p>
-                    </>
-                  )}
-                  {!isExpired && !isCompleted &&(
-                    <Button
-                      label="Start Test"
-                      icon="pi pi-play"
-                      className="p-button-success"
-                      onClick={() => handleStartTest(test.testId)}
-                    />
-                  )}
-                </Card>
-              </div>
+                <p>{test.description}</p>
+                {!isExpired && !isCompleted && (
+                  <>
+                    <p>
+                      <strong>Start Date:</strong>{" "}
+                      {convertToISTWithTime(test.start_date)}
+                    </p>
+                    <p>
+                      <strong>End Date:</strong>{" "}
+                      {convertToISTWithTime(test.end_date)}
+                    </p>
+                  </>
+                )}
+                {!isExpired && !isCompleted && (
+                  <Button
+                    label="Start Test"
+                    icon="pi pi-play"
+                    className="p-button-success"
+                    onClick={() => handleStartTest(test.testId)}
+                  />
+                )}
+              </Card>
             );
           })}
         </div>

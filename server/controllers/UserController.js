@@ -26,7 +26,6 @@ const handleUserLogin = async (req, res) => {
       response.usertype = user.role;
       response.email_id = user.email_id;
 
-      // Generate token
       const token = jwt.sign(
         { email: email, role: user.role },
         process.env.JWT_SECRET,
@@ -34,7 +33,6 @@ const handleUserLogin = async (req, res) => {
       );
       res.cookie("token", token, { httpOnly: false, maxAge: 3600000 });
 
-      // Update last_login timestamp
       await Login.findOneAndUpdate(
         { email_id: email },
         { last_login: new Date() }
@@ -57,9 +55,9 @@ const handleStudentRegister = async (req, res) => {
     message: "",
     error: "",
   };
-  const { email, password, confirmpassword, usertype,user_name } = req.body;
+  const { email, password, confirmpassword, usertype, user_name } = req.body;
 
-  if (!email || !password || !usertype || !confirmpassword ||!user_name) {
+  if (!email || !password || !usertype || !confirmpassword || !user_name) {
     response.error = "All fields are required";
     return res.status(400).json(response);
   }
@@ -79,7 +77,7 @@ const handleStudentRegister = async (req, res) => {
       email_id: email,
       password: hashedPassword,
       role: usertype,
-      user_name:user_name,
+      user_name: user_name,
     });
     await newUser.save();
     response.message = "User Successfully registered";
@@ -172,56 +170,49 @@ const handleResetPassword = async (req, res) => {
   }
 };
 
-const handleLogout=async (req,res) => {
-  const response={
-    message:"",
-    error:"",
-  }
-  try{
+const handleLogout = async (req, res) => {
+  const response = {
+    message: "",
+    error: "",
+  };
+  try {
     res.clearCookie("token");
-    response.message="Logout Success";
+    response.message = "Logout Success";
     return res.status(200).json(response);
-  }
-  catch(error){
-    response.error="An error occurred during logout";
+  } catch (error) {
+    response.error = "An error occurred during logout";
     console.log(error.message);
     return res.status(500).json(response);
   }
-}
-
-
-const resetPassword = async (req, res) => {
-    try {
-        const { email, oldPassword, newPassword } = req.body;
-
-        // Step 1: Check if the user exists
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        // Step 2: Compare old password with hashed password in DB
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: "Incorrect current password" });
-        }
-
-        // Step 3: Hash the new password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-        // Step 4: Update the user's password in the database
-        user.password = hashedPassword;
-        await user.save();
-
-        // Step 5: Send success response
-        return res.json({ error: "", message: "Password reset successful" });
-    } catch (error) {
-        console.error("Reset Password Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    console.log(req.body);
+
+    const user = await Login.findOne({ email_id: email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect current password" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.json({ error: "", message: "Password reset successful" });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   handleUserLogin,

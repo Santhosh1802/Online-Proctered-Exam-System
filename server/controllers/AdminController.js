@@ -1,4 +1,4 @@
-const bcrypt=require("bcrypt");
+const bcrypt = require("bcrypt");
 const Login = require("../models/LoginSchema");
 const Admin = require("../models/AdminSchema");
 const Student = require("../models/StudentSchema");
@@ -22,7 +22,6 @@ const getAdminProfile = async (req, res) => {
       response.data.name = admin.name;
       response.data.phone = admin.phone;
       response.data.email = admin.email;
-      //console.log(req.cookies.token);
 
       return res.status(200).send(response);
     } else {
@@ -109,10 +108,10 @@ const getOneTeacher = async (req, res) => {
     error: "",
     data: {},
   };
-  
+
   try {
     const teacher = await Teacher.findOne({ email: req.query.email });
-    if (!teacher || teacher==null) {
+    if (!teacher || teacher == null) {
       response.message = "No data found";
       return res.status(404).json(response);
     }
@@ -134,7 +133,7 @@ const getOneStudent = async (req, res) => {
   };
   try {
     const student = await Student.findOne({ email: req.query.email });
-    if (!student || student==null) {
+    if (!student || student == null) {
       response.message = "No data found";
       return res.status(404).json(response);
     }
@@ -155,13 +154,15 @@ const deleteTeacher = async (req, res) => {
     data: {},
   };
   try {
-    const loginTeacher=await Login.findOneAndDelete({email_id:req.query.email});
-    if(!loginTeacher || loginTeacher==null){
-      response.message="No data found";
+    const loginTeacher = await Login.findOneAndDelete({
+      email_id: req.query.email,
+    });
+    if (!loginTeacher || loginTeacher == null) {
+      response.message = "No data found";
       return res.status(404).json(response);
     }
     const teacher = await Teacher.findOneAndDelete({ email: req.query.email });
-    if (!teacher || teacher==null) {
+    if (!teacher || teacher == null) {
       response.message = "No data found";
       response.error = "Teacher only found in login";
       return res.status(200).json(response);
@@ -182,13 +183,15 @@ const deleteStudent = async (req, res) => {
     data: {},
   };
   try {
-    const loginStudent=await Login.findOneAndDelete({email_id:req.query.email});
-    if(!loginStudent || loginStudent==null){
-      response.message="No data found";
+    const loginStudent = await Login.findOneAndDelete({
+      email_id: req.query.email,
+    });
+    if (!loginStudent || loginStudent == null) {
+      response.message = "No data found";
       return res.status(404).json(response);
     }
     const student = await Student.findOneAndDelete({ email: req.query.email });
-    if (!student || student==null) {
+    if (!student || student == null) {
       response.message = "No data found";
       response.error = "Student only found in login";
       return res.status(200).json(response);
@@ -215,7 +218,7 @@ const createTeacher = async (req, res) => {
 
     const login = new Login({
       email_id: email,
-      password: hashedPassword, 
+      password: hashedPassword,
       user_name: name,
       role: "teacher",
     });
@@ -246,8 +249,18 @@ const createStudent = async (req, res) => {
     data: {},
   };
   try {
-    const { name, email, phone, department, profile,registerNumber,batch,section,password } = req.body;
-    
+    const {
+      name,
+      email,
+      phone,
+      department,
+      profile,
+      registerNumber,
+      batch,
+      section,
+      password,
+    } = req.body;
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -265,9 +278,9 @@ const createStudent = async (req, res) => {
       phone: phone,
       department: department,
       profile: profile,
-      registerNumber:registerNumber,
-      batch:batch,
-      section:section,
+      registerNumber: registerNumber,
+      batch: batch,
+      section: section,
     });
     await student.save();
 
@@ -296,28 +309,45 @@ const BulkUploadStudents = async (req, res) => {
     let validationErrors = [];
 
     students.forEach((student, index) => {
-      const row = index + 2; 
+      const row = index + 2;
 
       if (!student.name || typeof student.name !== "string") {
-        validationErrors.push(`Row ${row}, Column 'name': Invalid or missing value`);
+        validationErrors.push(
+          `Row ${row}, Column 'name': Invalid or missing value`
+        );
       }
       if (!student.email || !/^\S+@\S+\.\S+$/.test(student.email)) {
-        validationErrors.push(`Row ${row}, Column 'email': Invalid email format`);
+        validationErrors.push(
+          `Row ${row}, Column 'email': Invalid email format`
+        );
       }
       if (!student.phone || !/^\d{10}$/.test(student.phone)) {
-        validationErrors.push(`Row ${row}, Column 'phone': Must be a 10-digit number`);
+        validationErrors.push(
+          `Row ${row}, Column 'phone': Must be a 10-digit number`
+        );
       }
       if (!student.department || typeof student.department !== "string") {
-        validationErrors.push(`Row ${row}, Column 'department': Invalid or missing value`);
+        validationErrors.push(
+          `Row ${row}, Column 'department': Invalid or missing value`
+        );
       }
-      if (!student.registerNumber || typeof student.registerNumber !== "string") {
-        validationErrors.push(`Row ${row}, Column 'registerNumber': Invalid or missing value`);
+      if (
+        !student.registerNumber ||
+        typeof student.registerNumber !== "string"
+      ) {
+        validationErrors.push(
+          `Row ${row}, Column 'registerNumber': Invalid or missing value`
+        );
       }
       if (!student.batch) {
-        validationErrors.push(`Row ${row}, Column 'batch': Invalid or missing value`);
+        validationErrors.push(
+          `Row ${row}, Column 'batch': Invalid or missing value`
+        );
       }
       if (!student.section || typeof student.section !== "string") {
-        validationErrors.push(`Row ${row}, Column 'section': Invalid or missing value`);
+        validationErrors.push(
+          `Row ${row}, Column 'section': Invalid or missing value`
+        );
       }
     });
 
@@ -339,7 +369,10 @@ const BulkUploadStudents = async (req, res) => {
       role: "student",
     }));
 
-    await Promise.all([Student.insertMany(studentDocs), Login.insertMany(loginDocs)]);
+    await Promise.all([
+      Student.insertMany(studentDocs),
+      Login.insertMany(loginDocs),
+    ]);
 
     response.message = "Students and login records created successfully";
     return res.status(200).json(response);
@@ -349,7 +382,7 @@ const BulkUploadStudents = async (req, res) => {
   }
 };
 
-const getStats=async (req,res) => {
+const getStats = async (req, res) => {
   const response = {
     message: "",
     error: "",
@@ -365,7 +398,10 @@ const getStats=async (req,res) => {
       { $count: "uniqueOngoingQuizzes" },
     ]);
 
-    const ongoingQuizzes = ongoingQuizzesAggregation.length > 0 ? ongoingQuizzesAggregation[0].uniqueOngoingQuizzes : 0;
+    const ongoingQuizzes =
+      ongoingQuizzesAggregation.length > 0
+        ? ongoingQuizzesAggregation[0].uniqueOngoingQuizzes
+        : 0;
     response.data.totalTeachers = totalTeachers;
     response.data.totalStudents = totalStudents;
     response.data.activeUsers = activeUsers;
@@ -377,7 +413,7 @@ const getStats=async (req,res) => {
     console.log(error.message);
     return res.status(500).send(response);
   }
-}
+};
 
 const getAllTestsForAdmin = async (req, res) => {
   const response = {
@@ -387,7 +423,7 @@ const getAllTestsForAdmin = async (req, res) => {
   };
 
   try {
-    const tests = await Test.find(); // Fetch all tests without filtering by teacher_id
+    const tests = await Test.find();
 
     response.message = "All tests retrieved successfully";
     response.data = tests;
@@ -400,28 +436,26 @@ const getAllTestsForAdmin = async (req, res) => {
 
 const getLoginTrends = async (req, res) => {
   try {
-    const { days = 7 } = req.query; // Default to last 7 days if not specified
+    const { days = 7 } = req.query;
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days); // Set start date based on `days` param
-
+    startDate.setDate(startDate.getDate() - days);
     const loginTrends = await Login.aggregate([
       {
         $match: {
-          last_login: { $gte: startDate }, // Get logins from the last X days
+          last_login: { $gte: startDate },
         },
       },
       {
         $group: {
-          _id: { $dayOfWeek: "$last_login" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
-          count: { $sum: 1 }, // Count logins per day
+          _id: { $dayOfWeek: "$last_login" },
+          count: { $sum: 1 },
         },
       },
       {
-        $sort: { _id: 1 }, // Sort by day of the week
+        $sort: { _id: 1 },
       },
     ]);
 
-    // Convert numeric day of the week (1-7) to actual day names
     const dayMapping = {
       1: "Sunday",
       2: "Monday",
@@ -433,7 +467,7 @@ const getLoginTrends = async (req, res) => {
     };
 
     const formattedTrends = loginTrends.map((entry) => ({
-      day: dayMapping[entry._id], // Convert numeric day to name
+      day: dayMapping[entry._id],
       count: entry.count,
     }));
 
@@ -448,10 +482,6 @@ const getLoginTrends = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 module.exports = {
   getAdminProfile,

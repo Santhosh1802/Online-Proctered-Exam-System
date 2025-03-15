@@ -16,13 +16,13 @@ export default function StudentDataView() {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
   const [filters, setFilters] = useState({
-    global: { value: null, matchMode: 'contains' },
-    name: { value: null, matchMode: 'contains' },
-    email: { value: null, matchMode: 'contains' },
-    department: { value: null, matchMode: 'contains' },
-    batch: { value: null, matchMode: 'contains' },
-    section: { value: null, matchMode: 'contains' },
-    registerNumber: { value: null, matchMode: 'contains' },
+    global: { value: null, matchMode: "contains" },
+    name: { value: null, matchMode: "contains" },
+    email: { value: null, matchMode: "contains" },
+    department: { value: null, matchMode: "contains" },
+    batch: { value: null, matchMode: "contains" },
+    section: { value: null, matchMode: "contains" },
+    registerNumber: { value: null, matchMode: "contains" },
   });
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function StudentDataView() {
     const { value, field } = e.target;
     setFilters((prevFilters) => ({
       ...prevFilters,
-      [field]: { value, matchMode: 'contains' },
+      [field]: { value, matchMode: "contains" },
     }));
   };
 
@@ -113,16 +113,23 @@ export default function StudentDataView() {
         paginator
         rows={10}
         filters={filters}
-        globalFilterFields={['name', 'email', 'department', 'batch', 'section', 'registerNumber']}
+        globalFilterFields={[
+          "name",
+          "email",
+          "department",
+          "batch",
+          "section",
+          "registerNumber",
+        ]}
         header={
           <div className="table-header">
             <span className="p-input-icon-left">
-              <i className="pi pi-search" style={{marginLeft:"1em"}}/>
+              <i className="pi pi-search" style={{ marginLeft: "1em" }} />
               <InputText
                 type="search"
                 onInput={(e) => setGlobalFilter(e.target.value)}
                 placeholder="Global Search"
-                style={{paddingLeft:"2.5em"}}
+                style={{ paddingLeft: "2.5em" }}
               />
             </span>
           </div>
@@ -139,8 +146,10 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.name?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'name' } })}
+              value={filters.name?.value || ""}
+              onChange={(e) =>
+                onFilter({ target: { value: e.target.value, field: "name" } })
+              }
               placeholder="Search by Name"
             />
           }
@@ -151,8 +160,10 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.email?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'email' } })}
+              value={filters.email?.value || ""}
+              onChange={(e) =>
+                onFilter({ target: { value: e.target.value, field: "email" } })
+              }
               placeholder="Search by Email"
             />
           }
@@ -163,8 +174,12 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.department?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'department' } })}
+              value={filters.department?.value || ""}
+              onChange={(e) =>
+                onFilter({
+                  target: { value: e.target.value, field: "department" },
+                })
+              }
               placeholder="Search by Department"
             />
           }
@@ -175,8 +190,10 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.batch?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'batch' } })}
+              value={filters.batch?.value || ""}
+              onChange={(e) =>
+                onFilter({ target: { value: e.target.value, field: "batch" } })
+              }
               placeholder="Search by Batch"
             />
           }
@@ -187,8 +204,12 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.section?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'section' } })}
+              value={filters.section?.value || ""}
+              onChange={(e) =>
+                onFilter({
+                  target: { value: e.target.value, field: "section" },
+                })
+              }
               placeholder="Search by Section"
             />
           }
@@ -199,8 +220,12 @@ export default function StudentDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.registerNumber?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'registerNumber' } })}
+              value={filters.registerNumber?.value || ""}
+              onChange={(e) =>
+                onFilter({
+                  target: { value: e.target.value, field: "registerNumber" },
+                })
+              }
               placeholder="Search by Reg.no"
             />
           }
@@ -215,7 +240,6 @@ export default function StudentDataView() {
         visible={visible}
         onHide={() => setVisible(false)}
         header="Student Details"
-        style={{ width: "20vw" }}
       >
         {loading ? (
           <p>Loading...</p>
@@ -268,7 +292,6 @@ export default function StudentDataView() {
         visible={deleteDialog}
         onHide={() => setDeleteDialog(false)}
         header="Confirm Deletion"
-        style={{ width: "25vw" }}
         footer={
           <div className="flex justify-content-end">
             <Button
@@ -287,7 +310,8 @@ export default function StudentDataView() {
         }
       >
         <p>
-          Are you sure you want to delete <strong>{studentToDelete?.name}</strong>?
+          Are you sure you want to delete{" "}
+          <strong>{studentToDelete?.name}</strong>?
         </p>
       </Dialog>
     </div>

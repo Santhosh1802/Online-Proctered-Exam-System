@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
-const data=require("../utils/profileString");
+const data = require("../utils/profileString");
 const StudentSchema = new mongoose.Schema({
   profile: {
     type: String,
-    default:data.profileString,
+    default: data.profileString,
   },
   name: {
     type: String,
@@ -35,26 +35,29 @@ const StudentSchema = new mongoose.Schema({
     required: true,
   },
   ongoingTests: {
-    type:[{
-      testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
-      AssignedOn: { type: Date, default: Date.now },
-      start_date: { type: Date },
-      end_date: { type: Date },
-      duration: { type: Number },
-    },
+    type: [
+      {
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
+        AssignedOn: { type: Date, default: Date.now },
+        start_date: { type: Date },
+        end_date: { type: Date },
+        duration: { type: Number },
+      },
     ],
-    default:[],
+    default: [],
   },
   completedTests: {
-    type:[{
-      testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
-      completedAt: { type: Date, default: Date.now },
-      score: { type: Number },
-      start_date: { type: Date },
-      end_date: { type: Date },
-      duration_taken: { type: String },
-    },],
-    default:[],
+    type: [
+      {
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: "Test" },
+        completedAt: { type: Date, default: Date.now },
+        score: { type: Number },
+        start_date: { type: Date },
+        end_date: { type: Date },
+        duration_taken: { type: String },
+      },
+    ],
+    default: [],
   },
 });
 const Student = mongoose.model("Student", StudentSchema);

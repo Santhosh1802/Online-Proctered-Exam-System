@@ -7,6 +7,7 @@ import { Button } from "primereact/button";
 import { useSelector } from "react-redux";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { convertToISTWithTime } from "../Utils/time";
 
 export default function StudentViewReport() {
   const [reports, setReports] = useState([]);
@@ -17,39 +18,42 @@ export default function StudentViewReport() {
   useEffect(() => {
     const fetchTestDetails = async () => {
       if (reports.length === 0) return;
-  
+
       try {
         for (const report of reports) {
           if (!report.test_id) continue;
-  
-          const response = await axios.get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${report.test_id}`, {
-            withCredentials: true,
-          });
-  
+
+          const response = await axios.get(
+            `${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${report.test_id}`,
+            {
+              withCredentials: true,
+            }
+          );
+
           if (response.data) {
             setTestDetails(response.data.data);
           }
         }
-  
       } catch (error) {
         console.error("Error fetching test details:", error);
       }
     };
-  
+
     fetchTestDetails();
-  }, [reports]);  
+  }, [reports]);
   if (userEmail) {
-    axios.get(process.env.REACT_APP_GET_STUDENT_DATA, {
-      params: { email: userEmail },
-      withCredentials: true,
-    })
-    .then((response)=>{
-      setStudents(response.data.data);
-    })
+    axios
+      .get(process.env.REACT_APP_GET_STUDENT_DATA, {
+        params: { email: userEmail },
+        withCredentials: true,
+      })
+      .then((response) => {
+        setStudents(response.data.data);
+      });
   }
   useEffect(() => {
     const fetchReports = async () => {
-      if (!student_id) return; // Prevent API calls if student_id is undefined
+      if (!student_id) return;
 
       try {
         const apiUrl = process.env.REACT_APP_STUDENT_GET_ALL_REPORT;
@@ -72,30 +76,67 @@ export default function StudentViewReport() {
     fetchReports();
   }, [student_id]);
 
-  // Function to generate and download the PDF report
-  // Function to generate and download the PDF report
   const downloadPDFReport = (report) => {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text("Student Test Report", 14, 15);
     doc.setFontSize(12);
-    doc.text(`Test Name: ${report.testname}`, 14, 25);
-    doc.text(`Student Name: ${student.name}`, 14, 35);
-    doc.text(`Score: ${report.score}`, 14, 45);
-    doc.text(`Duration Taken: ${report.duration_taken} minutes`, 14, 55);
+
+    let currentY = 25;
+
+    const totalScore = testDetails.questions
+      ? testDetails.questions.reduce(
+          (sum, question) => sum + (question.marks || 1),
+          0
+        )
+      : "N/A";
+
+    doc.setFontSize(14);
+    doc.text("Test Details", 14, currentY);
+    doc.setFontSize(12);
+    currentY += 7;
+    doc.text(`Test Name: ${report.testname}`, 14, currentY);
+    currentY += 6;
     doc.text(
-      `Submitted At: ${new Date(report.submitted_at).toLocaleString()}`,
+      `Total Duration: ${testDetails.duration || "N/A"} min`,
       14,
-      65
+      currentY
     );
-  
-    let currentY = 75; // Track Y position manually
-  
-    // Check if the test had proctoring enabled
-    if (testDetails.proctor_settings && testDetails.proctor_settings.length > 0) {
+    currentY += 6;
+    doc.text(`Total Score: ${totalScore}`, 14, currentY);
+    currentY += 10;
+
+    doc.setFontSize(14);
+    doc.text("Student Details", 14, currentY);
+    doc.setFontSize(12);
+    currentY += 7;
+    doc.text(`Name: ${student.name}`, 14, currentY);
+    currentY += 6;
+    doc.text(`Email: ${student.email}`, 14, currentY);
+    currentY += 6;
+    doc.text(
+      `Submitted At: ${convertToISTWithTime(report.submitted_at)}`,
+      14,
+      currentY
+    );
+    currentY += 10;
+
+    doc.setFontSize(14);
+    doc.text("Test Performance Details", 14, currentY);
+    doc.setFontSize(12);
+    currentY += 7;
+    doc.text(`Score: ${report.score} / ${totalScore}`, 14, currentY);
+    currentY += 6;
+    doc.text(`Duration Taken: ${report.duration_taken} min`, 14, currentY);
+    currentY += 10;
+
+    if (
+      testDetails.proctor_settings &&
+      testDetails.proctor_settings.length > 0
+    ) {
       autoTable(doc, {
         startY: currentY,
-        head: [["Category", "Penalty"]],
+        head: [["Proctoring Category", "Penalty Score"]],
         body: [
           ["Noise Score", report.proctoring_report?.noise_score || "N/A"],
           ["Face Score", report.proctoring_report?.face_score || "N/A"],
@@ -104,13 +145,8 @@ export default function StudentViewReport() {
         ],
       });
       currentY = doc.lastAutoTable?.finalY + 10 || currentY + 20;
-    } else {
-      // Mention that the test had no proctoring
-      doc.text("No proctoring was enabled for this test.", 14, currentY);
-      currentY += 10;
     }
-  
-    // Proctoring Flags Table (if any flags exist)
+
     if (report.flags && report.flags.length > 0) {
       autoTable(doc, {
         startY: currentY,
@@ -119,37 +155,32 @@ export default function StudentViewReport() {
       });
       currentY = doc.lastAutoTable?.finalY + 10 || currentY + 20;
     }
-  
-    // Answers Table with Correct Answers
+
     if (report.answers && Object.keys(report.answers).length > 0) {
       const questionTable = Object.entries(report.answers).map(
         ([questionId, answer]) => {
           const questionObj = testDetails.questions?.find(
             (q) => q._id.toString() === questionId
           );
-  
-          const questionText = questionObj?.questionText || "Unknown Question";
-          const correctAnswers = questionObj?.correctAnswers || [];
-          const formattedCorrectAnswers =
-            correctAnswers.length > 0 ? correctAnswers.join(", ") : "N/A";
-  
+
           return [
-            questionText,
+            questionObj?.questionText || "Unknown Question",
             Array.isArray(answer) ? answer.join(", ") : answer.toString(),
-            formattedCorrectAnswers,
+            questionObj?.correctAnswers?.join(", ") || "N/A",
           ];
         }
       );
-  
+
       autoTable(doc, {
         startY: currentY,
-        head: [["Question", "Student Answer", "Correct Answer"]],
+        head: [["Question", "Your Answer", "Correct Answer"]],
         body: questionTable,
       });
     }
-  
+
     doc.save(`Report_${report.testname}_${student.name}.pdf`);
   };
+
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -192,11 +223,8 @@ export default function StudentViewReport() {
             <Column
               field="submitted_at"
               header="Submitted At"
-              body={(rowData) =>
-                new Date(rowData.submitted_at).toLocaleString()
-              }
+              body={(rowData) => convertToISTWithTime(rowData.submitted_at)}
             />
-            {/* Download PDF Button Column */}
             <Column
               header="Download"
               body={(rowData) => (

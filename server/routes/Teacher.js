@@ -1,19 +1,42 @@
-const express=require("express");
-const { getTecherProfile, updateTeacherProfile, createTest,getAllTest,getOneTest, assignTestToStudents, updateOneTest, getUniqueDepartments, getUniqueBatches, getUniqueSections, deassignTestFromStudents, getTeacherDashboardData, getTestReports } = require("../controllers/TeacherController");
-const router=express.Router();
+const express = require("express");
+const {
+  getTecherProfile,
+  updateTeacherProfile,
+  createTest,
+  getAllTest,
+  getOneTest,
+  assignTestToStudents,
+  updateOneTest,
+  getUniqueDepartments,
+  getUniqueBatches,
+  getUniqueSections,
+  deassignTestFromStudents,
+  getTeacherDashboardData,
+  getTestReports,
+} = require("../controllers/TeacherController");
+const { isTeacherAuthenticated } = require("../middlewares/authentication");
+const router = express.Router();
 
-router.get("/teacherprofile",getTecherProfile);
-router.post("/updateteacherprofile",updateTeacherProfile);
-router.post("/create-test",createTest);
-router.get("/getAlltest-teacher",getAllTest);
-router.get("/getOnetest-teacher",getOneTest);
-router.post("/assign-test",assignTestToStudents);
-router.put("/updateOnetest-teacher",updateOneTest);
-router.get("/getuniquedepts",getUniqueDepartments);
-router.get("/getuniquebatch",getUniqueBatches);
-router.get("/getuniquesections",getUniqueSections);
-router.post("/deassign-test",deassignTestFromStudents);
-router.get("/getTeacherDashboardData",getTeacherDashboardData);
-router.get("/get-report-by-test_id",getTestReports);
+router.get("/teacherprofile", isTeacherAuthenticated, getTecherProfile);
+router.post(
+  "/updateteacherprofile",
+  isTeacherAuthenticated,
+  updateTeacherProfile
+);
+router.post("/create-test", isTeacherAuthenticated, createTest);
+router.get("/getAlltest-teacher", isTeacherAuthenticated, getAllTest);
+router.get("/getOnetest-teacher", isTeacherAuthenticated, getOneTest);
+router.post("/assign-test", isTeacherAuthenticated, assignTestToStudents);
+router.put("/updateOnetest-teacher", isTeacherAuthenticated, updateOneTest);
+router.get("/getuniquedepts", isTeacherAuthenticated, getUniqueDepartments);
+router.get("/getuniquebatch", isTeacherAuthenticated, getUniqueBatches);
+router.get("/getuniquesections", isTeacherAuthenticated, getUniqueSections);
+router.post("/deassign-test", isTeacherAuthenticated, deassignTestFromStudents);
+router.get(
+  "/getTeacherDashboardData",
+  isTeacherAuthenticated,
+  getTeacherDashboardData
+);
+router.get("/get-report-by-test_id", isTeacherAuthenticated, getTestReports);
 
-module.exports=router;
+module.exports = router;

@@ -7,15 +7,15 @@ import { Column } from "primereact/column";
 import AdminNavBar from "../Components/AdminNavBar";
 import * as XLSX from "xlsx";
 import Chart from "react-apexcharts";
+import { convertToISTWithTime } from "../Utils/time";
 
 export default function AdminViewReport({ toast }) {
   const [tests, setTests] = useState([]);
   const [selectedTest, setSelectedTest] = useState(null);
   const [reportData, setReportData] = useState([]);
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(""); // Error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch the test list for the dropdown
   useEffect(() => {
     const fetchTests = async () => {
       try {
@@ -27,7 +27,7 @@ export default function AdminViewReport({ toast }) {
           }
         );
         setTests(response.data.data || []);
-        setError(""); // Clear any previous errors
+        setError("");
       } catch (err) {
         console.error("Error fetching tests:", err);
         setError("Failed to fetch tests. Please try again later.");
@@ -45,7 +45,6 @@ export default function AdminViewReport({ toast }) {
     fetchTests();
   }, [toast]);
 
-  // Fetch the report data when clicking the button
   const handleGetReports = async () => {
     if (!selectedTest) {
       toast.current.show({
@@ -77,7 +76,7 @@ export default function AdminViewReport({ toast }) {
       }
 
       setReportData(response.data.reports || []);
-      setError(""); // Clear any previous errors
+      setError("");
     } catch (err) {
       console.error("Error fetching report data:", err);
       setError("Failed to fetch reports. Please try again later.");
@@ -92,7 +91,6 @@ export default function AdminViewReport({ toast }) {
     }
   };
 
-  // Function to export table data as Excel
   const exportToExcel = () => {
     if (reportData.length === 0) {
       toast.current.show({
@@ -105,7 +103,6 @@ export default function AdminViewReport({ toast }) {
     }
 
     try {
-      // Convert data for Excel
       const formattedData = reportData.map((report) => ({
         "Student Name": report.student_id?.name || "N/A",
         Department: report.student_id?.department || "N/A",
@@ -113,19 +110,17 @@ export default function AdminViewReport({ toast }) {
         Batch: report.student_id?.batch || "N/A",
         Score: report.score,
         "Duration Taken": report.duration_taken,
-        "Submitted At": new Date(report.submitted_at).toLocaleString(),
+        "Submitted At": convertToISTWithTime(report.submitted_at),
         "Noise Score": report.proctoring_report?.noise_score || 0,
         "Face Score": report.proctoring_report?.face_score || 0,
         "Mobile Score": report.proctoring_report?.mobile_score || 0,
         "Tab Score": report.proctoring_report?.tab_score || 0,
       }));
 
-      // Convert to worksheet
       const worksheet = XLSX.utils.json_to_sheet(formattedData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
 
-      // Trigger download
       XLSX.writeFile(workbook, "Exam_Reports.xlsx");
 
       toast.current.show({
@@ -144,7 +139,6 @@ export default function AdminViewReport({ toast }) {
       });
     }
   };
-
   const topStudents = [...reportData]
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
@@ -152,12 +146,10 @@ export default function AdminViewReport({ toast }) {
   const calculateBoxPlotData = () => {
     if (reportData.length === 0) return [];
 
-    // Sort scores in ascending order
     const sortedScores = [...reportData]
       .map((r) => r.score)
       .sort((a, b) => a - b);
 
-    // Function to compute quartiles
     const getPercentile = (arr, percentile) => {
       const index = Math.floor(percentile * arr.length);
       return arr[index] || 0;
@@ -167,11 +159,11 @@ export default function AdminViewReport({ toast }) {
       {
         x: "Scores Distribution",
         y: [
-          sortedScores[0], // Min
-          getPercentile(sortedScores, 0.25), // Q1 (25th percentile)
-          getPercentile(sortedScores, 0.5), // Median (50th percentile)
-          getPercentile(sortedScores, 0.75), // Q3 (75th percentile)
-          sortedScores[sortedScores.length - 1], // Max
+          sortedScores[0],
+          getPercentile(sortedScores, 0.25),
+          getPercentile(sortedScores, 0.5),
+          getPercentile(sortedScores, 0.75),
+          sortedScores[sortedScores.length - 1],
         ],
       },
     ];
@@ -227,7 +219,7 @@ export default function AdminViewReport({ toast }) {
 
     reportData.forEach((r) => {
       const score = r.score || 0;
-      const totalQuestions = r.total_questions || 1; // Avoid division by zero
+      const totalQuestions = r.total_questions || 1;
       const normalizedScore = (score / totalQuestions) * 100;
 
       if (normalizedScore <= 10) categories["0-10"]++;
@@ -246,7 +238,7 @@ export default function AdminViewReport({ toast }) {
   };
 
   const scoreDistribution = categorizeScores();
-
+  const theme = localStorage.getItem("theme");
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -256,8 +248,6 @@ export default function AdminViewReport({ toast }) {
       <div style={{ marginTop: "5em", width: "80%" }}>
         <h1>View Reports</h1>
         {error && <p style={{ color: "red" }}>{error}</p>}{" "}
-        {/* Display error message */}
-        {/* Dropdown and Button Row */}
         <div
           style={{
             display: "flex",
@@ -275,13 +265,13 @@ export default function AdminViewReport({ toast }) {
             onChange={(e) => setSelectedTest(e.value)}
             placeholder="Select a Test"
             className="w-full"
-            disabled={loading} // Disable when loading
+            disabled={loading}
           />
           <Button
             label={loading ? "Loading..." : "Get Reports"}
             icon="pi pi-search"
             onClick={handleGetReports}
-            disabled={loading} // Disable when loading
+            disabled={loading}
           />
         </div>
         <Button
@@ -290,7 +280,7 @@ export default function AdminViewReport({ toast }) {
           className="p-button-success"
           onClick={exportToExcel}
           style={{ marginBottom: "1rem" }}
-          disabled={loading || reportData.length === 0} // Disable when loading or no data
+          disabled={loading || reportData.length === 0}
         />
         <DataTable
           value={reportData}
@@ -366,16 +356,36 @@ export default function AdminViewReport({ toast }) {
               marginTop: "2rem",
             }}
           >
-            {/* Bar Chart - Top Student Scores */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Top Student Scores</h2>
               <Chart
                 options={{
-                  chart: { id: "score-chart" },
+                  chart: { id: "score-chart", toolbar: { show: false } },
                   xaxis: {
                     categories: topStudents.map(
                       (r, index) => `Student ${index + 1}`
                     ),
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
                   },
                 }}
                 series={[
@@ -386,13 +396,35 @@ export default function AdminViewReport({ toast }) {
               />
             </div>
 
-            {/* Radar Chart - Proctoring Scores */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Proctoring Scores</h2>
               <Chart
                 options={{
-                  chart: { id: "proctoring-chart" },
-                  xaxis: { categories: ["Noise", "Face", "Mobile", "Tab"] },
+                  chart: { id: "proctoring-chart", toolbar: { show: false } },
+                  xaxis: {
+                    categories: ["Noise", "Face", "Mobile", "Tab"],
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={[
                   {
@@ -405,14 +437,36 @@ export default function AdminViewReport({ toast }) {
               />
             </div>
 
-            {/* Box Plot - Score Distribution */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Score Distribution</h2>
               <Chart
                 options={{
-                  chart: { id: "box-chart" },
+                  chart: { id: "box-chart", toolbar: { show: false } },
                   title: { text: "Score Distribution Box Plot" },
-                  xaxis: { categories: ["Scores"] },
+                  xaxis: {
+                    categories: ["Scores"],
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={[{ type: "boxPlot", data: boxPlotData }]}
                 type="boxPlot"
@@ -420,12 +474,18 @@ export default function AdminViewReport({ toast }) {
               />
             </div>
 
-            {/* Pie Chart - Score Breakdown */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Score Breakdown</h2>
               <Chart
                 options={{
                   labels: Object.keys(scoreDistribution),
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={Object.values(scoreDistribution)}
                 type="pie"

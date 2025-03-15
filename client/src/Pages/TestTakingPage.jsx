@@ -33,7 +33,7 @@ export default function TestTakingPage({ toast }) {
   const [timeLeft, setTimeLeft] = useState(10);
   const [submitted, setSubmitted] = useState(false);
   const [permissionDialogVisible, setPermissionDialogVisible] = useState(false);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${testId}`)
@@ -41,7 +41,6 @@ export default function TestTakingPage({ toast }) {
         const testData = res.data.data;
         setTest(testData);
         setTimeLeft(testSlice.test_duration - testSlice.test_current_time);
-        // Initialize answers only if it's empty
         if (Object.keys(testSlice.answers).length === 0) {
           const initialAnswers = testData.answers || {};
           dispatch(setAnswers(initialAnswers));
@@ -84,10 +83,8 @@ export default function TestTakingPage({ toast }) {
         const index = currentAnswers.indexOf(value);
 
         if (index !== -1) {
-          // If the answer already exists, remove it (unchecking)
           currentAnswers.splice(index, 1);
         } else {
-          // If not selected, add the new answer
           currentAnswers.push(value);
         }
 
@@ -163,7 +160,6 @@ export default function TestTakingPage({ toast }) {
     }
 
     if (test.proctor_settings.includes("Tab Switching")) {
-      // Assuming tab switching detection does not require explicit permission
       permissions.tabSwitching = true;
     }
 
@@ -187,7 +183,7 @@ export default function TestTakingPage({ toast }) {
 
   const handleSubmit = () => {
     saveCurrentAnswer();
-    setSubmitted(true); // Set submitted to true to prevent multiple submissions
+    setSubmitted(true);
     console.log(answers);
     console.log(proctoring);
 
@@ -200,10 +196,14 @@ export default function TestTakingPage({ toast }) {
         student_id: userSlice.id,
       })
       .then((res) => {
-          dispatch(resetTest());
-          toast.current.show({severity:"success",summary:"Success",detail:"Test Submitted Successfully!"});
-          navigate("/studentdashboard");
-          })
+        dispatch(resetTest());
+        toast.current.show({
+          severity: "success",
+          summary: "Success",
+          detail: "Test Submitted Successfully!",
+        });
+        navigate("/studentdashboard");
+      })
       .catch((err) => console.error("Error submitting test:", err));
   };
 
@@ -222,7 +222,10 @@ export default function TestTakingPage({ toast }) {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div
+      style={{ display: "flex", height: "100vh" }}
+      onContextMenu={handleContextMenu}
+    >
       <PermissionDialog
         visible={permissionDialogVisible}
         onHide={handleHideDialog}

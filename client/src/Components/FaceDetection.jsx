@@ -1,11 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useRef, useEffect, useState } from "react";
 import * as faceDetection from "@tensorflow-models/face-detection";
 import "@tensorflow/tfjs";
 import MobileDetection from "./MobileDetection";
 import { useDispatch } from "react-redux";
-import { updateProctoring,addFlag } from "../Store/testSlice";
+import { updateProctoring, addFlag } from "../Store/testSlice";
+import { convertToISTWithTime } from "../Utils/time";
 
 const FaceDetection = ({ toast }) => {
   const videoRef = useRef(null);
@@ -65,9 +65,16 @@ const FaceDetection = ({ toast }) => {
           setFaceCount(newFaceCount);
           if (newFaceCount === 0) {
             setMessage("No face detected. Please stay in front of the camera.");
-            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'No face detected. Please stay in front of the camera.', life: 3000 });
-            dispatch(updateProctoring({ face_score: 1 })); // Update face score
-            dispatch(addFlag("No Face Detected at "+new Date().toLocaleString()))
+            toast.current.show({
+              severity: "warn",
+              summary: "Warning",
+              detail: "No face detected. Please stay in front of the camera.",
+              life: 3000,
+            });
+            dispatch(updateProctoring({ face_score: 1 }));
+            dispatch(
+              addFlag("No Face Detected at " + convertToISTWithTime(new Date()))
+            );
           } else if (newFaceCount > 1) {
             setMessage(`${newFaceCount} faces detected!`);
           } else {
@@ -101,11 +108,18 @@ const FaceDetection = ({ toast }) => {
 
     const interval = setInterval(detectFaces, 500);
     return () => clearInterval(interval);
-  }, [detector, dispatch]);
+  }, [detector, dispatch, toast]);
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <div style={{ position: "relative", display: "inline-block", width: "260px", height: "240px" }}>
+      <div
+        style={{
+          position: "relative",
+          display: "inline-block",
+          width: "260px",
+          height: "240px",
+        }}
+      >
         <video
           ref={videoRef}
           autoPlay
@@ -113,7 +127,6 @@ const FaceDetection = ({ toast }) => {
           width="260"
           height="240"
           style={{
-            //border: "1px solid black",
             position: "absolute",
             top: 0,
             left: 0,

@@ -5,7 +5,6 @@ import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { ProgressSpinner } from "primereact/progressspinner";
 
-
 const Login = lazy(() => import("./Pages/Login"));
 const Register = lazy(() => import("./Pages/Register"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
@@ -17,16 +16,16 @@ const AdminDashboard = lazy(() => import("./Pages/AdminDashboard"));
 const AdminProfile = lazy(() => import("./Pages/AdminProfile"));
 const AdminManageStudent = lazy(() => import("./Pages/AdminManageStudent"));
 const AdminManageTeacher = lazy(() => import("./Pages/AdminManageTeacher"));
-const AdminViewReport=lazy(()=>import("./Pages/AdminViewReport"));
+const AdminViewReport = lazy(() => import("./Pages/AdminViewReport"));
 const TeacherDashboard = lazy(() => import("./Pages/TeacherDashboard"));
 const TeacherAssignTest = lazy(() => import("./Pages/TeacherAssignTest"));
 const TeacherManageTest = lazy(() => import("./Pages/TeacherManageTest"));
 const TeacherProfile = lazy(() => import("./Pages/TeacherProfile"));
 const TestForm = lazy(() => import("./Pages/TestForm"));
 const EditTestForm = lazy(() => import("./Pages/EditTestForm"));
-const TestTakingPage=lazy(()=>import("./Pages/TestTakingPage"));
-const InstructionsPage =lazy(()=>import("./Pages/InstructionsPage"));
-const TeacherViewReport=lazy(()=>import("./Pages/TeacherViewReport"));
+const TestTakingPage = lazy(() => import("./Pages/TestTakingPage"));
+const InstructionsPage = lazy(() => import("./Pages/InstructionsPage"));
+const TeacherViewReport = lazy(() => import("./Pages/TeacherViewReport"));
 function App() {
   const toast = useRef(null);
 
@@ -126,7 +125,10 @@ function AppRoutes({ toast }) {
           path="/adminteacher"
           element={<AdminManageTeacher toast={toast} />}
         />
-        <Route path="/adminreport" element={<AdminViewReport toast={toast}/>}/>
+        <Route
+          path="/adminreport"
+          element={<AdminViewReport toast={toast} />}
+        />
         <Route
           path="/teacherdashboard"
           element={<TeacherDashboard toast={toast} />}
@@ -139,15 +141,27 @@ function AppRoutes({ toast }) {
           path="/teachertest"
           element={<TeacherManageTest toast={toast} />}
         />
-        <Route path="/teacherreport" element={<TeacherViewReport toast={toast}/>}/>
+        <Route
+          path="/teacherreport"
+          element={<TeacherViewReport toast={toast} />}
+        />
         <Route path="/createtest" element={<TestForm toast={toast} />} />
-        <Route path="/edittest/:testId" element={<EditTestForm toast={toast} />} />
+        <Route
+          path="/edittest/:testId"
+          element={<EditTestForm toast={toast} />}
+        />
         <Route
           path="/teacherprofile"
           element={<TeacherProfile toast={toast} />}
         />
-        <Route path="/test/:testId" element={<TestTakingPage toast={toast}/>}/>
-        <Route path="/instructions/:testId" element={<InstructionsPage toast={toast}/>}/>
+        <Route
+          path="/test/:testId"
+          element={<TestTakingPage toast={toast} />}
+        />
+        <Route
+          path="/instructions/:testId"
+          element={<InstructionsPage toast={toast} />}
+        />
         <Route path="*" element={<Login toast={toast} />} />
       </Routes>
     </div>

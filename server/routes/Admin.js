@@ -14,21 +14,22 @@ const {
   BulkUploadStudents,
   getStats,
   getAllTestsForAdmin,
-  getLoginTrends
+  getLoginTrends,
 } = require("../controllers/AdminController");
+const { isAdminAuthenticated } = require("../middlewares/authentication");
 
-router.get("/adminprofile", getAdminProfile);
-router.post("/adminupdateprofile", updateAdminProfile);
-router.get("/getallteacher", getAllTeacher);
-router.get("/getallstudent", getAllStudent);
-router.get("/getstudent", getOneStudent);
-router.get("/getteacher", getOneTeacher);
-router.delete("/deletestudent", deleteStudent);
-router.delete("/deleteteacher", deleteTeacher);
-router.post("/createteacher", createTeacher);
-router.post("/createstudent", createStudent);
-router.post("/bulkuploadstudents", BulkUploadStudents);
-router.get("/getstats", getStats);
-router.get("/getalltestadmin",getAllTestsForAdmin);
-router.get("/getlogintrends",getLoginTrends);
+router.get("/adminprofile", isAdminAuthenticated, getAdminProfile);
+router.post("/adminupdateprofile", isAdminAuthenticated, updateAdminProfile);
+router.get("/getallteacher", isAdminAuthenticated, getAllTeacher);
+router.get("/getallstudent", isAdminAuthenticated, getAllStudent);
+router.get("/getstudent", isAdminAuthenticated, getOneStudent);
+router.get("/getteacher", isAdminAuthenticated, getOneTeacher);
+router.delete("/deletestudent", isAdminAuthenticated, deleteStudent);
+router.delete("/deleteteacher", isAdminAuthenticated, deleteTeacher);
+router.post("/createteacher", isAdminAuthenticated, createTeacher);
+router.post("/createstudent", isAdminAuthenticated, createStudent);
+router.post("/bulkuploadstudents", isAdminAuthenticated, BulkUploadStudents);
+router.get("/getstats", isAdminAuthenticated, getStats);
+router.get("/getalltestadmin", isAdminAuthenticated, getAllTestsForAdmin);
+router.get("/getlogintrends", isAdminAuthenticated, getLoginTrends);
 module.exports = router;

@@ -8,6 +8,7 @@ import TeacherNavBar from "../Components/TeacherNavBar";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import Chart from "react-apexcharts";
+import { convertToISTWithTime } from "../Utils/time";
 
 export default function TeacherViewReport({ toast }) {
   const [tests, setTests] = useState([]);
@@ -16,15 +17,15 @@ export default function TeacherViewReport({ toast }) {
   const id = useSelector((state) => state.user.id);
 
   useEffect(() => {
-    if(id){
-    axios
-      .get(`${process.env.REACT_APP_TEACHER_GET_TESTS}`, {
-        params: { teacher_id: id },
-        withCredentials: true,
-      })
-      .then((response) => {
-        setTests(response.data.data || []);
-      });
+    if (id) {
+      axios
+        .get(`${process.env.REACT_APP_TEACHER_GET_TESTS}`, {
+          params: { teacher_id: id },
+          withCredentials: true,
+        })
+        .then((response) => {
+          setTests(response.data.data || []);
+        });
     }
   }, [id]);
 
@@ -38,23 +39,23 @@ export default function TeacherViewReport({ toast }) {
       });
       return;
     }
-    if(selectedTest){
-    const response = await axios.get(
-      `${process.env.REACT_APP_TEACHER_GET_REPORT_BY_TEST}`,
-      {
-        params: { test_id: selectedTest },
-        withCredentials: true,
-      }
-    );
+    if (selectedTest) {
+      const response = await axios.get(
+        `${process.env.REACT_APP_TEACHER_GET_REPORT_BY_TEST}`,
+        {
+          params: { test_id: selectedTest },
+          withCredentials: true,
+        }
+      );
 
-    setReportData(response.data.reports || []);
-    toast.current.show({
-      severity: "success",
-      summary: "Success",
-      detail: "Report data fetched successfully.",
-      life: 3000,
-    });
-  }
+      setReportData(response.data.reports || []);
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Report data fetched successfully.",
+        life: 3000,
+      });
+    }
   };
 
   const exportToExcel = () => {
@@ -75,7 +76,7 @@ export default function TeacherViewReport({ toast }) {
       Batch: report.student_id?.batch || "N/A",
       Score: report.score,
       "Duration Taken": report.duration_taken,
-      "Submitted At": new Date(report.submitted_at).toLocaleString(),
+      "Submitted At": convertToISTWithTime(report.submitted_at),
       "Noise Score": report.proctoring_report?.noise_score || 0,
       "Face Score": report.proctoring_report?.face_score || 0,
       "Mobile Score": report.proctoring_report?.mobile_score || 0,
@@ -101,13 +102,10 @@ export default function TeacherViewReport({ toast }) {
 
   const calculateBoxPlotData = () => {
     if (reportData.length === 0) return [];
-
-    // Sort scores in ascending order
     const sortedScores = [...reportData]
       .map((r) => r.score)
       .sort((a, b) => a - b);
 
-    // Function to compute quartiles
     const getPercentile = (arr, percentile) => {
       const index = Math.floor(percentile * arr.length);
       return arr[index] || 0;
@@ -117,11 +115,11 @@ export default function TeacherViewReport({ toast }) {
       {
         x: "Scores Distribution",
         y: [
-          sortedScores[0], // Min
-          getPercentile(sortedScores, 0.25), // Q1 (25th percentile)
-          getPercentile(sortedScores, 0.5), // Median (50th percentile)
-          getPercentile(sortedScores, 0.75), // Q3 (75th percentile)
-          sortedScores[sortedScores.length - 1], // Max
+          sortedScores[0],
+          getPercentile(sortedScores, 0.25),
+          getPercentile(sortedScores, 0.5),
+          getPercentile(sortedScores, 0.75),
+          sortedScores[sortedScores.length - 1],
         ],
       },
     ];
@@ -174,12 +172,12 @@ export default function TeacherViewReport({ toast }) {
       "81-90": 0,
       "91-100": 0,
     };
-  
+
     reportData.forEach((r) => {
       const score = r.score || 0;
-      const totalQuestions = r.total_questions || 1; // Avoid division by zero
+      const totalQuestions = r.total_questions || 1;
       const normalizedScore = (score / totalQuestions) * 100;
-  
+
       if (normalizedScore <= 10) categories["0-10"]++;
       else if (normalizedScore <= 20) categories["11-20"]++;
       else if (normalizedScore <= 30) categories["21-30"]++;
@@ -191,12 +189,12 @@ export default function TeacherViewReport({ toast }) {
       else if (normalizedScore <= 90) categories["81-90"]++;
       else categories["91-100"]++;
     });
-  
+
     return categories;
   };
-  
+
   const scoreDistribution = categorizeScores();
-  
+  const theme = localStorage.getItem("theme");
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -278,7 +276,7 @@ export default function TeacherViewReport({ toast }) {
           <Column
             field="submitted_at"
             header="Submitted At"
-            body={(rowData) => new Date(rowData.submitted_at).toLocaleString()}
+            body={(rowData) => convertToISTWithTime(rowData.submitted_at)}
           />
           <Column
             field="proctoring_report.noise_score"
@@ -311,16 +309,36 @@ export default function TeacherViewReport({ toast }) {
               marginTop: "2rem",
             }}
           >
-            {/* Bar Chart - Top Student Scores */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Top Student Scores</h2>
               <Chart
                 options={{
-                  chart: { id: "score-chart" },
+                  chart: { id: "score-chart", toolbar: { show: false } },
                   xaxis: {
                     categories: topStudents.map(
                       (r, index) => `Student ${index + 1}`
                     ),
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
                   },
                 }}
                 series={[
@@ -331,13 +349,35 @@ export default function TeacherViewReport({ toast }) {
               />
             </div>
 
-            {/* Radar Chart - Proctoring Scores */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Proctoring Scores</h2>
               <Chart
                 options={{
-                  chart: { id: "proctoring-chart" },
-                  xaxis: { categories: ["Noise", "Face", "Mobile", "Tab"] },
+                  chart: { id: "proctoring-chart", toolbar: { show: false } },
+                  xaxis: {
+                    categories: ["Noise", "Face", "Mobile", "Tab"],
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={[
                   {
@@ -350,14 +390,36 @@ export default function TeacherViewReport({ toast }) {
               />
             </div>
 
-            {/* Box Plot - Score Distribution */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Score Distribution</h2>
               <Chart
                 options={{
-                  chart: { id: "box-chart" },
+                  chart: { id: "box-chart", toolbar: { show: false } },
                   title: { text: "Score Distribution Box Plot" },
-                  xaxis: { categories: ["Scores"] },
+                  xaxis: {
+                    categories: ["Scores"],
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    labels: {
+                      style: {
+                        colors: theme === "dark" ? "white" : "black",
+                        fontSize: "12px",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={[{ type: "boxPlot", data: boxPlotData }]}
                 type="boxPlot"
@@ -365,12 +427,18 @@ export default function TeacherViewReport({ toast }) {
               />
             </div>
 
-            {/* Pie Chart - Score Breakdown */}
             <div style={{ flex: "1 1 45%", maxWidth: "45%" }}>
               <h2>Score Breakdown</h2>
               <Chart
                 options={{
                   labels: Object.keys(scoreDistribution),
+                  tooltip: {
+                    theme: theme === "dark" ? "dark" : "light",
+                    style: {
+                      fontSize: "12px",
+                      color: theme === "dark" ? "white" : "black",
+                    },
+                  },
                 }}
                 series={Object.values(scoreDistribution)}
                 type="pie"

@@ -16,10 +16,10 @@ export default function TeacherDataView() {
   const [teacherToDelete, setTeacherToDelete] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
   const [filters, setFilters] = useState({
-    global: { value: null, matchMode: 'contains' },
-    name: { value: null, matchMode: 'contains' },
-    email: { value: null, matchMode: 'contains' },
-    department: { value: null, matchMode: 'contains' },
+    global: { value: null, matchMode: "contains" },
+    name: { value: null, matchMode: "contains" },
+    email: { value: null, matchMode: "contains" },
+    department: { value: null, matchMode: "contains" },
   });
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function TeacherDataView() {
     const { value, field } = e.target;
     setFilters((prevFilters) => ({
       ...prevFilters,
-      [field]: { value, matchMode: 'contains' },
+      [field]: { value, matchMode: "contains" },
     }));
   };
 
@@ -110,16 +110,16 @@ export default function TeacherDataView() {
         paginator
         rows={10}
         filters={filters}
-        globalFilterFields={['name', 'email', 'department']}
+        globalFilterFields={["name", "email", "department"]}
         header={
           <div className="table-header">
             <span className="p-input-icon-left">
-              <i className="pi pi-search" style={{marginLeft:"1em"}}/>
+              <i className="pi pi-search" style={{ marginLeft: "1em" }} />
               <InputText
                 type="search"
                 onInput={(e) => setGlobalFilter(e.target.value)}
                 placeholder="Global Search"
-                style={{paddingLeft:"2.5em"}}
+                style={{ paddingLeft: "2.5em" }}
               />
             </span>
           </div>
@@ -136,8 +136,10 @@ export default function TeacherDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.name?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'name' } })}
+              value={filters.name?.value || ""}
+              onChange={(e) =>
+                onFilter({ target: { value: e.target.value, field: "name" } })
+              }
               placeholder="Search by Name"
             />
           }
@@ -148,8 +150,10 @@ export default function TeacherDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.email?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'email' } })}
+              value={filters.email?.value || ""}
+              onChange={(e) =>
+                onFilter({ target: { value: e.target.value, field: "email" } })
+              }
               placeholder="Search by Email"
             />
           }
@@ -160,8 +164,12 @@ export default function TeacherDataView() {
           filter
           filterElement={
             <InputText
-              value={filters.department?.value || ''}
-              onChange={(e) => onFilter({ target: { value: e.target.value, field: 'department' } })}
+              value={filters.department?.value || ""}
+              onChange={(e) =>
+                onFilter({
+                  target: { value: e.target.value, field: "department" },
+                })
+              }
               placeholder="Search by Department"
             />
           }
@@ -176,7 +184,6 @@ export default function TeacherDataView() {
         visible={visible}
         onHide={() => setVisible(false)}
         header="Teacher Details"
-        style={{ width: "20vw" }}
       >
         {loading ? (
           <p>Loading...</p>
@@ -217,7 +224,6 @@ export default function TeacherDataView() {
         visible={deleteDialog}
         onHide={() => setDeleteDialog(false)}
         header="Confirm Deletion"
-        style={{ width: "25vw" }}
         footer={
           <div className="flex justify-content-end">
             <Button
@@ -236,7 +242,8 @@ export default function TeacherDataView() {
         }
       >
         <p>
-          Are you sure you want to delete <strong>{teacherToDelete?.name}</strong>?
+          Are you sure you want to delete{" "}
+          <strong>{teacherToDelete?.name}</strong>?
         </p>
       </Dialog>
     </div>

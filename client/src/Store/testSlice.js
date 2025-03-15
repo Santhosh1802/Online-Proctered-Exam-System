@@ -6,20 +6,20 @@ export const testSlice = createSlice({
     test_id: "",
     student_id: "",
     proctor_settings: [],
-    test_duration: 0, // in seconds
-    test_current_time: 0, // in seconds
+    test_duration: 0,
+    test_current_time: 0,
     lastUpdateTime: null,
     noise_score: 0,
     face_score: 0,
     mobile_score: 0,
     tab_score: 0,
-    answers: {}, // Stores answers: { question_id: answer }
-    flags: [],   // Stores malpractice flags
-    final_score: 0, // Final score after submission
+    answers: {},
+    flags: [],
+    final_score: 0,
     permissions: {
       faceDetection: false,
       noiseDetection: false,
-      tabSwitching:false,
+      tabSwitching: false,
     },
   },
   reducers: {
@@ -37,7 +37,9 @@ export const testSlice = createSlice({
     },
     IncrementTestCurrentTime: (state) => {
       const currentTime = new Date().getTime();
-      const lastUpdateTime = state.lastUpdateTime ? new Date(state.lastUpdateTime).getTime() : currentTime;
+      const lastUpdateTime = state.lastUpdateTime
+        ? new Date(state.lastUpdateTime).getTime()
+        : currentTime;
 
       const timeElapsed = Math.floor((currentTime - lastUpdateTime) / 1000);
 
@@ -45,37 +47,37 @@ export const testSlice = createSlice({
         state.test_current_time += timeElapsed;
         state.lastUpdateTime = new Date().toISOString();
       } else {
-        state.test_current_time = state.test_duration; // Test time is up
+        state.test_current_time = state.test_duration;
       }
     },
     saveAnswer: (state, action) => {
       const { questionId, answer, isMultiple } = action.payload;
-    
+
       if (isMultiple) {
-        state.answers[questionId]="";
-        const currentAnswers = state.answers[questionId] ? state.answers[questionId].split(',') : [];
+        state.answers[questionId] = "";
+        const currentAnswers = state.answers[questionId]
+          ? state.answers[questionId].split(",")
+          : [];
         const index = currentAnswers.indexOf(answer);
-    
+
         if (index !== -1) {
-          // If the answer already exists, remove it (unchecking)
           currentAnswers.splice(index, 1);
         } else {
-          // If not selected, add the new answer
           currentAnswers.push(answer);
         }
-    
-        state.answers[questionId] = currentAnswers.join(',');
+
+        state.answers[questionId] = currentAnswers.join(",");
       } else {
-        // Single-choice: replace with new answer
         state.answers[questionId] = answer;
       }
-    },  
-         
+    },
+
     setAnswers: (state, action) => {
       state.answers = action.payload;
     },
     updateProctoring: (state, action) => {
-      const { noise_score, face_score, mobile_score, tab_score } = action.payload;
+      const { noise_score, face_score, mobile_score, tab_score } =
+        action.payload;
       state.noise_score += noise_score || 0;
       state.face_score += face_score || 0;
       state.mobile_score += mobile_score || 0;
@@ -87,26 +89,7 @@ export const testSlice = createSlice({
     setFinalScore: (state, action) => {
       state.final_score = action.payload;
     },
-    submitTest: (state) => {
-      // Logic to submit the test could go here if needed
-      // For now, this can reset or prepare data for submission
-      console.log("Test submitted:", {
-        test_id: state.test_id,
-        student_id: state.student_id,
-        answers: state.answers,
-        final_score: state.final_score,
-        proctoring: {
-          noise_score: state.noise_score,
-          face_score: state.face_score,
-          mobile_score: state.mobile_score,
-          tab_score: state.tab_score,
-          flags: state.flags,
-        },
-        duration_taken: state.test_current_time,
-      });
-    },
     resetTest: (state) => {
-      // Reset the state after test submission
       state.test_id = "";
       state.student_id = "";
       state.proctor_settings = [];
@@ -147,7 +130,6 @@ export const {
   updateProctoring,
   addFlag,
   setFinalScore,
-  submitTest,
   resetTest,
   setPermissions,
 } = testSlice.actions;

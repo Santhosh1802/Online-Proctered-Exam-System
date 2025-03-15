@@ -3,6 +3,7 @@ const Test = require("../models/TestSchema");
 const Student = require("../models/StudentSchema");
 const Report = require("../models/ReportSchema");
 const nodemailer = require("nodemailer");
+const { convertToISTWithTime } = require("../utils/time");
 const getTecherProfile = async (req, res) => {
   const response = {
     message: "",
@@ -68,27 +69,24 @@ const createTest = async (req, res) => {
       duration,
       status,
       proctor_settings,
-      questions, // Must include marks & negativeMarks
+      questions,
     } = req.body;
 
-    // Find teacher by email
     const teacher = await Teacher.findOne({ email: email });
 
     if (!teacher) {
       return res.status(404).json({ message: "Teacher not found" });
     }
 
-    // Validate each question to ensure marks and negativeMarks are present
     const validatedQuestions = questions.map((q) => ({
       questionText: q.questionText,
       type: q.type,
       options: q.options || [],
       correctAnswers: q.correctAnswers,
-      marks: q.marks, // Ensure marks are included
-      negativeMarks: q.negativeMarks ?? 0, // Default to 0 if not provided
+      marks: q.marks,
+      negativeMarks: q.negativeMarks ?? 0,
     }));
 
-    // Create new test
     const newTest = new Test({
       testname,
       description,
@@ -98,13 +96,11 @@ const createTest = async (req, res) => {
       duration: parseInt(duration, 10),
       status: status || "pending",
       proctor_settings,
-      questions: validatedQuestions, // Include questions with marks & negativeMarks
+      questions: validatedQuestions,
     });
 
-    // Save test to DB
     const savedTest = await newTest.save();
 
-    // Add test reference to teacher
     teacher.tests.push(savedTest._id);
     await teacher.save();
 
@@ -161,7 +157,8 @@ const assignTestToStudents = async (req, res) => {
 
     if (!department || !batch || !section || !testId) {
       return res.status(400).json({
-        error: "Missing required parameters: department, batch, section, or testId",
+        error:
+          "Missing required parameters: department, batch, section, or testId",
       });
     }
 
@@ -173,10 +170,11 @@ const assignTestToStudents = async (req, res) => {
     const students = await Student.find({ department, batch, section });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: "No students found for the given filters" });
+      return res
+        .status(404)
+        .json({ message: "No students found for the given filters" });
     }
 
-    // ✅ Create transporter only once
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -185,7 +183,6 @@ const assignTestToStudents = async (req, res) => {
       },
     });
 
-    // ✅ Process students one by one using `for...of`
     for (const student of students) {
       const alreadyAssigned = student.ongoingTests.some(
         (ongoingTest) => ongoingTest.testId.toString() === testId
@@ -203,7 +200,7 @@ const assignTestToStudents = async (req, res) => {
           endDate: test.end_date,
           duration: test.duration,
         });
-        await student.save(); // ✅ Wait for DB update before sending email
+        await student.save();
 
         const mailOptions = {
           from: process.env.GMAIL_USER,
@@ -215,7 +212,9 @@ const assignTestToStudents = async (req, res) => {
                 <h2>📢 New Test Assigned</h2>
               </div>
               <div style="padding: 20px; background-color: white;">
-                <p style="font-size: 18px;">Hello <strong>${student.name}</strong>,</p>
+                <p style="font-size: 18px;">Hello <strong>${
+                  student.name
+                }</strong>,</p>
                 <p style="color: #333;">You have been assigned a new test. Please review the details below:</p>
         
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
@@ -225,7 +224,9 @@ const assignTestToStudents = async (req, res) => {
                   </tr>
                   <tr>
                     <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">📅 Start Date:</td>
-                    <td style="padding: 10px;">${test.start_date}</td>
+                    <td style="padding: 10px;">${convertToISTWithTime(
+                      test.start_date
+                    )}</td>
                   </tr>
                   <tr>
                     <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">⏳ Duration:</td>
@@ -233,7 +234,9 @@ const assignTestToStudents = async (req, res) => {
                   </tr>
                   <tr>
                     <td style="padding: 10px; font-weight: bold; background-color: #f2f2f2;">🕒 End Date:</td>
-                    <td style="padding: 10px;">${test.end_date}</td>
+                    <td style="padding: 10px;">${convertToISTWithTime(
+                      test.end_date
+                    )}</td>
                   </tr>
                 </table>
         
@@ -255,18 +258,18 @@ const assignTestToStudents = async (req, res) => {
           `,
         };
 
-        // ✅ Send email only after student data is updated
         await transporter.sendMail(mailOptions);
       }
     }
 
-    return res.status(200).json({ message: "Test assigned and emails sent successfully." });
+    return res
+      .status(200)
+      .json({ message: "Test assigned and emails sent successfully." });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 };
-
 
 const deassignTestFromStudents = async (req, res) => {
   try {
@@ -434,14 +437,12 @@ const getTeacherDashboardData = async (req, res) => {
   }
 };
 
-// Get reports for a test by test_id
 const getTestReports = async (req, res) => {
   try {
     const { test_id } = req.query;
 
     console.log("Fetching reports for test ID:", test_id);
 
-    // Fetch reports with student details populated
     const reports = await Report.find({ test_id }).populate(
       "student_id",
       "name department section batch"
