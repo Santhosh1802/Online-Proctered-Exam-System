@@ -168,7 +168,7 @@ export default function TeacherProfile({ toast }) {
             src={`data:image/jpeg;base64,${profile}`}
             alt="Profile"
             preview
-            style={{ border: "1px solid black", marginLeft: "3em" }}
+            style={{ border: "1px solid black", marginLeft: "3em",width:"200px",height:"200px" }}
             width="200px"
             height="200px"
           />
@@ -239,7 +239,7 @@ export default function TeacherProfile({ toast }) {
         </form>
         <Button
           label="Reset Password"
-          className="p-button-danger"
+          severity="secondary"
           type="button"
           style={{ width: "20em", marginTop: "1em", marginBottom: "2em" }}
           onClick={() => setIsDialogVisible(true)}

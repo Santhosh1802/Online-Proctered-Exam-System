@@ -4,6 +4,7 @@ const Admin = require("../models/AdminSchema");
 const Student = require("../models/StudentSchema");
 const Teacher = require("../models/TeacherSchema");
 const Test = require("../models/TestSchema");
+const Report=require("../models/ReportSchema");
 const getAdminProfile = async (req, res) => {
   const response = {
     message: "",
@@ -572,7 +573,7 @@ const getTestReports = async (req, res) => {
 
     if (!reports.length) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No reports found for this test." });
     }
 

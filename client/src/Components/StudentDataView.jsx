@@ -252,8 +252,8 @@ export default function StudentDataView() {
               src={`data:image/png;base64,${selectedStudent.profile}`}
               alt="Student"
               style={{
-                width: "120px",
-                height: "120px",
+                width: "130px",
+                height: "165px",
                 borderRadius: ".5em",
                 objectFit: "cover",
               }}

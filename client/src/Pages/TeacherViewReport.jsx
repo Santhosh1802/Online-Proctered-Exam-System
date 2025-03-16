@@ -47,6 +47,15 @@ export default function TeacherViewReport({ toast }) {
           withCredentials: true,
         }
       );
+      if(response.data.message==="No reports found for this test."){
+        toast.current.show({
+          severity: "info",
+          summary: "Info",
+          detail: "No reports found for this test.",
+          life: 3000,
+        });
+        return;
+      }
 
       setReportData(response.data.reports || []);
       toast.current.show({

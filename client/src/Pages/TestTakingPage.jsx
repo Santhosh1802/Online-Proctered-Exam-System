@@ -36,7 +36,7 @@ export default function TestTakingPage({ toast }) {
   const navigate = useNavigate();
   useEffect(() => {
     axios
-      .get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${testId}`)
+      .get(`${process.env.REACT_APP_STUDENT_GET_ONE_TEST}?id=${testId}`,{withCredentials:true})
       .then((res) => {
         const testData = res.data.data;
         setTest(testData);
@@ -194,7 +194,7 @@ export default function TestTakingPage({ toast }) {
         test_duration: testSlice.test_current_time,
         proctor_scores: proctoring,
         student_id: userSlice.id,
-      })
+      },{withCredentials:true})
       .then((res) => {
         dispatch(resetTest());
         toast.current.show({
@@ -217,14 +217,13 @@ export default function TestTakingPage({ toast }) {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-  };
+  // const handleContextMenu = (e) => {
+  //   e.preventDefault();
+  // };
 
   return (
     <div
       style={{ display: "flex", height: "100vh" }}
-      onContextMenu={handleContextMenu}
     >
       <PermissionDialog
         visible={permissionDialogVisible}

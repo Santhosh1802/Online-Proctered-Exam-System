@@ -155,8 +155,8 @@ const assignTestToStudents = async (req, res) => {
   try {
     const { department, batch, section, testId } = req.body;
 
-    if (!department || !batch || !section || !testId) {
-      return res.status(400).json({
+    if (department==="" || batch==="" || section==="" || testId==="" || !department || !batch || !section || !testId) {
+      return res.status(201).json({
         error:
           "Missing required parameters: department, batch, section, or testId",
       });
@@ -164,14 +164,14 @@ const assignTestToStudents = async (req, res) => {
 
     const test = await Test.findById(testId);
     if (!test) {
-      return res.status(404).json({ message: "Test not found" });
+      return res.status(200).json({ message: "Test not found" });
     }
 
     const students = await Student.find({ department, batch, section });
 
     if (students.length === 0) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No students found for the given filters" });
     }
 
@@ -258,7 +258,7 @@ const assignTestToStudents = async (req, res) => {
           `,
         };
 
-        await transporter.sendMail(mailOptions);
+        //await transporter.sendMail(mailOptions);
       }
     }
 
@@ -450,7 +450,7 @@ const getTestReports = async (req, res) => {
 
     if (!reports.length) {
       return res
-        .status(404)
+        .status(200)
         .json({ message: "No reports found for this test." });
     }
 

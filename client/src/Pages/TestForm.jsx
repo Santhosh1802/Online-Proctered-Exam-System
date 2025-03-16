@@ -84,7 +84,18 @@ const TestForm = ({ toast }) => {
   };
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+  
     if (file) {
+      if (file.size > maxSize) {
+        toast.current.show({
+          severity: "warn",
+          summary: "File Too Large",
+          detail: "Please upload an image smaller than 2MB.",
+        });
+        return;
+      }
+  
       const reader = new FileReader();
       reader.onloadend = () => {
         updateQuestion(index, "image", reader.result);
@@ -92,6 +103,7 @@ const TestForm = ({ toast }) => {
       reader.readAsDataURL(file);
     }
   };
+  
   const removeImage = (index) => {
     updateQuestion(index, "image", "");
   };
@@ -103,12 +115,15 @@ const TestForm = ({ toast }) => {
     try {
       let response;
       if (testData.test_id) {
+        console.log(requestData);
         response = await axios.put(
           `${process.env.REACT_APP_UPDATE_TEST}/${testData.test_id}`,
           requestData,
           { withCredentials: true }
         );
       } else {
+        console.log(requestData);
+        
         response = await axios.post(
           process.env.REACT_APP_TEACHER_CREATE_TEST,
           requestData,

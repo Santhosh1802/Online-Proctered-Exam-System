@@ -30,7 +30,7 @@ export default function InstructionsPage({ toast }) {
 
   const handleStartTest = () => {
     dispatch(setTestId(testDetails._id));
-    dispatch(setTestDuration(testDetails.duration * 60)); // Convert minutes to seconds
+    dispatch(setTestDuration(testDetails.duration * 60));
     dispatch(setProctorSettings(testDetails.proctor_settings));
     navigate(`/test/${testId}`, {
       state: { proctorSettings: testDetails.proctor_settings },
@@ -145,7 +145,7 @@ export default function InstructionsPage({ toast }) {
             label="Test Camera and Audio"
             onClick={() =>
               window.open(
-                "https://www.onlinemictest.com/webcam-test/",
+                "https://webcamtests.com/",
                 "_blank"
               )
             }

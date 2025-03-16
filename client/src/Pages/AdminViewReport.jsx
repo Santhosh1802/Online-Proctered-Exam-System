@@ -104,6 +104,7 @@ export default function AdminViewReport({ toast }) {
 
     try {
       const formattedData = reportData.map((report) => ({
+        "Test Name":report.testname || "N/A",
         "Student Name": report.student_id?.name || "N/A",
         Department: report.student_id?.department || "N/A",
         Section: report.student_id?.section || "N/A",
@@ -116,12 +117,12 @@ export default function AdminViewReport({ toast }) {
         "Mobile Score": report.proctoring_report?.mobile_score || 0,
         "Tab Score": report.proctoring_report?.tab_score || 0,
       }));
-
+      
       const worksheet = XLSX.utils.json_to_sheet(formattedData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
 
-      XLSX.writeFile(workbook, "Exam_Reports.xlsx");
+      XLSX.writeFile(workbook, `Reports_${reportData[0].testname}.xlsx`);
 
       toast.current.show({
         severity: "success",
@@ -216,10 +217,11 @@ export default function AdminViewReport({ toast }) {
       "81-90": 0,
       "91-100": 0,
     };
-
+    console.log(reportData);
+    
     reportData.forEach((r) => {
       const score = r.score || 0;
-      const totalQuestions = r.total_questions || 1;
+      const totalQuestions = Object.keys(r.answers).length || 1;
       const normalizedScore = (score / totalQuestions) * 100;
 
       if (normalizedScore <= 10) categories["0-10"]++;
@@ -266,16 +268,19 @@ export default function AdminViewReport({ toast }) {
             placeholder="Select a Test"
             className="w-full"
             disabled={loading}
+            title="Select Test From Dropdown"
           />
           <Button
             label={loading ? "Loading..." : "Get Reports"}
             icon="pi pi-search"
+            title="Get Reports Of Selected Test"
             onClick={handleGetReports}
             disabled={loading}
           />
         </div>
         <Button
           label="Download Excel"
+          title="Download All Report Data"
           icon="pi pi-file-excel"
           className="p-button-success"
           onClick={exportToExcel}
@@ -323,7 +328,7 @@ export default function AdminViewReport({ toast }) {
           <Column
             field="submitted_at"
             header="Submitted At"
-            body={(rowData) => new Date(rowData.submitted_at).toLocaleString()}
+            body={(rowData) => convertToISTWithTime(rowData.submitted_at)}
           />
           <Column
             field="proctoring_report.noise_score"

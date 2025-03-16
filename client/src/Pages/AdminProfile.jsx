@@ -228,7 +228,7 @@ export default function AdminProfile({ toast }) {
 
         <Button
           label="Reset Password"
-          className="p-button-danger"
+          severity="secondary"
           style={{ width: "20em", marginTop: "1em", marginBottom: "2em" }}
           onClick={() => setIsDialogVisible(true)}
         />

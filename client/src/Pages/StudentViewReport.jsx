@@ -42,6 +42,7 @@ export default function StudentViewReport() {
     fetchTestDetails();
   }, [reports]);
   useEffect(() => {
+    if(!userEmail) return;
     axios
       .get(process.env.REACT_APP_GET_STUDENT_DATA, {
         params: { email: userEmail },

@@ -300,10 +300,10 @@ const calculateProctorPenalty = (scores) => {
   const { noise_score, face_score, mobile_score, tab_score } = scores;
 
   let penalty = 0;
-  if (noise_score > 5) penalty += 1;
-  if (face_score > 5) penalty += 2;
-  if (mobile_score > 3) penalty += 2;
-  if (tab_score > 2) penalty += 2;
+  if (noise_score > 3) penalty += 1;
+  if (face_score > 3) penalty += 1;
+  if (mobile_score > 0) penalty += 1;
+  if (tab_score > 0) penalty += 1;
 
   return penalty;
 };

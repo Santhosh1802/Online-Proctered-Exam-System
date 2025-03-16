@@ -18,6 +18,7 @@ export default function TeacherAssignTest({ toast }) {
   const id = useSelector((state) => state.user.id);
 
   useEffect(() => {
+    if(!id) return;
     axios
       .get(`${process.env.REACT_APP_GET_UNIQUE_DEPARTMENTS}`, {
         withCredentials: true,
@@ -90,7 +91,7 @@ export default function TeacherAssignTest({ toast }) {
         toast.current.show({
           severity: "error",
           summary: "Error",
-          detail: "Failed to assign test",
+          detail: response.data.error,
         });
       }
     } catch (error) {
