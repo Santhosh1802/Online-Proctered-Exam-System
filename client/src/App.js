@@ -46,13 +46,7 @@ function App() {
 
   useEffect(() => {
     const themeLink = document.getElementById("theme-link");
-    if (isDarkTheme) {
-      themeLink.href =
-        "https://unpkg.com/primereact/resources/themes/md-dark-indigo/theme.css";
-    } else {
-      themeLink.href =
-        "https://unpkg.com/primereact/resources/themes/md-light-indigo/theme.css";
-    }
+    themeLink.href = `/primereact-themes/${isDarkTheme ? "md-dark-indigo.css" : "md-light-indigo.css"}`;
   }, [isDarkTheme]);
   return (
     <BrowserRouter>

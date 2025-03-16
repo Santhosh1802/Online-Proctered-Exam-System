@@ -45,12 +45,12 @@ export default function AdminDashboard() {
         })
         .catch((error) => console.log(error));
 
-      axios
-        .get(process.env.REACT_APP_GET_LOGIN_TRENDS, { withCredentials: true })
-        .then((res) => {
-          setLoginTrends(res.data.data);
-        })
-        .catch((error) => console.log(error));
+      // axios
+      //   .get(process.env.REACT_APP_GET_LOGIN_TRENDS, { withCredentials: true })
+      //   .then((res) => {
+      //     setLoginTrends(res.data.data);
+      //   })
+      //   .catch((error) => console.log(error));
     }
   }, [email, navigate]);
 
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
         </div>
-        <div className="w-8 mt-4">
+        {/* <div className="w-8 mt-4">
           <Card
             className="shadow-2 text-center p-4"
             style={{ borderRadius: "0" }}
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
               height={250}
             />
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );

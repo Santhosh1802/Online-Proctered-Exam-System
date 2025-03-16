@@ -108,6 +108,7 @@ function Login({ toast }) {
             onChange={(e) => setEmail(e.target.value)}
             style={{ width: "100%" }}
             placeholder="Enter Email"
+            title="User Email"
           />
           <br />
           <br />
@@ -123,7 +124,9 @@ function Login({ toast }) {
             onChange={(e) => setPassword(e.target.value)}
             toggleMask
             feedback={false}
+            autoComplete="true"
             placeholder="Enter Password"
+            title="User Password"
           />
           <br />
           <br />

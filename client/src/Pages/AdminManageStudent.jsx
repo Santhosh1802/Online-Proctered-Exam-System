@@ -115,6 +115,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.name}
             onChange={handleChange}
             required
+            tooltip="Enter Student Name" tooltipOptions={{ event: 'focus' }}
+            title="Student Name"
           />
           <InputText
             name="email"
@@ -123,6 +125,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.email}
             onChange={handleChange}
             required
+            tooltip="Enter Student Email" tooltipOptions={{ event: 'focus' }}
+            title="Student Email"
           />
           <InputText
             name="phone"
@@ -130,6 +134,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.phone}
             onChange={handleChange}
             required
+            tooltip="Enter Student Phone Number" tooltipOptions={{ event: 'focus' }}
+            title="Student Phone Number"
           />
           <InputText
             name="department"
@@ -137,6 +143,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.department}
             onChange={handleChange}
             required
+            tooltip="Enter Student Department" tooltipOptions={{ event: 'focus' }}
+            title="Student Department"
           />
           <InputText
             name="registerNumber"
@@ -144,6 +152,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.registerNumber}
             onChange={handleChange}
             required
+            tooltip="Enter Student Register Number" tooltipOptions={{ event: 'focus' }}
+            title="Student Register Number"
           />
           <InputText
             name="batch"
@@ -151,6 +161,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.batch}
             onChange={handleChange}
             required
+            tooltip="Enter Student Batch" tooltipOptions={{ event: 'focus' }}
+            title="Student Batch"
           />
           <InputText
             name="section"
@@ -158,6 +170,8 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.section}
             onChange={handleChange}
             required
+            tooltip="Enter Student Section" tooltipOptions={{ event: 'focus' }}
+            title="Student Section"
           />
           <InputText
             name="password"
@@ -165,8 +179,10 @@ export default function AdminManageStudent({ toast }) {
             value={studentData.password}
             onChange={handleChange}
             required
+            tooltip="Enter Student Password" tooltipOptions={{ event: 'focus' }}
+            title="Student Password"
           />
-          <Button label="Create" onClick={handleSubmit} />
+          <Button label="Create" onClick={handleSubmit} title="Create Student"/>
         </div>
       </Dialog>
     </div>

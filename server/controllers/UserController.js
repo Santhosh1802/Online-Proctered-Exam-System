@@ -96,10 +96,10 @@ const handleForgotPassword = async (req, res) => {
   };
 
   const { email } = req.body;
-  const registered=Login.findOne({email_id:email});
+  const registered=await Login.findOne({email_id:email});
   console.log(registered);
   
-  if(!registered.email_id){
+  if(!registered){
     response.error="User Not Registerd";
     return res.status(200).json(response);
   }
