@@ -90,7 +90,7 @@ export default function AdminViewReport({ toast }) {
       setLoading(false);
     }
   };
-
+  
   const exportToExcel = () => {
     if (reportData.length === 0) {
       toast.current.show({
@@ -279,7 +279,7 @@ export default function AdminViewReport({ toast }) {
           />
         </div>
         <Button
-          label="Download Excel"
+          label="Download Report"
           title="Download All Report Data"
           icon="pi pi-file-excel"
           className="p-button-success"
@@ -292,6 +292,9 @@ export default function AdminViewReport({ toast }) {
           paginator
           rows={5}
           responsiveLayout="scroll"
+          rowsPerPageOptions={[5,10,20,30,50,100]}
+          currentPageReportTemplate="{first} to {last} of {totalRecords}"
+          emptyMessage="No reports found."
         >
           <Column
             field="student_id.name"

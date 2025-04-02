@@ -11,6 +11,7 @@ function Login({ toast }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const theme = localStorage.getItem("theme") || "light";
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -81,16 +82,19 @@ function Login({ toast }) {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         paddingRight: "8em",
+        filter:theme==="dark"?"brightness(0.7)":"none",
       }}
     >
       <div
         style={{
-          boxShadow: "0px 2px 8px 0px",
+          boxShadow: theme==="dark"
+      ? "0px 2px 8px 0px rgba(0,0,0,0.8)" 
+      : "0px 2px 8px 0px rgba(0,0,0,0.2)",
           borderRadius: ".5em",
           height: "500px",
           marginTop: "8em",
-          backgroundColor: "white",
-          color: "black",
+          backgroundColor: theme==="dark" ? "#34455d" : "white",
+          color: theme==="dark" ? "white":"black",
         }}
       >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>Login</h1>

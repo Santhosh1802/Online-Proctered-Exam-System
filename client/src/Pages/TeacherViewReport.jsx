@@ -58,12 +58,12 @@ export default function TeacherViewReport({ toast }) {
       }
 
       setReportData(response.data.reports || []);
-      toast.current.show({
-        severity: "success",
-        summary: "Success",
-        detail: "Report data fetched successfully.",
-        life: 3000,
-      });
+      // toast.current.show({
+      //   severity: "success",
+      //   summary: "Success",
+      //   detail: "Report data fetched successfully.",
+      //   life: 3000,
+      // });
     }
   };
 
@@ -95,7 +95,7 @@ export default function TeacherViewReport({ toast }) {
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
-    XLSX.writeFile(workbook, "Exam_Reports.xlsx");
+    XLSX.writeFile(workbook, `Reports_${reportData[0].testname}.xlsx`);
 
     toast.current.show({
       severity: "success",
@@ -236,7 +236,8 @@ export default function TeacherViewReport({ toast }) {
           />
         </div>
         <Button
-          label="Download Excel"
+          label="Download Report"
+          title="Download All Report Data"
           icon="pi pi-file-excel"
           className="p-button-success"
           onClick={exportToExcel}
@@ -249,6 +250,9 @@ export default function TeacherViewReport({ toast }) {
           paginator
           rows={5}
           responsiveLayout="scroll"
+          rowsPerPageOptions={[5,10,20,30,50,100]}
+          currentPageReportTemplate="{first} to {last} of {totalRecords}"
+          emptyMessage="No reports found."
         >
           <Column
             field="student_id.name"

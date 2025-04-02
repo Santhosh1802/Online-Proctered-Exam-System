@@ -5,6 +5,7 @@ import axios from "axios";
 
 function ForgotPassword({ toast }) {
   const [email, setEmail] = useState("");
+  const theme = localStorage.getItem("theme") || "light";
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (email === "") {
@@ -52,16 +53,19 @@ function ForgotPassword({ toast }) {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         paddingRight: "8em",
+        filter:theme==="dark"?"brightness(0.7)":"none",
       }}
     >
       <div
         style={{
-          boxShadow: "0px 2px 8px 0px",
+          boxShadow: theme==="dark"
+      ? "0px 2px 8px 0px rgba(0,0,0,0.8)" 
+      : "0px 2px 8px 0px rgba(0,0,0,0.2)",
           borderRadius: ".5em",
           marginTop: "8em",
-          marginBottom: "12em",
-          backgroundColor: "white",
-          color: "black",
+          backgroundColor: theme==="dark" ? "#34455d" : "white",
+          color: theme==="dark" ? "white":"black",
+          marginBottom:"12em",
         }}
       >
         <h1 style={{ textAlign: "center", marginTop: "2em" }}>

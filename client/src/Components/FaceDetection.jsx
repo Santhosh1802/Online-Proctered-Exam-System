@@ -60,7 +60,7 @@ const FaceDetection = ({ toast }) => {
         if (videoRef.current.readyState === 4) {
           const video = videoRef.current;
           const detections = await detector.estimateFaces(video);
-          console.log("Detections:", detections);
+          //console.log("Detections:", detections);
           const newFaceCount = detections.length;
           setFaceCount(newFaceCount);
           if (newFaceCount === 0) {
