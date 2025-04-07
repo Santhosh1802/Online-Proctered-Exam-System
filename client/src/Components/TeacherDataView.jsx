@@ -113,6 +113,8 @@ export default function TeacherDataView() {
         value={teacher || []}
         paginator
         rows={10}
+        rowsPerPageOptions={[5,10,20,30,50,100]}
+        emptyMessage="No teachers found."
         filters={filters}
         globalFilterFields={["name", "email", "department"]}
         header={

@@ -62,6 +62,8 @@ function App() {
             offIcon="pi pi-sun"
             className="w-8rem"
             style={{ zIndex: "2" }}
+            aria-label="Theme Toggle Button"
+            aria-roledescription="Toggle theme between light and dark"
           />
         </div>
         <Suspense

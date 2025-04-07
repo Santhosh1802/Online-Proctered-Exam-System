@@ -116,6 +116,8 @@ export default function StudentDataView() {
         paginator
         rows={10}
         filters={filters}
+        rowsPerPageOptions={[5,10,20,30,50,100]}
+        emptyMessage="No students found."
         globalFilterFields={[
           "name",
           "email",

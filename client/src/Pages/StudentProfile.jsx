@@ -191,6 +191,7 @@ export default function StudentProfile({ toast }) {
             onChange={(e) => setName(e.target.value)}
             required
             style={{ width: "20em" }}
+            readOnly
           />
           <br />
           <br />
@@ -216,6 +217,7 @@ export default function StudentProfile({ toast }) {
             placeholder="Enter your phone number"
             keyfilter={"pnum"}
             onChange={(e) => setPhone(e.target.value)}
+            readOnly
           />
           <br />
           <br />
@@ -228,6 +230,7 @@ export default function StudentProfile({ toast }) {
             placeholder="Enter your department"
             onChange={(e) => setDepartment(e.target.value)}
             style={{ width: "20em" }}
+            readOnly
           />
           <br />
           <br />
@@ -240,6 +243,7 @@ export default function StudentProfile({ toast }) {
             placeholder="Enter your Register Number"
             onChange={(e) => setRegisterNumber(e.target.value)}
             style={{ width: "20em" }}
+            readOnly
           />
           <br />
           <br />
@@ -252,6 +256,7 @@ export default function StudentProfile({ toast }) {
             placeholder="Enter your Batch"
             onChange={(e) => setBatch(e.target.value)}
             style={{ width: "20em" }}
+            readOnly
           />
           <br />
           <br />
@@ -264,6 +269,7 @@ export default function StudentProfile({ toast }) {
             placeholder="Enter your Section"
             onChange={(e) => setSection(e.target.value)}
             style={{ width: "20em" }}
+            readOnly
           />
           <br />
           <br />

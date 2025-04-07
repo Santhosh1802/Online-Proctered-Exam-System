@@ -8,6 +8,7 @@ import {
   setTestDuration,
   setProctorSettings,
 } from "../Store/testSlice";
+import { Message } from "primereact/message";
 
 export default function InstructionsPage({ toast }) {
   const { testId } = useParams();
@@ -68,6 +69,11 @@ export default function InstructionsPage({ toast }) {
         >
           Test Instructions
         </h1>
+        <Message severity="info" style={{ marginBottom: "1em" }} text="Note: Please read the instructions carefully before
+          starting the test.">
+        </Message>
+        <Message severity="error" style={{ marginBottom: "1em" }} text="If Page Stuck: Wait for the Test Timer to start if your test page is stuck or the page is not responsive.">
+        </Message>
         <p>
           <strong>Test Name:</strong> {testDetails.testname}
         </p>
@@ -95,7 +101,6 @@ export default function InstructionsPage({ toast }) {
             Face Detection will monitor your presence throughout the test.
           </li>
           <li>Noise Detection will ensure a quiet environment.</li>
-          <li>Any suspicious activity may lead to disqualification.</li>
         </ul>
 
         <h2>Technical Requirements</h2>
@@ -116,7 +121,7 @@ export default function InstructionsPage({ toast }) {
 
         <h2>Consequences of Violations</h2>
         <ul>
-          <li>Any violation of the rules may result in test termination.</li>
+          <li>Any violation of the rules may result in penalty for test score</li>
           <li>Suspicious behavior flagged by proctoring will be reviewed.</li>
         </ul>
 

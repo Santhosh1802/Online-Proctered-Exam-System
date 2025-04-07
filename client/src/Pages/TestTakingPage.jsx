@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,Suspense} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "primereact/button";
@@ -8,10 +8,11 @@ import { RadioButton } from "primereact/radiobutton";
 import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import axios from "axios";
-import FaceDetection from "../Components/FaceDetection";
+
 import NoiseDetection from "../Components/NoiseDetection";
 import TabSwitchDetector from "../Components/TabSwitcherDetector";
-import PermissionDialog from "../Components/PermissionDialog";
+
+//import PermissionDialog from "../Components/PermissionDialog";
 import {
   IncrementTestCurrentTime,
   resetTest,
@@ -20,6 +21,7 @@ import {
   setAnswers,
   setPermissions,
 } from "../Store/testSlice";
+const FaceDetection = React.lazy(()=>import("../Components/FaceDetection"));
 
 export default function TestTakingPage({ toast }) {
   let { testId } = useParams();
@@ -32,7 +34,7 @@ export default function TestTakingPage({ toast }) {
   const [answers, setAnswersState] = useState({});
   const [timeLeft, setTimeLeft] = useState(10);
   const [submitted, setSubmitted] = useState(false);
-  const [permissionDialogVisible, setPermissionDialogVisible] = useState(false);
+  //const [permissionDialogVisible, setPermissionDialogVisible] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     axios
@@ -166,20 +168,20 @@ export default function TestTakingPage({ toast }) {
     dispatch(setPermissions(permissions));
   };
 
-  useEffect(() => {
-    if (test) {
-      setPermissionDialogVisible(true);
-    }
-  }, [test]);
+  // useEffect(() => {
+  //   if (test) {
+  //     setPermissionDialogVisible(true);
+  //   }
+  // }, [test]);
 
-  const handleGrantPermissions = async () => {
-    await requestPermissions();
-    setPermissionDialogVisible(false);
-  };
+  // const handleGrantPermissions = async () => {
+  //   await requestPermissions();
+  //   setPermissionDialogVisible(false);
+  // };
 
-  const handleHideDialog = () => {
-    setPermissionDialogVisible(false);
-  };
+  // const handleHideDialog = () => {
+  //   setPermissionDialogVisible(false);
+  // };
 
   const handleSubmit = () => {
     saveCurrentAnswer();
@@ -203,6 +205,7 @@ export default function TestTakingPage({ toast }) {
           detail: "Test Submitted Successfully!",
         });
         navigate("/studentdashboard");
+        window.location.reload();
       })
       .catch((err) => console.error("Error submitting test:", err));
   };
@@ -225,11 +228,11 @@ export default function TestTakingPage({ toast }) {
     <div
       style={{ display: "flex", height: "100vh" }}
     >
-      <PermissionDialog
+      {/* <PermissionDialog
         visible={permissionDialogVisible}
         onHide={handleHideDialog}
         onGrant={handleGrantPermissions}
-      />
+      /> */}
       <div
         style={{
           overflowY: "auto",
@@ -243,9 +246,11 @@ export default function TestTakingPage({ toast }) {
               ? "Proctoring Enabled Test"
               : "No Proctoring for this test"}
           </h3>
+          <Suspense fallback={<div>Loading...</div>}>
           {test.proctor_settings.includes("Face Detection") && (
             <FaceDetection toast={toast} />
           )}
+          </Suspense>
           {test.proctor_settings.includes("Noise Detection") && (
             <NoiseDetection toast={toast} />
           )}

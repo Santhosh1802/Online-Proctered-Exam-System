@@ -85,7 +85,7 @@ const TestForm = ({ toast }) => {
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     const maxSize = 2 * 1024 * 1024; // 2MB
-  
+
     if (file) {
       if (file.size > maxSize) {
         toast.current.show({
@@ -95,21 +95,30 @@ const TestForm = ({ toast }) => {
         });
         return;
       }
-  
+
       const reader = new FileReader();
       reader.onloadend = () => {
         updateQuestion(index, "image", reader.result);
+        event.target.value="";
       };
       reader.readAsDataURL(file);
     }
   };
-  
+
   const removeImage = (index) => {
     updateQuestion(index, "image", "");
   };
   const email = useSelector((store) => store.user.email);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (testData.questions.length === 0) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please add at least one question.",
+      });
+      return;
+    }
     const requestData = { ...testData, email };
 
     try {
@@ -123,7 +132,7 @@ const TestForm = ({ toast }) => {
         );
       } else {
         console.log(requestData);
-        
+
         response = await axios.post(
           process.env.REACT_APP_TEACHER_CREATE_TEST,
           requestData,
@@ -179,268 +188,277 @@ const TestForm = ({ toast }) => {
     window.history.back();
   };
   return (
-    <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <Button onClick={navigateBack}>Back</Button>
-      <h2 className="text-center mb-4">Create a Test</h2>
-      <form onSubmit={handleSubmit} className="p-fluid grid gap-3">
-        <div className="col-12">
-          <label>Test Name</label>
-          <InputText
-            className="w-full"
-            value={testData.testname}
-            onChange={(e) =>
-              setTestData({ ...testData, testname: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="col-12">
-          <label>Description</label>
-          <InputTextarea
-            className="w-full"
-            value={testData.description}
-            onChange={(e) =>
-              setTestData({ ...testData, description: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="col-12">
-          <label>Start Date</label>
-          <Calendar
-            className="w-full"
-            value={testData.start_date}
-            onChange={(e) => setTestData({ ...testData, start_date: e.value })}
-            showTime
-            required
-          />
-        </div>
-        <div className="col-12">
-          <label>End Date</label>
-          <Calendar
-            className="w-full"
-            value={testData.end_date}
-            onChange={(e) => setTestData({ ...testData, end_date: e.value })}
-            showTime
-            required
-          />
-        </div>
-        <div className="col-12">
-          <label>Duration (Minutes)</label>
-          <InputText
-            className="w-full"
-            type="number"
-            keyfilter={"num"}
-            value={testData.duration}
-            onChange={(e) =>
-              setTestData({ ...testData, duration: e.target.value })
-            }
-            required
-          />
-        </div>
-        <h3 className="col-12 mt-4">Proctor Settings</h3>
-        <div className="col-12 flex flex-wrap gap-2">
-          {proctorOptions.map((option) => (
-            <div key={option} className="flex align-items-center">
-              <Checkbox
-                inputId={option}
-                checked={testData.proctor_settings.includes(option)}
-                onChange={() => toggleProctorSetting(option)}
-              />
-              <label htmlFor={option} className="ml-2">
-                {option}
-              </label>
-            </div>
-          ))}
-        </div>
-        <h3 className="col-12 mt-4">Questions</h3>
-        {testData.questions.map((question, qIndex) => (
-          <div
-            key={qIndex}
-            className="col-12 p-3 border-1 border-round surface-border"
-          >
-            <h3>Question {qIndex + 1}</h3>
+    <div>
+      <Button onClick={navigateBack} style={{ position: "fixed",margin:"1em" }}>
+        Back
+      </Button>
+      <div className="p-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <h2 className="text-center mb-4">Create a Test</h2>
+        <form onSubmit={handleSubmit} className="p-fluid grid gap-3">
+          <div className="col-12">
+            <label>Test Name</label>
             <InputText
               className="w-full"
-              placeholder="Enter question"
-              value={question.questionText}
+              value={testData.testname}
               onChange={(e) =>
-                updateQuestion(qIndex, "questionText", e.target.value)
+                setTestData({ ...testData, testname: e.target.value })
               }
               required
-            />
-            <label className="mt-2">Type</label>
-            <Dropdown
-              className="w-full mt-2"
-              value={question.type}
-              options={questionTypes}
-              onChange={(e) => updateQuestion(qIndex, "type", e.value)}
-              placeholder="Select Type"
-              required
-            />
-            <label className="mt-2">Marks</label>
-            <InputText
-              className="w-full mt-2"
-              type="number"
-              placeholder="Marks"
-              value={question.marks}
-              onChange={(e) => updateQuestion(qIndex, "marks", e.target.value)}
-            />
-            <label className="mt-2">Negative Marks</label>
-            <InputText
-              className="w-full mt-2"
-              type="number"
-              placeholder="Negative Marks"
-              value={question.negativeMarks}
-              onChange={(e) =>
-                updateQuestion(qIndex, "negativeMarks", e.target.value)
-              }
-            />
-            {["choose-one", "choose-multiple"].includes(question.type) && (
-              <div className="mt-3">
-                <h4>Options</h4>
-                {question.options.map((option, oIndex) => (
-                  <div
-                    key={oIndex}
-                    className="flex align-items-center gap-2 mt-2"
-                  >
-                    <InputText
-                      className="w-full"
-                      value={option}
-                      onChange={(e) =>
-                        updateOption(qIndex, oIndex, e.target.value)
-                      }
-                    />
-                    <Button
-                      icon="pi pi-times"
-                      className="p-button-danger p-button-sm"
-                      onClick={() => removeOption(qIndex, oIndex)}
-                    />
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  label="Add Option"
-                  icon="pi pi-plus"
-                  className="p-button-secondary mt-2"
-                  onClick={() => addOption(qIndex)}
-                />
-              </div>
-            )}
-            {question.type === "choose-one" && question.options.length > 0 && (
-              <div className="mt-3">
-                <h4>Select Correct Answer</h4>
-                <Dropdown
-                  className="w-full"
-                  value={question.correctAnswers[0] || ""}
-                  options={question.options.map((opt) => ({
-                    label: opt,
-                    value: opt,
-                  }))}
-                  onChange={(e) =>
-                    updateQuestion(qIndex, "correctAnswers", [e.value])
-                  }
-                  placeholder="Choose Correct Answer"
-                />
-              </div>
-            )}
-            {question.type === "choose-multiple" &&
-              question.options.length > 0 && (
-                <div className="mt-3">
-                  <h4>Select Correct Answers</h4>
-                  <MultiSelect
-                    className="w-full"
-                    value={question.correctAnswers}
-                    options={question.options.map((opt) => ({
-                      label: opt,
-                      value: opt,
-                    }))}
-                    onChange={(e) =>
-                      updateQuestion(qIndex, "correctAnswers", e.value)
-                    }
-                    placeholder="Select Correct Answers"
-                    display="chip"
-                  />
-                </div>
-              )}
-            {question.type === "fill-in-the-blanks" && (
-              <div className="mt-3">
-                <h4>Correct Answer</h4>
-                <InputText
-                  className="w-full"
-                  value={question.correctAnswers[0] || ""}
-                  onChange={(e) =>
-                    updateQuestion(qIndex, "correctAnswers", [e.target.value])
-                  }
-                  placeholder="Enter the correct answer"
-                />
-              </div>
-            )}
-            {question.type === "true-false" && (
-              <div className="mt-3">
-                <h4>Select Correct Answer</h4>
-                <Dropdown
-                  className="w-full"
-                  value={question.correctAnswers[0] || ""}
-                  options={[
-                    { label: "True", value: "true" },
-                    { label: "False", value: "false" },
-                  ]}
-                  onChange={(e) =>
-                    updateQuestion(qIndex, "correctAnswers", [e.value])
-                  }
-                  placeholder="Choose Correct Answer"
-                />
-              </div>
-            )}
-            <div className="mt-3">
-              <label>Upload Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(e, qIndex)}
-              />
-              {question.image && (
-                <div className="mt-2">
-                  <img
-                    src={question.image}
-                    alt="Uploaded"
-                    className="mt-2"
-                    style={{ maxWidth: "100px" }}
-                  />
-                  <button
-                    type="button"
-                    className="p-button-danger p-button-sm mt-2"
-                    onClick={() => removeImage(qIndex)}
-                  >
-                    Remove Image
-                  </button>
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              label="Remove Question"
-              icon="pi pi-trash"
-              className="p-button-danger mt-3"
-              onClick={() => removeQuestion(qIndex)}
             />
           </div>
-        ))}
-        <Button
-          type="button"
-          label="Add Question"
-          icon="pi pi-plus"
-          className="p-button-secondary mt-3"
-          onClick={addQuestion}
-        />
-        <Button
-          type="submit"
-          label="Create Test"
-          icon="pi pi-check"
-          className="p-button-success mt-3 w-full"
-        />
-      </form>
+          <div className="col-12">
+            <label>Description</label>
+            <InputTextarea
+              className="w-full"
+              value={testData.description}
+              onChange={(e) =>
+                setTestData({ ...testData, description: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="col-12">
+            <label>Start Date</label>
+            <Calendar
+              className="w-full"
+              value={testData.start_date}
+              onChange={(e) =>
+                setTestData({ ...testData, start_date: e.value })
+              }
+              showTime
+              required
+            />
+          </div>
+          <div className="col-12">
+            <label>End Date</label>
+            <Calendar
+              className="w-full"
+              value={testData.end_date}
+              onChange={(e) => setTestData({ ...testData, end_date: e.value })}
+              showTime
+              required
+            />
+          </div>
+          <div className="col-12">
+            <label>Duration (Minutes)</label>
+            <InputText
+              className="w-full"
+              type="number"
+              keyfilter={"num"}
+              value={testData.duration}
+              onChange={(e) =>
+                setTestData({ ...testData, duration: e.target.value })
+              }
+              required
+            />
+          </div>
+          <h3 className="col-12 mt-4">Proctor Settings</h3>
+          <div className="col-12 flex flex-wrap gap-2">
+            {proctorOptions.map((option) => (
+              <div key={option} className="flex align-items-center">
+                <Checkbox
+                  inputId={option}
+                  checked={testData.proctor_settings.includes(option)}
+                  onChange={() => toggleProctorSetting(option)}
+                />
+                <label htmlFor={option} className="ml-2">
+                  {option}
+                </label>
+              </div>
+            ))}
+          </div>
+          <h3 className="col-12 mt-4">Questions</h3>
+          {testData.questions.map((question, qIndex) => (
+            <div
+              key={qIndex}
+              className="col-12 p-3 border-1 border-round surface-border"
+            >
+              <h3>Question {qIndex + 1}</h3>
+              <InputText
+                className="w-full"
+                placeholder="Enter question"
+                value={question.questionText}
+                onChange={(e) =>
+                  updateQuestion(qIndex, "questionText", e.target.value)
+                }
+                required
+              />
+              <label className="mt-2">Type</label>
+              <Dropdown
+                className="w-full mt-2"
+                value={question.type}
+                options={questionTypes}
+                onChange={(e) => updateQuestion(qIndex, "type", e.value)}
+                placeholder="Select Type"
+                required
+              />
+              <label className="mt-2">Marks</label>
+              <InputText
+                className="w-full mt-2"
+                type="number"
+                placeholder="Marks"
+                value={question.marks}
+                onChange={(e) =>
+                  updateQuestion(qIndex, "marks", e.target.value)
+                }
+              />
+              <label className="mt-2">Negative Marks</label>
+              <InputText
+                className="w-full mt-2"
+                type="number"
+                placeholder="Negative Marks"
+                value={question.negativeMarks}
+                onChange={(e) =>
+                  updateQuestion(qIndex, "negativeMarks", e.target.value)
+                }
+              />
+              {["choose-one", "choose-multiple"].includes(question.type) && (
+                <div className="mt-3">
+                  <h4>Options</h4>
+                  {question.options.map((option, oIndex) => (
+                    <div
+                      key={oIndex}
+                      className="flex align-items-center gap-2 mt-2"
+                    >
+                      <InputText
+                        className="w-full"
+                        value={option}
+                        onChange={(e) =>
+                          updateOption(qIndex, oIndex, e.target.value)
+                        }
+                      />
+                      <Button
+                        icon="pi pi-times"
+                        className="p-button-danger p-button-sm"
+                        onClick={() => removeOption(qIndex, oIndex)}
+                      />
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    label="Add Option"
+                    icon="pi pi-plus"
+                    className="p-button-secondary mt-2"
+                    onClick={() => addOption(qIndex)}
+                  />
+                </div>
+              )}
+              {question.type === "choose-one" &&
+                question.options.length > 0 && (
+                  <div className="mt-3">
+                    <h4>Select Correct Answer</h4>
+                    <Dropdown
+                      className="w-full"
+                      value={question.correctAnswers[0] || ""}
+                      options={question.options.map((opt) => ({
+                        label: opt,
+                        value: opt,
+                      }))}
+                      onChange={(e) =>
+                        updateQuestion(qIndex, "correctAnswers", [e.value])
+                      }
+                      placeholder="Choose Correct Answer"
+                    />
+                  </div>
+                )}
+              {question.type === "choose-multiple" &&
+                question.options.length > 0 && (
+                  <div className="mt-3">
+                    <h4>Select Correct Answers</h4>
+                    <MultiSelect
+                      className="w-full"
+                      value={question.correctAnswers}
+                      options={question.options.map((opt) => ({
+                        label: opt,
+                        value: opt,
+                      }))}
+                      onChange={(e) =>
+                        updateQuestion(qIndex, "correctAnswers", e.value)
+                      }
+                      placeholder="Select Correct Answers"
+                      display="chip"
+                    />
+                  </div>
+                )}
+              {question.type === "fill-in-the-blanks" && (
+                <div className="mt-3">
+                  <h4>Correct Answer</h4>
+                  <InputText
+                    className="w-full"
+                    value={question.correctAnswers[0] || ""}
+                    onChange={(e) =>
+                      updateQuestion(qIndex, "correctAnswers", [e.target.value])
+                    }
+                    placeholder="Enter the correct answer"
+                  />
+                </div>
+              )}
+              {question.type === "true-false" && (
+                <div className="mt-3">
+                  <h4>Select Correct Answer</h4>
+                  <Dropdown
+                    className="w-full"
+                    value={question.correctAnswers[0] || ""}
+                    options={[
+                      { label: "True", value: "true" },
+                      { label: "False", value: "false" },
+                    ]}
+                    onChange={(e) =>
+                      updateQuestion(qIndex, "correctAnswers", [e.value])
+                    }
+                    placeholder="Choose Correct Answer"
+                  />
+                </div>
+              )}
+              <div className="mt-3">
+                <label>Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, qIndex)}
+                />
+                {question.image && (
+                  <div className="mt-2">
+                    <img
+                      src={question.image}
+                      alt="Uploaded"
+                      className="mt-2"
+                      style={{ maxWidth: "100px" }}
+                    />
+                    <button
+                      type="button"
+                      className="p-button-danger p-button-sm mt-2"
+                      onClick={() => removeImage(qIndex)}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                )}
+              </div>
+              <Button
+                type="button"
+                label="Remove Question"
+                icon="pi pi-trash"
+                className="p-button-danger mt-3"
+                onClick={() => removeQuestion(qIndex)}
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            label="Add Question"
+            icon="pi pi-plus"
+            className="p-button-secondary mt-3"
+            onClick={addQuestion}
+          />
+          <Button
+            type="submit"
+            label="Create Test"
+            icon="pi pi-check"
+            className="p-button-success mt-3 w-full"
+          />
+        </form>
+      </div>
     </div>
   );
 };

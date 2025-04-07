@@ -54,61 +54,79 @@ const FaceDetection = ({ toast }) => {
       });
   };
 
-  useEffect(() => {
-    const detectFaces = async () => {
-      if (detector && videoRef.current) {
-        if (videoRef.current.readyState === 4) {
-          const video = videoRef.current;
-          const detections = await detector.estimateFaces(video);
-          //console.log("Detections:", detections);
-          const newFaceCount = detections.length;
-          setFaceCount(newFaceCount);
-          if (newFaceCount === 0) {
-            setMessage("No face detected. Please stay in front of the camera.");
-            toast.current.show({
-              severity: "warn",
-              summary: "Warning",
-              detail: "No face detected. Please stay in front of the camera.",
-              life: 3000,
-            });
-            dispatch(updateProctoring({ face_score: 1 }));
-            dispatch(
-              addFlag("No Face Detected at " + convertToISTWithTime(new Date()))
-            );
-          } else if (newFaceCount > 1) {
-            setMessage(`${newFaceCount} faces detected!`);
-          } else {
-            setMessage("Face detected");
-          }
+ // Replace your current useEffect for detection with this version:
+useEffect(() => {
+  let isMounted = true;
 
-          const canvas = canvasRef.current;
-          const context = canvas.getContext("2d");
-          context.clearRect(0, 0, canvas.width, canvas.height);
+  const detectFaces = async () => {
+    if (!isMounted) return;
+    if (detector && videoRef.current && videoRef.current.readyState === 4) {
+      try {
+        const video = videoRef.current;
+        const detections = await detector.estimateFaces(video);
+        const newFaceCount = detections.length;
+        setFaceCount(newFaceCount);
 
-          detections.forEach((detection, index) => {
-            console.log(`Detection ${index + 1}:`, detection);
-            if (detection.boundingBox) {
-              const { topLeft, bottomRight } = detection.boundingBox;
+        if (newFaceCount === 0) {
+          setMessage("No face detected. Please stay in front of the camera.");
+          toast.current.show({
+            severity: "warn",
+            summary: "Warning",
+            detail: "No face detected. Please stay in front of the camera.",
+            life: 3000,
+          });
+          dispatch(updateProctoring({ face_score: 1 }));
+          dispatch(
+            addFlag("No Face Detected at " + convertToISTWithTime(new Date()))
+          );
+        } else if (newFaceCount > 1) {
+          setMessage(`${newFaceCount} faces detected!`);
+        } else {
+          setMessage("Face detected");
+        }
+
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        detections.forEach((detection) => {
+          // Try boundingBox; if not available, check for box
+          const boundingBox = detection.boundingBox || detection.box;
+          if (boundingBox) {
+            if (boundingBox.topLeft && boundingBox.bottomRight) {
+              const { topLeft, bottomRight } = boundingBox;
               const width = bottomRight[0] - topLeft[0];
               const height = bottomRight[1] - topLeft[1];
-
               context.beginPath();
               context.rect(topLeft[0], topLeft[1], width, height);
               context.lineWidth = 2;
               context.strokeStyle = "red";
-              context.fillStyle = "red";
               context.stroke();
-            } else {
-              console.error("Bounding box not found for face:", detection);
+            } else if (boundingBox.xMin != null) {
+              const { xMin, yMin, width, height } = boundingBox;
+              context.beginPath();
+              context.rect(xMin, yMin, width, height);
+              context.lineWidth = 2;
+              context.strokeStyle = "red";
+              context.stroke();
             }
-          });
-        }
+          } else {
+            console.error("Bounding box not found for face:", detection);
+          }
+        });
+      } catch (err) {
+        console.error(err);
       }
-    };
+    }
+    setTimeout(detectFaces, 1500);
+  };
 
-    const interval = setInterval(detectFaces, 500);
-    return () => clearInterval(interval);
-  }, [detector, dispatch, toast]);
+  detectFaces();
+
+  return () => {
+    isMounted = false;
+  };
+}, [detector, dispatch]);
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>

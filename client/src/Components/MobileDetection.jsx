@@ -43,53 +43,62 @@ const MobileDetection = ({ toast }) => {
       });
   };
 
-  useEffect(() => {
-    const detectMobile = async () => {
-      if (model && videoRef.current) {
-        if (videoRef.current.readyState === 4) {
-          const video = videoRef.current;
-          const predictions = await model.detect(video);
-          const mobileDetected = predictions.some(
-            (prediction) => prediction.class === "cell phone"
-          );
-          setMobileDetected(mobileDetected);
-          if (mobileDetected) {
-            toast.current.show({
-              severity: "warn",
-              summary: "Warning",
-              detail: "Mobile device detected!",
-              life: 3000,
-            });
-            dispatch(updateProctoring({ mobile_score: 1 }));
-            dispatch(
-              addFlag(
-                "Mobile Phone detected at " + convertToISTWithTime(new Date())
-              )
-            );
-          }
+ // Replace your current useEffect for detection with this version:
+useEffect(() => {
+  let isMounted = true;
 
-          const canvas = canvasRef.current;
-          const context = canvas.getContext("2d");
-          context.clearRect(0, 0, canvas.width, canvas.height);
+  const detectMobile = async () => {
+    if (!isMounted) return;
+    if (model && videoRef.current && videoRef.current.readyState === 4) {
+      try {
+        const video = videoRef.current;
+        const predictions = await model.detect(video);
+        const mobileFound = predictions.some(
+          (prediction) => prediction.class === "cell phone"
+        );
+        setMobileDetected(mobileFound);
 
-          predictions.forEach((prediction) => {
-            if (prediction.class === "cell phone") {
-              const [x, y, width, height] = prediction.bbox;
-              context.beginPath();
-              context.rect(x, y, width, height);
-              context.lineWidth = 2;
-              context.strokeStyle = "red";
-              context.fillStyle = "red";
-              context.stroke();
-            }
+        if (mobileFound) {
+          toast.current.show({
+            severity: "warn",
+            summary: "Warning",
+            detail: "Mobile device detected!",
+            life: 3000,
           });
+          dispatch(updateProctoring({ mobile_score: 1 }));
+          dispatch(
+            addFlag("Mobile Phone detected at " + convertToISTWithTime(new Date()))
+          );
         }
-      }
-    };
 
-    const interval = setInterval(detectMobile, 500);
-    return () => clearInterval(interval);
-  }, [model, toast, dispatch]);
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        predictions.forEach((prediction) => {
+          if (prediction.class === "cell phone") {
+            const [x, y, width, height] = prediction.bbox;
+            context.beginPath();
+            context.rect(x, y, width, height);
+            context.lineWidth = 2;
+            context.strokeStyle = "red";
+            context.fillStyle = "red";
+            context.stroke();
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    setTimeout(detectMobile, 1500);
+  };
+
+  detectMobile();
+
+  return () => {
+    isMounted = false;
+  };
+}, [model,dispatch]);
 
   return (
     <div style={{ textAlign: "center" }}>

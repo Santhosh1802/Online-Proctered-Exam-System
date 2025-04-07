@@ -29,9 +29,9 @@ const handleUserLogin = async (req, res) => {
       const token = jwt.sign(
         { email: email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "3h" }
       );
-      res.cookie("token", token, { httpOnly: false, maxAge: 3600000 });
+      res.cookie("token", token, { httpOnly: false, maxAge: 10800000 });
 
       await Login.findOneAndUpdate(
         { email_id: email },

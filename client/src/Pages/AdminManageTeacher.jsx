@@ -92,6 +92,7 @@ export default function AdminManageTeacher({ toast }) {
             name="name"
             placeholder="Name"
             value={teacherData.name}
+            tooltip="Enter Teacher Name" tooltipOptions={{ event: 'focus' }}
             onChange={handleChange}
             required
           />
@@ -101,6 +102,7 @@ export default function AdminManageTeacher({ toast }) {
             type="email"
             value={teacherData.email}
             onChange={handleChange}
+            tooltip="Enter Teacher Email" tooltipOptions={{ event: 'focus' }}
             required
           />
           <InputText
@@ -108,6 +110,7 @@ export default function AdminManageTeacher({ toast }) {
             placeholder="Phone"
             value={teacherData.phone}
             onChange={handleChange}
+            tooltip="Enter Teacher Phone Number" tooltipOptions={{ event: 'focus' }}
             required
           />
           <InputText
@@ -115,6 +118,7 @@ export default function AdminManageTeacher({ toast }) {
             placeholder="Department"
             value={teacherData.department}
             onChange={handleChange}
+            tooltip="Enter Teacher Department" tooltipOptions={{ event: 'focus' }}
             required
           />
           <InputText
@@ -122,6 +126,7 @@ export default function AdminManageTeacher({ toast }) {
             placeholder="Password"
             value={teacherData.password}
             onChange={handleChange}
+            tooltip="Enter Teacher Password" tooltipOptions={{ event: 'focus' }}
             required
           />
           <Button label="Create" onClick={handleSubmit} />
