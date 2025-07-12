@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { ProgressSpinner } from "primereact/progressspinner";
-
+import CookieConsent from "react-cookie-consent";
 const Login = lazy(() => import("./Pages/Login"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./Pages/ResetPassword"));
@@ -83,6 +83,14 @@ function App() {
 function AppRoutes({ toast }) {
   return (
     <div>
+    <CookieConsent
+        location="bottom"
+        buttonText="Accept"
+        enableDeclineButton
+
+        onAccept={() => document.cookie="userConsent=true;path=/"}>
+          This website uses cookies Accept or else it won't perform{" "}
+        </CookieConsent>
       <Routes>
         <Route path="/" element={<Login toast={toast} />} />
         <Route path="/login" element={<Login toast={toast} />} />
