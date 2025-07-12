@@ -31,7 +31,7 @@ const handleUserLogin = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: "3h" }
       );
-      res.cookie("token", token, { httpOnly: false, maxAge: 10800000 });
+      res.cookie("token", token, { httpOnly: true, maxAge: 10800000,sameSite:"None",secure:true });
 
       await Login.findOneAndUpdate(
         { email_id: email },
